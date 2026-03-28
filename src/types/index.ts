@@ -1,0 +1,103 @@
+export type UserRole = 'gerente' | 'coordenador' | 'supervisor' | 'tecnico';
+
+export interface User {
+  id: string;
+  username: string;
+  password: string;
+  role: UserRole;
+  nome?: string;
+  sobrenome?: string;
+  telefone: string;
+  foto?: string;
+  unidade?: string;
+  armazem?: string;
+}
+
+export interface Maquina {
+  id: string;
+  tipo: string;
+  frota: string;
+  marca: string;
+  modelo: string;
+  unidade: string;
+  armazem: string;
+  foto?: string;
+}
+
+export type SituacaoMaquina = 'Parada' | 'Operando com restrições';
+
+export type StatusChamado = 'Aberto' | 'Em andamento' | 'Aguardando mão de obra' | 'Aguardando peças' | 'Concluído';
+
+export type CategoriaChamado =
+  | 'Manutenção corretiva'
+  | 'Manutenção preditiva'
+  | 'Manutenção preventiva'
+  | 'Dano operacional'
+  | 'Diagnóstico'
+  | 'Revitalização';
+
+export interface Chamado {
+  id: string;
+  numero: string;
+  descricao: string;
+  maquinaId: string;
+  situacaoMaquina: SituacaoMaquina;
+  status: StatusChamado;
+  categoria?: CategoriaChamado;
+  tecnicoId?: string;
+  criadoPor: string;
+  criadoEm: string;
+}
+
+export const UNIDADES = ['Polo Saúde', 'Pátio', 'Alimentos'] as const;
+export const ARMAZENS = ['AZ1', 'AZ2', 'AZ3'] as const;
+export const TIPOS_MAQUINA = ['Stacker', 'Mecklift', 'Caminhão', 'Empilhadeira elétrica'] as const;
+export const FROTAS = ['EP-03', 'EP-17', 'EP-39', 'EP-387'] as const;
+export const MARCAS = ['Yale', 'Still', 'Hyster', 'Linde'] as const;
+export const MODELOS = ['GTP050', 'H55XM', 'R17', 'R1.6H'] as const;
+
+export const CATEGORIAS: CategoriaChamado[] = [
+  'Manutenção corretiva',
+  'Manutenção preditiva',
+  'Manutenção preventiva',
+  'Dano operacional',
+  'Diagnóstico',
+  'Revitalização',
+];
+
+export const STATUS_LIST: StatusChamado[] = [
+  'Aberto',
+  'Em andamento',
+  'Aguardando mão de obra',
+  'Aguardando peças',
+  'Concluído',
+];
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  gerente: 'Gerente',
+  coordenador: 'Coordenador',
+  supervisor: 'Supervisor',
+  tecnico: 'Técnico de Manutenção',
+};
+
+export function getStatusColor(status: StatusChamado): string {
+  switch (status) {
+    case 'Aberto': return 'status-open';
+    case 'Em andamento': return 'status-progress';
+    case 'Aguardando mão de obra': return 'status-waiting';
+    case 'Aguardando peças': return 'status-waiting';
+    case 'Concluído': return 'status-done';
+    default: return '';
+  }
+}
+
+export function getStatusBgColor(status: StatusChamado): string {
+  switch (status) {
+    case 'Aberto': return 'bg-status-open';
+    case 'Em andamento': return 'bg-status-progress';
+    case 'Aguardando mão de obra': return 'bg-status-waiting';
+    case 'Aguardando peças': return 'bg-status-waiting';
+    case 'Concluído': return 'bg-status-done';
+    default: return '';
+  }
+}
