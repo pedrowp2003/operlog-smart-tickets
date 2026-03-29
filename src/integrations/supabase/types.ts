@@ -14,16 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chamados: {
+        Row: {
+          categoria: string | null
+          created_at: string
+          criado_por: string
+          descricao: string
+          id: string
+          maquina_id: string
+          numero: string
+          situacao_maquina: string
+          status: string
+          tecnico_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string
+          criado_por: string
+          descricao: string
+          id?: string
+          maquina_id: string
+          numero: string
+          situacao_maquina: string
+          status?: string
+          tecnico_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string
+          criado_por?: string
+          descricao?: string
+          id?: string
+          maquina_id?: string
+          numero?: string
+          situacao_maquina?: string
+          status?: string
+          tecnico_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chamados_maquina_id_fkey"
+            columns: ["maquina_id"]
+            isOneToOne: false
+            referencedRelation: "maquinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      maquinas: {
+        Row: {
+          armazem: string
+          created_at: string
+          foto_url: string | null
+          frota: string
+          id: string
+          marca: string
+          modelo: string
+          tipo: string
+          unidade: string
+          updated_at: string
+        }
+        Insert: {
+          armazem: string
+          created_at?: string
+          foto_url?: string | null
+          frota: string
+          id?: string
+          marca: string
+          modelo: string
+          tipo: string
+          unidade: string
+          updated_at?: string
+        }
+        Update: {
+          armazem?: string
+          created_at?: string
+          foto_url?: string | null
+          frota?: string
+          id?: string
+          marca?: string
+          modelo?: string
+          tipo?: string
+          unidade?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          armazem: string | null
+          created_at: string
+          foto_url: string | null
+          id: string
+          nome: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          sobrenome: string | null
+          telefone: string
+          unidade: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          armazem?: string | null
+          created_at?: string
+          foto_url?: string | null
+          id: string
+          nome?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          sobrenome?: string | null
+          telefone: string
+          unidade?: string | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          armazem?: string | null
+          created_at?: string
+          foto_url?: string | null
+          id?: string
+          nome?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          sobrenome?: string | null
+          telefone?: string
+          unidade?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "gerente" | "coordenador" | "supervisor" | "tecnico"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +304,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["gerente", "coordenador", "supervisor", "tecnico"],
+    },
   },
 } as const
