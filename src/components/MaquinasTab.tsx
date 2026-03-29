@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getMaquinas, addMaquina, updateMaquina, deleteMaquina } from '@/data/store';
-import { Maquina, UNIDADES, ARMAZENS, TIPOS_MAQUINA, FROTAS, MARCAS, MODELOS } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+import { UNIDADES, ARMAZENS, TIPOS_MAQUINA, FROTAS, MARCAS, MODELOS } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,23 +11,30 @@ import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Plus, Trash2, Pencil, Wrench } from 'lucide-react';
 
+type Maquina = Tables<'maquinas'>;
+
 export function MaquinasTab() {
-  const { user } = useAuth();
-  const [refresh, setRefresh] = useState(0);
+  const { user, uploadImage } = useAuth();
+  const [maquinas, setMaquinas] = useState<Maquina[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [editMaquina, setEditMaquina] = useState<Maquina | null>(null);
   const [detailMaquina, setDetailMaquina] = useState<Maquina | null>(null);
 
-  // Form state
   const [tipo, setTipo] = useState('');
   const [frota, setFrota] = useState('');
   const [marca, setMarca] = useState('');
   const [modelo, setModelo] = useState('');
   const [unidade, setUnidade] = useState('');
   const [armazem, setArmazem] = useState('');
-  const [foto, setFoto] = useState<string | undefined>();
+  const [fotoPreview, setFotoPreview] = useState<string | undefined>();
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
 
-  const allMaquinas = useMemo(() => getMaquinas(), [refresh]);
+  const fetchMaquinas = async () => {
+    const { data } = await supabase.from('maquinas').select('*').order('created_at', { ascending: false });
+    if (data) setMaquinas(data);
+  };
+
+  useEffect(() => { fetchMaquinas(); }, []);
 
   if (!user) return null;
 
@@ -34,7 +42,7 @@ export function MaquinasTab() {
   const canEdit = user.role !== 'tecnico';
   const canDeleteMaq = user.role === 'gerente' || user.role === 'coordenador' || user.role === 'supervisor';
 
-  const resetForm = () => { setTipo(''); setFrota(''); setMarca(''); setModelo(''); setUnidade(''); setArmazem(''); setFoto(undefined); };
+  const resetForm = () => { setTipo(''); setFrota(''); setMarca(''); setModelo(''); setUnidade(''); setArmazem(''); setFotoPreview(undefined); setFotoFile(null); };
 
   const openCreate = () => {
     resetForm();
@@ -45,31 +53,41 @@ export function MaquinasTab() {
 
   const openEdit = (m: Maquina) => {
     setTipo(m.tipo); setFrota(m.frota); setMarca(m.marca); setModelo(m.modelo);
-    setUnidade(m.unidade); setArmazem(m.armazem); setFoto(m.foto);
+    setUnidade(m.unidade); setArmazem(m.armazem); setFotoPreview(m.foto_url || undefined); setFotoFile(null);
     setEditMaquina(m);
   };
 
-  const handleSave = () => {
+  const handleFotoChange = (base64: string | undefined, file?: File) => {
+    setFotoPreview(base64);
+    setFotoFile(file || null);
+  };
+
+  const handleSave = async () => {
     if (!tipo || !frota || !marca || !modelo || !unidade || !armazem) return;
-    const maq: Maquina = {
-      id: editMaquina?.id || crypto.randomUUID(),
-      tipo, frota, marca, modelo, unidade, armazem, foto,
-    };
+
+    let foto_url = editMaquina?.foto_url || null;
+    if (fotoFile) {
+      const url = await uploadImage(fotoFile, 'maquinas');
+      if (url) foto_url = url;
+    } else if (!fotoPreview) {
+      foto_url = null;
+    }
+
     if (editMaquina) {
-      updateMaquina(maq);
+      await supabase.from('maquinas').update({ tipo, frota, marca, modelo, unidade, armazem, foto_url }).eq('id', editMaquina.id);
       setEditMaquina(null);
     } else {
-      addMaquina(maq);
+      await supabase.from('maquinas').insert({ tipo, frota, marca, modelo, unidade, armazem, foto_url });
       setCreateOpen(false);
     }
     resetForm();
-    setRefresh(r => r + 1);
+    fetchMaquinas();
   };
 
-  const handleDelete = (id: string) => {
-    deleteMaquina(id);
+  const handleDelete = async (id: string) => {
+    await supabase.from('maquinas').delete().eq('id', id);
     setDetailMaquina(null);
-    setRefresh(r => r + 1);
+    fetchMaquinas();
   };
 
   const formContent = (
@@ -122,7 +140,7 @@ export function MaquinasTab() {
       )}
       <div>
         <Label>Foto</Label>
-        <ImageUpload value={foto} onChange={setFoto} label="Foto da máquina" />
+        <ImageUpload value={fotoPreview} onChange={handleFotoChange} label="Foto da máquina" />
       </div>
       <Button onClick={handleSave} disabled={!tipo || !frota || !marca || !modelo || !unidade || !armazem}>Salvar</Button>
     </div>
@@ -139,14 +157,14 @@ export function MaquinasTab() {
         )}
       </div>
 
-      {allMaquinas.length === 0 ? (
+      {maquinas.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhuma máquina cadastrada</p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {allMaquinas.map(m => (
+          {maquinas.map(m => (
             <Card key={m.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailMaquina(m)}>
-              {m.foto ? (
-                <img src={m.foto} alt="" className="w-16 h-16 rounded object-cover flex-shrink-0" />
+              {m.foto_url ? (
+                <img src={m.foto_url} alt="" className="w-16 h-16 rounded object-cover flex-shrink-0" />
               ) : (
                 <div className="w-16 h-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
                   <Wrench className="w-6 h-6 text-muted-foreground" />
@@ -174,7 +192,6 @@ export function MaquinasTab() {
         </div>
       )}
 
-      {/* Create */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Nova Máquina</DialogTitle></DialogHeader>
@@ -182,7 +199,6 @@ export function MaquinasTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit */}
       <Dialog open={!!editMaquina} onOpenChange={() => { setEditMaquina(null); resetForm(); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Editar Máquina</DialogTitle></DialogHeader>
@@ -190,13 +206,12 @@ export function MaquinasTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Detail */}
       <Dialog open={!!detailMaquina} onOpenChange={() => setDetailMaquina(null)}>
         <DialogContent>
           {detailMaquina && (
             <>
               <DialogHeader><DialogTitle>{detailMaquina.tipo} — {detailMaquina.frota}</DialogTitle></DialogHeader>
-              {detailMaquina.foto && <img src={detailMaquina.foto} alt="" className="w-full h-48 object-cover rounded-lg" />}
+              {detailMaquina.foto_url && <img src={detailMaquina.foto_url} alt="" className="w-full h-48 object-cover rounded-lg" />}
               <div className="grid grid-cols-2 gap-1 text-sm">
                 <span className="text-muted-foreground">Tipo:</span><span>{detailMaquina.tipo}</span>
                 <span className="text-muted-foreground">Frota:</span><span>{detailMaquina.frota}</span>

@@ -1,10 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { Camera, Upload, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Camera, X } from 'lucide-react';
 
 interface ImageUploadProps {
   value?: string;
-  onChange: (base64: string | undefined) => void;
+  onChange: (base64OrUrl: string | undefined, file?: File) => void;
   label?: string;
   className?: string;
 }
@@ -17,7 +16,7 @@ export function ImageUpload({ value, onChange, label = 'Adicionar foto', classNa
     if (!file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      onChange(e.target?.result as string);
+      onChange(e.target?.result as string, file);
     };
     reader.readAsDataURL(file);
   };

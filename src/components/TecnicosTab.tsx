@@ -1,7 +1,6 @@
-import { useState, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { getTecnicos, deleteUser } from '@/data/store';
-import { User } from '@/types';
+import { useState, useEffect } from 'react';
+import { useAuth, Profile } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,19 +8,24 @@ import { Trash2, User as UserIcon } from 'lucide-react';
 
 export function TecnicosTab() {
   const { user } = useAuth();
-  const [refresh, setRefresh] = useState(0);
-  const [detailTecnico, setDetailTecnico] = useState<User | null>(null);
+  const [tecnicos, setTecnicos] = useState<Profile[]>([]);
+  const [detailTecnico, setDetailTecnico] = useState<Profile | null>(null);
 
-  const tecnicos = useMemo(() => getTecnicos(), [refresh]);
+  const fetchTecnicos = async () => {
+    const { data } = await supabase.from('profiles').select('*').eq('role', 'tecnico');
+    if (data) setTecnicos(data);
+  };
+
+  useEffect(() => { fetchTecnicos(); }, []);
 
   if (!user) return null;
 
   const canDelete = user.role === 'gerente';
 
-  const handleDelete = (id: string) => {
-    deleteUser(id);
+  const handleDelete = async (id: string) => {
+    await supabase.from('profiles').delete().eq('id', id);
     setDetailTecnico(null);
-    setRefresh(r => r + 1);
+    fetchTecnicos();
   };
 
   return (
@@ -34,8 +38,8 @@ export function TecnicosTab() {
         <div className="grid gap-3 sm:grid-cols-2">
           {tecnicos.map(t => (
             <Card key={t.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-center" onClick={() => setDetailTecnico(t)}>
-              {t.foto ? (
-                <img src={t.foto} alt="" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+              {t.foto_url ? (
+                <img src={t.foto_url} alt="" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
               ) : (
                 <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                   <UserIcon className="w-6 h-6 text-muted-foreground" />
@@ -62,8 +66,8 @@ export function TecnicosTab() {
             <>
               <DialogHeader><DialogTitle>{detailTecnico.nome} {detailTecnico.sobrenome}</DialogTitle></DialogHeader>
               <div className="flex flex-col items-center gap-3">
-                {detailTecnico.foto ? (
-                  <img src={detailTecnico.foto} alt="" className="w-32 h-32 rounded-full object-cover" />
+                {detailTecnico.foto_url ? (
+                  <img src={detailTecnico.foto_url} alt="" className="w-32 h-32 rounded-full object-cover" />
                 ) : (
                   <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center">
                     <UserIcon className="w-12 h-12 text-muted-foreground" />

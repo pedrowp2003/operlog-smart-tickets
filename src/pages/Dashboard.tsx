@@ -10,18 +10,23 @@ import { ClipboardList, Wrench, Users } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) navigate('/');
-  }, [user, navigate]);
+    if (!loading && !user) navigate('/');
+  }, [user, loading, navigate]);
+
+  if (loading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="text-muted-foreground">Carregando...</p>
+    </div>
+  );
 
   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -32,7 +37,6 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
         <Tabs defaultValue="chamados" className="w-full">
           <TabsList className="w-full grid grid-cols-3 mb-4">

@@ -11,22 +11,25 @@ import logo from '@/assets/operlog-logo.png';
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!username.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       setError('Preencha todos os campos');
       return;
     }
-    const success = login(username.trim(), password);
-    if (success) {
-      navigate('/dashboard');
+    setLoading(true);
+    const err = await login(email.trim(), password);
+    setLoading(false);
+    if (err) {
+      setError('Email ou senha inválidos');
     } else {
-      setError('Usuário ou senha inválidos');
+      navigate('/dashboard');
     }
   };
 
@@ -43,15 +46,17 @@ export default function Login() {
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <Label htmlFor="username">Usuário</Label>
-              <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Nome de usuário" />
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" />
             </div>
             <div>
               <Label htmlFor="password">Senha</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Senha" />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full">Entrar</Button>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </Button>
           </form>
           <p className="text-sm text-center text-muted-foreground mt-4">
             Não tem conta?{' '}

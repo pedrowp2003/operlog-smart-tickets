@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ROLE_LABELS } from '@/types';
+import { ROLE_LABELS, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -15,23 +15,21 @@ export function UserMenu() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [telefone, setTelefone] = useState(user?.telefone || '');
-  const [password, setPassword] = useState('');
 
   if (!user) return null;
 
-  const handleSave = () => {
-    updateProfile({ ...user, telefone: telefone.trim(), password: password || user.password });
+  const handleSave = async () => {
+    await updateProfile({ telefone: telefone.trim() });
     setEditOpen(false);
-    setPassword('');
   };
 
-  const handleDelete = () => {
-    deleteAccount();
+  const handleDelete = async () => {
+    await deleteAccount();
     navigate('/');
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
 
@@ -40,8 +38,8 @@ export function UserMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="gap-2">
-            {user.foto ? (
-              <img src={user.foto} alt="" className="w-6 h-6 rounded-full object-cover" />
+            {user.foto_url ? (
+              <img src={user.foto_url} alt="" className="w-6 h-6 rounded-full object-cover" />
             ) : (
               <User className="w-4 h-4" />
             )}
@@ -51,7 +49,7 @@ export function UserMenu() {
         <DropdownMenuContent align="end">
           <div className="px-2 py-1.5">
             <p className="text-sm font-medium">{user.username}</p>
-            <p className="text-xs text-muted-foreground">{ROLE_LABELS[user.role]}</p>
+            <p className="text-xs text-muted-foreground">{ROLE_LABELS[user.role as UserRole]}</p>
           </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => { setTelefone(user.telefone); setEditOpen(true); }}>
@@ -74,10 +72,6 @@ export function UserMenu() {
             <div>
               <Label>Telefone</Label>
               <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-            </div>
-            <div>
-              <Label>Nova Senha (deixe em branco para manter)</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <Button onClick={handleSave}>Salvar</Button>
           </div>
