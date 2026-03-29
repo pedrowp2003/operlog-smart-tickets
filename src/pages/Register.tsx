@@ -13,23 +13,31 @@ import logo from '@/assets/operlog-logo.png';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, uploadImage } = useAuth();
   const [role, setRole] = useState<UserRole | ''>('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
   const [sobrenome, setSobrenome] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [foto, setFoto] = useState<string | undefined>();
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | undefined>();
   const [unidade, setUnidade] = useState('');
   const [armazem, setArmazem] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFotoChange = (base64: string | undefined, file?: File) => {
+    setFotoPreview(base64);
+    setFotoFile(file || null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!role || !username.trim() || !password.trim() || !telefone.trim()) {
+    if (!role || !username.trim() || !email.trim() || !password.trim() || !telefone.trim()) {
       setError('Preencha todos os campos obrigatórios');
       return;
     }
@@ -46,23 +54,33 @@ export default function Register() {
       return;
     }
 
-    const success = register({
-      id: crypto.randomUUID(),
+    setLoading(true);
+
+    // Upload photo if present
+    let foto_url: string | undefined;
+    if (fotoFile) {
+      const url = await uploadImage(fotoFile, 'profiles');
+      if (url) foto_url = url;
+    }
+
+    const metadata: Record<string, string | undefined> = {
       username: username.trim(),
-      password,
       role,
       nome: nome.trim() || undefined,
       sobrenome: sobrenome.trim() || undefined,
       telefone: telefone.trim(),
-      foto,
+      foto_url,
       unidade: unidade || undefined,
       armazem: armazem || undefined,
-    });
+    };
 
-    if (success) {
-      navigate('/dashboard');
+    const err = await register(email.trim(), password, metadata);
+    setLoading(false);
+
+    if (err) {
+      setError(err);
     } else {
-      setError('Nome de usuário já existe');
+      navigate('/dashboard');
     }
   };
 
@@ -91,12 +109,16 @@ export default function Register() {
             </div>
 
             <div>
-              <Label>Usuário *</Label>
+              <Label>Nome de Usuário *</Label>
               <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Nome de usuário" />
             </div>
             <div>
+              <Label>Email *</Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" />
+            </div>
+            <div>
               <Label>Senha *</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Senha" />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Senha (mínimo 6 caracteres)" />
             </div>
 
             {role === 'tecnico' && (
@@ -113,7 +135,7 @@ export default function Register() {
                 </div>
                 <div>
                   <Label>Foto</Label>
-                  <ImageUpload value={foto} onChange={setFoto} label="Sua foto" />
+                  <ImageUpload value={fotoPreview} onChange={handleFotoChange} label="Sua foto" />
                 </div>
               </>
             )}
@@ -148,7 +170,9 @@ export default function Register() {
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full">Cadastrar-se</Button>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Cadastrando...' : 'Cadastrar-se'}
+            </Button>
           </form>
           <p className="text-sm text-center text-muted-foreground mt-4">
             Já tem conta?{' '}

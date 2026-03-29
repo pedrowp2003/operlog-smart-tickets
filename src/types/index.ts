@@ -1,29 +1,5 @@
 export type UserRole = 'gerente' | 'coordenador' | 'supervisor' | 'tecnico';
 
-export interface User {
-  id: string;
-  username: string;
-  password: string;
-  role: UserRole;
-  nome?: string;
-  sobrenome?: string;
-  telefone: string;
-  foto?: string;
-  unidade?: string;
-  armazem?: string;
-}
-
-export interface Maquina {
-  id: string;
-  tipo: string;
-  frota: string;
-  marca: string;
-  modelo: string;
-  unidade: string;
-  armazem: string;
-  foto?: string;
-}
-
 export type SituacaoMaquina = 'Parada' | 'Operando com restrições';
 
 export type StatusChamado = 'Aberto' | 'Em andamento' | 'Aguardando mão de obra' | 'Aguardando peças' | 'Concluído';
@@ -35,19 +11,6 @@ export type CategoriaChamado =
   | 'Dano operacional'
   | 'Diagnóstico'
   | 'Revitalização';
-
-export interface Chamado {
-  id: string;
-  numero: string;
-  descricao: string;
-  maquinaId: string;
-  situacaoMaquina: SituacaoMaquina;
-  status: StatusChamado;
-  categoria?: CategoriaChamado;
-  tecnicoId?: string;
-  criadoPor: string;
-  criadoEm: string;
-}
 
 export const UNIDADES = ['Polo Saúde', 'Pátio', 'Alimentos'] as const;
 export const ARMAZENS = ['AZ1', 'AZ2', 'AZ3'] as const;

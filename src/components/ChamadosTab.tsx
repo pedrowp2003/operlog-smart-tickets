@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { getChamados, getMaquinas, getMaquinaById, addChamado, updateChamado, deleteChamado, generateChamadoNumero, getTecnicos, getUserById } from '@/data/store';
-import { Chamado, Maquina, StatusChamado, CategoriaChamado, CATEGORIAS, STATUS_LIST, getStatusColor, getStatusBgColor } from '@/types';
+import { useState, useEffect } from 'react';
+import { useAuth, Profile } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+import { StatusChamado, CategoriaChamado, CATEGORIAS, STATUS_LIST, getStatusColor, getStatusBgColor } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,96 +12,107 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Wrench, User } from 'lucide-react';
 
+type Chamado = Tables<'chamados'>;
+type Maquina = Tables<'maquinas'>;
+
 const MAX_DESC = 500;
 
 export function ChamadosTab() {
   const { user } = useAuth();
-  const [refresh, setRefresh] = useState(0);
+  const [chamados, setChamados] = useState<Chamado[]>([]);
+  const [maquinas, setMaquinas] = useState<Maquina[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [detailChamado, setDetailChamado] = useState<Chamado | null>(null);
   const [showTecnicoInfo, setShowTecnicoInfo] = useState(false);
   const [meusChamados, setMeusChamados] = useState(false);
 
-  // Create form state
   const [descricao, setDescricao] = useState('');
   const [maquinaId, setMaquinaId] = useState('');
   const [situacao, setSituacao] = useState<'Parada' | 'Operando com restrições'>('Parada');
 
-  // Accept form state
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
   const [status, setStatus] = useState<StatusChamado>('Aberto');
 
-  const allChamados = useMemo(() => getChamados(), [refresh]);
-  const allMaquinas = useMemo(() => getMaquinas(), [refresh]);
+  const fetchData = async () => {
+    const [cRes, mRes, pRes] = await Promise.all([
+      supabase.from('chamados').select('*').order('created_at', { ascending: false }),
+      supabase.from('maquinas').select('*'),
+      supabase.from('profiles').select('*').eq('role', 'tecnico'),
+    ]);
+    if (cRes.data) setChamados(cRes.data);
+    if (mRes.data) setMaquinas(mRes.data);
+    if (pRes.data) setProfiles(pRes.data);
+  };
+
+  useEffect(() => { fetchData(); }, []);
 
   if (!user) return null;
 
   const canCreate = user.role !== 'tecnico';
   const canDelete = user.role === 'gerente';
 
-  // Filter machines for creation based on role
-  const availableMaquinas = allMaquinas.filter((m) => {
+  const getMaquina = (id: string) => maquinas.find(m => m.id === id);
+  const getTecnico = (id: string) => profiles.find(p => p.id === id);
+
+  const availableMaquinas = maquinas.filter((m) => {
     if (user.role === 'gerente') return true;
     if (user.role === 'coordenador') return m.unidade === user.unidade;
     if (user.role === 'supervisor') return m.unidade === user.unidade && m.armazem === user.armazem;
     return false;
   });
 
-  // Filter chamados based on role
-  let filteredChamados = allChamados;
+  let filteredChamados = chamados;
   if (user.role === 'tecnico' && meusChamados) {
-    filteredChamados = allChamados.filter(c => c.tecnicoId === user.id);
+    filteredChamados = chamados.filter(c => c.tecnico_id === user.id);
   }
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!descricao.trim() || !maquinaId) return;
-    const chamado: Chamado = {
-      id: crypto.randomUUID(),
-      numero: generateChamadoNumero(),
+    await supabase.from('chamados').insert({
+      numero: 'TEMP',
       descricao: descricao.trim().toUpperCase(),
-      maquinaId,
-      situacaoMaquina: situacao,
-      status: 'Aberto',
-      criadoPor: user.id,
-      criadoEm: new Date().toISOString(),
-    };
-    addChamado(chamado);
+      maquina_id: maquinaId,
+      situacao_maquina: situacao,
+      criado_por: user.id,
+    });
     setCreateOpen(false);
     setDescricao('');
     setMaquinaId('');
-    setRefresh(r => r + 1);
+    fetchData();
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (!detailChamado) return;
-    const updated = { ...detailChamado, tecnicoId: user.id, categoria, status };
-    updateChamado(updated);
-    setDetailChamado(updated);
+    const { data } = await supabase.from('chamados').update({
+      tecnico_id: user.id,
+      categoria,
+      status,
+    }).eq('id', detailChamado.id).select().single();
+    if (data) setDetailChamado(data);
     setAcceptOpen(false);
-    setRefresh(r => r + 1);
+    fetchData();
   };
 
-  const handleStatusChange = (newStatus: StatusChamado) => {
-    if (!detailChamado || detailChamado.tecnicoId !== user.id) return;
-    const updated = { ...detailChamado, status: newStatus };
-    updateChamado(updated);
-    setDetailChamado(updated);
-    setRefresh(r => r + 1);
+  const handleStatusChange = async (newStatus: StatusChamado) => {
+    if (!detailChamado || detailChamado.tecnico_id !== user.id) return;
+    const { data } = await supabase.from('chamados').update({ status: newStatus }).eq('id', detailChamado.id).select().single();
+    if (data) setDetailChamado(data);
+    fetchData();
   };
 
-  const handleCategoriaChange = (newCat: CategoriaChamado) => {
-    if (!detailChamado || detailChamado.tecnicoId !== user.id) return;
-    const updated = { ...detailChamado, categoria: newCat };
-    updateChamado(updated);
-    setDetailChamado(updated);
-    setRefresh(r => r + 1);
+  const handleCategoriaChange = async (newCat: CategoriaChamado) => {
+    if (!detailChamado || detailChamado.tecnico_id !== user.id) return;
+    const { data } = await supabase.from('chamados').update({ categoria: newCat }).eq('id', detailChamado.id).select().single();
+    if (data) setDetailChamado(data);
+    fetchData();
   };
 
-  const handleDeleteChamado = (id: string) => {
-    deleteChamado(id);
+  const handleDeleteChamado = async (id: string) => {
+    await supabase.from('chamados').delete().eq('id', id);
     setDetailChamado(null);
-    setRefresh(r => r + 1);
+    fetchData();
   };
 
   return (
@@ -126,15 +138,11 @@ export function ChamadosTab() {
       ) : (
         <div className="grid gap-3">
           {filteredChamados.map((chamado) => {
-            const maquina = getMaquinaById(chamado.maquinaId);
+            const maquina = getMaquina(chamado.maquina_id);
             return (
-              <Card
-                key={chamado.id}
-                className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start"
-                onClick={() => setDetailChamado(chamado)}
-              >
-                {maquina?.foto ? (
-                  <img src={maquina.foto} alt="" className="w-16 h-16 rounded object-cover flex-shrink-0" />
+              <Card key={chamado.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailChamado(chamado)}>
+                {maquina?.foto_url ? (
+                  <img src={maquina.foto_url} alt="" className="w-16 h-16 rounded object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-16 h-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
                     <Wrench className="w-6 h-6 text-muted-foreground" />
@@ -143,17 +151,13 @@ export function ChamadosTab() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-muted-foreground">{chamado.numero}</span>
-                    <Badge variant="outline" className={`text-xs ${getStatusColor(chamado.status)} ${getStatusBgColor(chamado.status)} border-0`}>
+                    <Badge variant="outline" className={`text-xs ${getStatusColor(chamado.status as StatusChamado)} ${getStatusBgColor(chamado.status as StatusChamado)} border-0`}>
                       {chamado.status}
                     </Badge>
                   </div>
-                  {maquina && (
-                    <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota} ({maquina.marca})</p>
-                  )}
+                  {maquina && <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota} ({maquina.marca})</p>}
                   <p className="text-xs text-muted-foreground truncate">{chamado.descricao}</p>
-                  {chamado.categoria && (
-                    <span className="text-xs text-muted-foreground">{chamado.categoria}</span>
-                  )}
+                  {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
                 {canDelete && (
                   <Button variant="ghost" size="sm" className="text-destructive flex-shrink-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
@@ -212,14 +216,12 @@ export function ChamadosTab() {
       <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowTecnicoInfo(false); }}>
         <DialogContent className="max-w-md">
           {detailChamado && (() => {
-            const maquina = getMaquinaById(detailChamado.maquinaId);
-            const tecnico = detailChamado.tecnicoId ? getUserById(detailChamado.tecnicoId) : null;
+            const maquina = getMaquina(detailChamado.maquina_id);
+            const tecnico = detailChamado.tecnico_id ? getTecnico(detailChamado.tecnico_id) : null;
             return (
               <>
                 <DialogHeader><DialogTitle>Chamado {detailChamado.numero}</DialogTitle></DialogHeader>
-                {maquina?.foto && (
-                  <img src={maquina.foto} alt="" className="w-full h-48 object-cover rounded-lg" />
-                )}
+                {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full h-48 object-cover rounded-lg" />}
                 <div className="space-y-2 text-sm">
                   {maquina && (
                     <div className="grid grid-cols-2 gap-1 text-sm">
@@ -232,13 +234,13 @@ export function ChamadosTab() {
                     </div>
                   )}
                   <div className="pt-2 border-t border-border">
-                    <p className="text-muted-foreground">Situação: <span className="text-foreground">{detailChamado.situacaoMaquina}</span></p>
+                    <p className="text-muted-foreground">Situação: <span className="text-foreground">{detailChamado.situacao_maquina}</span></p>
                     <p className="text-muted-foreground">Descrição:</p>
                     <p>{detailChamado.descricao}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">Status:</span>
-                    {detailChamado.tecnicoId === user?.id ? (
+                    {detailChamado.tecnico_id === user?.id ? (
                       <Select value={detailChamado.status} onValueChange={(v) => handleStatusChange(v as StatusChamado)}>
                         <SelectTrigger className="w-auto h-7 text-xs"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -246,7 +248,7 @@ export function ChamadosTab() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Badge variant="outline" className={`${getStatusColor(detailChamado.status)} ${getStatusBgColor(detailChamado.status)} border-0`}>
+                      <Badge variant="outline" className={`${getStatusColor(detailChamado.status as StatusChamado)} ${getStatusBgColor(detailChamado.status as StatusChamado)} border-0`}>
                         {detailChamado.status}
                       </Badge>
                     )}
@@ -254,7 +256,7 @@ export function ChamadosTab() {
                   {detailChamado.categoria && (
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">Categoria:</span>
-                      {detailChamado.tecnicoId === user?.id ? (
+                      {detailChamado.tecnico_id === user?.id ? (
                         <Select value={detailChamado.categoria} onValueChange={(v) => handleCategoriaChange(v as CategoriaChamado)}>
                           <SelectTrigger className="w-auto h-7 text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>
@@ -272,7 +274,7 @@ export function ChamadosTab() {
                   <Button variant="outline" size="sm" onClick={() => setShowTecnicoInfo(!showTecnicoInfo)}>
                     <User className="w-4 h-4 mr-1" /> Dados do Chamado
                   </Button>
-                  {user?.role === 'tecnico' && !detailChamado.tecnicoId && (
+                  {user?.role === 'tecnico' && !detailChamado.tecnico_id && (
                     <Button size="sm" onClick={() => setAcceptOpen(true)}>Aceitar Chamado</Button>
                   )}
                 </div>
@@ -281,8 +283,8 @@ export function ChamadosTab() {
                   <div className="border border-border rounded-lg p-3 mt-2">
                     {tecnico ? (
                       <div className="flex gap-3 items-center">
-                        {tecnico.foto ? (
-                          <img src={tecnico.foto} alt="" className="w-14 h-14 rounded-full object-cover" />
+                        {tecnico.foto_url ? (
+                          <img src={tecnico.foto_url} alt="" className="w-14 h-14 rounded-full object-cover" />
                         ) : (
                           <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
                             <User className="w-6 h-6 text-muted-foreground" />
