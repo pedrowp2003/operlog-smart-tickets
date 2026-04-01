@@ -67,10 +67,10 @@ export function TecnicosTab() {
               <DialogHeader><DialogTitle>{detailTecnico.nome} {detailTecnico.sobrenome}</DialogTitle></DialogHeader>
               <div className="flex flex-col items-center gap-3">
                 {detailTecnico.foto_url ? (
-                  <img src={detailTecnico.foto_url} alt="" className="w-32 h-32 rounded-full object-cover" />
+                  <img src={detailTecnico.foto_url} alt="" className="w-40 h-40 rounded-full object-contain bg-muted" />
                 ) : (
-                  <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center">
-                    <UserIcon className="w-12 h-12 text-muted-foreground" />
+                  <div className="w-40 h-40 rounded-full bg-muted flex items-center justify-center">
+                    <UserIcon className="w-16 h-16 text-muted-foreground" />
                   </div>
                 )}
                 <div className="text-sm space-y-1 text-center">

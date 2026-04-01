@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Plus, Trash2, Pencil, Wrench } from 'lucide-react';
+import { toast } from 'sonner';
 
 type Maquina = Tables<'maquinas'>;
 
@@ -42,6 +43,14 @@ export function MaquinasTab() {
   const canEdit = user.role !== 'tecnico';
   const canDeleteMaq = user.role === 'gerente' || user.role === 'coordenador' || user.role === 'supervisor';
 
+  // Filter machines by role
+  const visibleMaquinas = maquinas.filter(m => {
+    if (user.role === 'gerente' || user.role === 'tecnico') return true;
+    if (user.role === 'coordenador') return m.unidade === user.unidade;
+    if (user.role === 'supervisor') return m.unidade === user.unidade && m.armazem === user.armazem;
+    return false;
+  });
+
   const resetForm = () => { setTipo(''); setFrota(''); setMarca(''); setModelo(''); setUnidade(''); setArmazem(''); setFotoPreview(undefined); setFotoFile(null); };
 
   const openCreate = () => {
@@ -62,8 +71,21 @@ export function MaquinasTab() {
     setFotoFile(file || null);
   };
 
+  const checkDuplicate = () => {
+    return maquinas.some(m =>
+      m.tipo === tipo && m.frota === frota && m.marca === marca && m.modelo === modelo &&
+      m.unidade === unidade && m.armazem === armazem &&
+      (!editMaquina || m.id !== editMaquina.id)
+    );
+  };
+
   const handleSave = async () => {
     if (!tipo || !frota || !marca || !modelo || !unidade || !armazem) return;
+
+    if (checkDuplicate()) {
+      toast.error('Máquina já cadastrada com essas informações!');
+      return;
+    }
 
     let foto_url = editMaquina?.foto_url || null;
     if (fotoFile) {
@@ -89,6 +111,10 @@ export function MaquinasTab() {
     setDetailMaquina(null);
     fetchMaquinas();
   };
+
+  // Determine which fields user can select
+  const showUnidadeSelect = user.role === 'gerente';
+  const showArmazemSelect = user.role === 'gerente' || user.role === 'coordenador';
 
   const formContent = (
     <div className="flex flex-col gap-4">
@@ -120,7 +146,7 @@ export function MaquinasTab() {
           <SelectContent>{MODELOS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      {user.role === 'gerente' && (
+      {showUnidadeSelect && (
         <div>
           <Label>Unidade *</Label>
           <Select value={unidade} onValueChange={setUnidade}>
@@ -129,7 +155,7 @@ export function MaquinasTab() {
           </Select>
         </div>
       )}
-      {(user.role === 'gerente' || user.role === 'coordenador') && (
+      {showArmazemSelect && (
         <div>
           <Label>Armazém *</Label>
           <Select value={armazem} onValueChange={setArmazem}>
@@ -157,11 +183,11 @@ export function MaquinasTab() {
         )}
       </div>
 
-      {maquinas.length === 0 ? (
+      {visibleMaquinas.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhuma máquina cadastrada</p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {maquinas.map(m => (
+          {visibleMaquinas.map(m => (
             <Card key={m.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailMaquina(m)}>
               {m.foto_url ? (
                 <img src={m.foto_url} alt="" className="w-16 h-16 rounded object-cover flex-shrink-0" />
@@ -211,7 +237,7 @@ export function MaquinasTab() {
           {detailMaquina && (
             <>
               <DialogHeader><DialogTitle>{detailMaquina.tipo} — {detailMaquina.frota}</DialogTitle></DialogHeader>
-              {detailMaquina.foto_url && <img src={detailMaquina.foto_url} alt="" className="w-full h-48 object-cover rounded-lg" />}
+              {detailMaquina.foto_url && <img src={detailMaquina.foto_url} alt="" className="w-full rounded-lg object-contain max-h-64" />}
               <div className="grid grid-cols-2 gap-1 text-sm">
                 <span className="text-muted-foreground">Tipo:</span><span>{detailMaquina.tipo}</span>
                 <span className="text-muted-foreground">Frota:</span><span>{detailMaquina.frota}</span>

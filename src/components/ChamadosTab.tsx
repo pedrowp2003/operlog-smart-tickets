@@ -64,8 +64,19 @@ export function ChamadosTab() {
   });
 
   let filteredChamados = chamados;
+  if (user.role === 'coordenador') {
+    filteredChamados = chamados.filter(c => {
+      const maq = getMaquina(c.maquina_id);
+      return maq && maq.unidade === user.unidade;
+    });
+  } else if (user.role === 'supervisor') {
+    filteredChamados = chamados.filter(c => {
+      const maq = getMaquina(c.maquina_id);
+      return maq && maq.unidade === user.unidade && maq.armazem === user.armazem;
+    });
+  }
   if (user.role === 'tecnico' && meusChamados) {
-    filteredChamados = chamados.filter(c => c.tecnico_id === user.id);
+    filteredChamados = filteredChamados.filter(c => c.tecnico_id === user.id);
   }
 
   const handleCreate = async () => {
