@@ -8,13 +8,12 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="animate-fade-in flex flex-col items-center max-w-md w-full">
           <img src={logo} alt="OperLog" width={100} height={100} className="mb-4" />
           <h1 className="text-4xl font-extrabold text-primary tracking-tight mb-1">OperLog</h1>
           <p className="text-muted-foreground text-center mb-8 text-sm">
-            Gestão de chamados para manutenção — Multilog
+            Gestão de chamados para manutenção
           </p>
 
           <div className="flex gap-3 mb-12 text-muted-foreground">
@@ -44,7 +43,7 @@ export default function Landing() {
       </div>
 
       <footer className="text-center text-xs text-muted-foreground py-4">
-        © {new Date().getFullYear()} OperLog — Multilog
+        © {new Date().getFullYear()} OperLog
       </footer>
     </div>
   );

@@ -10,8 +10,8 @@ import logo from '@/assets/operlog-logo.png';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const { loginWithUsername } = useAuth();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,15 +19,15 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim() || !password.trim()) {
+    if (!username.trim() || !password.trim()) {
       setError('Preencha todos os campos');
       return;
     }
     setLoading(true);
-    const err = await login(email.trim(), password);
+    const err = await loginWithUsername(username.trim(), password);
     setLoading(false);
     if (err) {
-      setError('Email ou senha inválidos');
+      setError(err);
     } else {
       navigate('/dashboard');
     }
@@ -46,8 +46,8 @@ export default function Login() {
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" />
+              <Label htmlFor="username">Nome de Usuário</Label>
+              <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Seu nome de usuário" />
             </div>
             <div>
               <Label htmlFor="password">Senha</Label>

@@ -33,12 +33,21 @@ export default function Register() {
     setFotoFile(file || null);
   };
 
+  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '');
+    setTelefone(digits);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (!role || !username.trim() || !email.trim() || !password.trim() || !telefone.trim()) {
       setError('Preencha todos os campos obrigatórios');
+      return;
+    }
+    if (password.length < 8) {
+      setError('A senha deve ter no mínimo 8 dígitos');
       return;
     }
     if (role === 'tecnico' && (!nome.trim() || !sobrenome.trim())) {
@@ -56,7 +65,6 @@ export default function Register() {
 
     setLoading(true);
 
-    // Upload photo if present
     let foto_url: string | undefined;
     if (fotoFile) {
       const url = await uploadImage(fotoFile, 'profiles');
@@ -118,7 +126,7 @@ export default function Register() {
             </div>
             <div>
               <Label>Senha *</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Senha (mínimo 6 caracteres)" />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 8 dígitos" />
             </div>
 
             {role === 'tecnico' && (
@@ -166,7 +174,12 @@ export default function Register() {
 
             <div>
               <Label>Telefone *</Label>
-              <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(00) 00000-0000" />
+              <Input
+                value={telefone}
+                onChange={handleTelefoneChange}
+                placeholder="Somente números"
+                inputMode="numeric"
+              />
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
