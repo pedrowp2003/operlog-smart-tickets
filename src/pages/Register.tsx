@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
-import { UserRole, UNIDADES, ARMAZENS, ROLE_LABELS } from '@/types';
+import { UserRole, UNIDADES, ARMAZENS, ROLE_LABELS, formatPhone } from '@/types';
 import { ArrowLeft } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
 
