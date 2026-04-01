@@ -221,7 +221,7 @@ export function ChamadosTab() {
             return (
               <>
                 <DialogHeader><DialogTitle>Chamado {detailChamado.numero}</DialogTitle></DialogHeader>
-                {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full h-48 object-cover rounded-lg" />}
+                {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full rounded-lg object-contain max-h-64" />}
                 <div className="space-y-2 text-sm">
                   {maquina && (
                     <div className="grid grid-cols-2 gap-1 text-sm">
