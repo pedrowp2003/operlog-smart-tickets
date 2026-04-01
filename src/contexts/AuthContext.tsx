@@ -8,9 +8,12 @@ interface AuthContextType {
   user: Profile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<string | null>;
+  loginWithUsername: (username: string, password: string) => Promise<string | null>;
   register: (email: string, password: string, metadata: Record<string, string | undefined>) => Promise<string | null>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
+  updateEmail: (newEmail: string) => Promise<string | null>;
+  updatePassword: (newPassword: string) => Promise<string | null>;
   deleteAccount: () => Promise<void>;
   uploadImage: (file: File, path: string) => Promise<string | null>;
 }
@@ -27,10 +30,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        // Use setTimeout to avoid potential deadlock with Supabase auth
         setTimeout(async () => {
           const profile = await fetchProfile(session.user.id);
           setUser(profile);
@@ -42,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // THEN check existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const profile = await fetchProfile(session.user.id);
@@ -57,6 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<string | null> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return error.message;
+    return null;
+  };
+
+  const loginWithUsername = async (username: string, password: string): Promise<string | null> => {
+    // Look up email by username using database function
+    const { data: email, error: lookupError } = await supabase.rpc('get_email_by_username', { _username: username });
+    if (lookupError || !email) return 'Usuário não encontrado';
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return 'Usuário ou senha inválidos';
     return null;
   };
 
@@ -81,9 +90,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data) setUser(data);
   };
 
+  const updateEmail = async (newEmail: string): Promise<string | null> => {
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) return error.message;
+    // Also update in profiles
+    if (user) {
+      await supabase.from('profiles').update({ email: newEmail }).eq('id', user.id);
+    }
+    return null;
+  };
+
+  const updatePassword = async (newPassword: string): Promise<string | null> => {
+    if (newPassword.length < 8) return 'A senha deve ter no mínimo 8 dígitos';
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return error.message;
+    return null;
+  };
+
   const deleteAccount = async () => {
     if (!user) return;
-    // Delete profile (cascade will handle user_roles)
     await supabase.from('profiles').delete().eq('id', user.id);
     await supabase.auth.signOut();
     setUser(null);
@@ -99,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, deleteAccount, uploadImage }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithUsername, register, logout, updateProfile, updateEmail, updatePassword, deleteAccount, uploadImage }}>
       {children}
     </AuthContext.Provider>
   );
