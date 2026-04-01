@@ -334,6 +334,43 @@ export function ChamadosTab() {
                     ) : (
                       <p className="text-sm text-muted-foreground">Nenhum técnico atribuído</p>
                     )}
+
+                    {/* Ações do chamado */}
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-sm font-medium flex items-center gap-1 mb-2">
+                        <ClipboardList className="w-4 h-4" /> Ações realizadas
+                      </p>
+                      {detailChamado.tecnico_id === user?.id && (
+                        <div className="flex gap-2 mb-2">
+                          <Input
+                            value={novaAcao}
+                            onChange={(e) => setNovaAcao(e.target.value.toUpperCase())}
+                            placeholder="DESCREVA A AÇÃO..."
+                            className="text-xs"
+                            style={{ textTransform: 'uppercase' }}
+                          />
+                          <Button size="sm" onClick={handleAddAcao} disabled={!novaAcao.trim()}>
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                      {acoes.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Nenhuma ação registrada</p>
+                      ) : (
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                          {acoes.map((acao) => {
+                            const d = new Date(acao.created_at);
+                            const dataFormatada = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                            return (
+                              <div key={acao.id} className="bg-muted rounded p-2">
+                                <p className="text-xs">{acao.descricao}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{dataFormatada}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </>
