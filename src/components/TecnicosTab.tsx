@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Trash2, User as UserIcon } from 'lucide-react';
+import { formatPhone } from '@/types';
 
 export function TecnicosTab() {
   const { user } = useAuth();
