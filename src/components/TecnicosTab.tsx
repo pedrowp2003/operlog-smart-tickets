@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Trash2, User as UserIcon } from 'lucide-react';
+import { formatPhone } from '@/types';
 
 export function TecnicosTab() {
   const { user } = useAuth();
@@ -48,7 +49,7 @@ export function TecnicosTab() {
               <div className="flex-1 min-w-0 text-sm">
                 <p className="font-medium">{t.nome} {t.sobrenome}</p>
                 <p className="text-muted-foreground">@{t.username}</p>
-                <p className="text-xs text-muted-foreground">{t.telefone}</p>
+                <p className="text-xs text-muted-foreground">{formatPhone(t.telefone)}</p>
               </div>
               {canDelete && (
                 <Button variant="ghost" size="sm" className="text-destructive flex-shrink-0" onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}>
@@ -76,7 +77,7 @@ export function TecnicosTab() {
                 <div className="text-sm space-y-1 text-center">
                   <p className="font-medium text-lg">{detailTecnico.nome} {detailTecnico.sobrenome}</p>
                   <p className="text-muted-foreground">@{detailTecnico.username}</p>
-                  <p className="text-muted-foreground">{detailTecnico.telefone}</p>
+                  <p className="text-muted-foreground">{formatPhone(detailTecnico.telefone)}</p>
                 </div>
               </div>
             </>

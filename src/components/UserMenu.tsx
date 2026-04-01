@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ROLE_LABELS, UserRole, UNIDADES, ARMAZENS } from '@/types';
+import { ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, formatPhone } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -58,7 +58,7 @@ export function UserMenu() {
   };
 
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, '');
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
     setTelefone(digits);
   };
 
@@ -173,9 +173,9 @@ export function UserMenu() {
             <div>
               <Label>Telefone</Label>
               <Input
-                value={telefone}
+                value={formatPhone(telefone)}
                 onChange={handleTelefoneChange}
-                placeholder="Somente números"
+                placeholder="(XX) XXXXX-XXXX"
                 inputMode="numeric"
               />
             </div>

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
-import { UserRole, UNIDADES, ARMAZENS, ROLE_LABELS } from '@/types';
+import { UserRole, UNIDADES, ARMAZENS, ROLE_LABELS, formatPhone } from '@/types';
 import { ArrowLeft } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
 
@@ -34,7 +34,7 @@ export default function Register() {
   };
 
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, '');
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
     setTelefone(digits);
   };
 
@@ -175,9 +175,9 @@ export default function Register() {
             <div>
               <Label>Telefone *</Label>
               <Input
-                value={telefone}
+                value={formatPhone(telefone)}
                 onChange={handleTelefoneChange}
-                placeholder="Somente números"
+                placeholder="(XX) XXXXX-XXXX"
                 inputMode="numeric"
               />
             </div>
