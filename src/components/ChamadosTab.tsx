@@ -316,7 +316,7 @@ export function ChamadosTab() {
                 </div>
 
                 {showTecnicoInfo && (
-                  <div className="border border-border rounded-lg p-3 mt-2 space-y-3">
+                  <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
                     {tecnico ? (
                       <div className="flex gap-3 items-center">
                         {tecnico.foto_url ? (
@@ -342,17 +342,19 @@ export function ChamadosTab() {
                         <ClipboardList className="w-4 h-4" /> Ações realizadas
                       </p>
                       {detailChamado.tecnico_id === user?.id && (
-                        <div className="flex gap-2 mb-2">
-                          <Input
-                            value={novaAcao}
-                            onChange={(e) => setNovaAcao(e.target.value.toUpperCase().slice(0, MAX_ACAO))}
-                            placeholder="DESCREVA A AÇÃO..."
-                            className="text-xs"
-                            maxLength={MAX_ACAO}
-                            style={{ textTransform: 'uppercase' }}
-                          />
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">{novaAcao.length}/{MAX_ACAO}</span>
-                          <Button size="sm" onClick={handleAddAcao} disabled={!novaAcao.trim()}>
+                        <div className="flex gap-2 mb-2 items-center min-w-0">
+                          <div className="flex-1 min-w-0">
+                            <Input
+                              value={novaAcao}
+                              onChange={(e) => setNovaAcao(e.target.value.toUpperCase().slice(0, MAX_ACAO))}
+                              placeholder="DESCREVA A AÇÃO..."
+                              className="text-xs w-full"
+                              maxLength={MAX_ACAO}
+                              style={{ textTransform: 'uppercase' }}
+                            />
+                            <span className="text-[10px] text-muted-foreground">{novaAcao.length}/{MAX_ACAO}</span>
+                          </div>
+                          <Button size="sm" onClick={handleAddAcao} disabled={!novaAcao.trim()} className="flex-shrink-0">
                             <Plus className="w-4 h-4" />
                           </Button>
                         </div>
@@ -366,7 +368,7 @@ export function ChamadosTab() {
                             const dataFormatada = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                             return (
                               <div key={acao.id} className="bg-muted rounded p-2">
-                                <p className="text-xs">{acao.descricao}</p>
+                                <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
                                 <p className="text-[10px] text-muted-foreground mt-1">{dataFormatada}</p>
                               </div>
                             );
