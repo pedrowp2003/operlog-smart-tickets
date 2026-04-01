@@ -250,7 +250,7 @@ export function ChamadosTab() {
 
       {/* Detail Dialog */}
       <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowTecnicoInfo(false); }}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto overflow-x-hidden">
           {detailChamado && (() => {
             const maquina = getMaquina(detailChamado.maquina_id);
             const tecnico = detailChamado.tecnico_id ? getTecnico(detailChamado.tecnico_id) : null;
@@ -272,7 +272,7 @@ export function ChamadosTab() {
                   <div className="pt-2 border-t border-border">
                     <p className="text-muted-foreground">Situação: <span className="text-foreground">{detailChamado.situacao_maquina}</span></p>
                     <p className="text-muted-foreground">Descrição:</p>
-                    <p>{detailChamado.descricao}</p>
+                    <p className="break-words whitespace-pre-wrap">{detailChamado.descricao}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">Status:</span>
