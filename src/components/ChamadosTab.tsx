@@ -51,6 +51,27 @@ export function ChamadosTab() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const fetchAcoes = async (chamadoId: string) => {
+    const { data } = await supabase.from('chamado_acoes').select('*').eq('chamado_id', chamadoId).order('created_at', { ascending: false });
+    if (data) setAcoes(data);
+  };
+
+  const handleAddAcao = async () => {
+    if (!detailChamado || !novaAcao.trim()) return;
+    await supabase.from('chamado_acoes').insert({
+      chamado_id: detailChamado.id,
+      tecnico_id: user!.id,
+      descricao: novaAcao.trim().toUpperCase(),
+    });
+    setNovaAcao('');
+    fetchAcoes(detailChamado.id);
+  };
+
+  useEffect(() => {
+    if (detailChamado) fetchAcoes(detailChamado.id);
+    else setAcoes([]);
+  }, [detailChamado?.id]);
+
   if (!user) return null;
 
   const canCreate = user.role !== 'tecnico';
