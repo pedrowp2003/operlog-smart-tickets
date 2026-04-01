@@ -64,8 +64,19 @@ export function ChamadosTab() {
   });
 
   let filteredChamados = chamados;
+  if (user.role === 'coordenador') {
+    filteredChamados = chamados.filter(c => {
+      const maq = getMaquina(c.maquina_id);
+      return maq && maq.unidade === user.unidade;
+    });
+  } else if (user.role === 'supervisor') {
+    filteredChamados = chamados.filter(c => {
+      const maq = getMaquina(c.maquina_id);
+      return maq && maq.unidade === user.unidade && maq.armazem === user.armazem;
+    });
+  }
   if (user.role === 'tecnico' && meusChamados) {
-    filteredChamados = chamados.filter(c => c.tecnico_id === user.id);
+    filteredChamados = filteredChamados.filter(c => c.tecnico_id === user.id);
   }
 
   const handleCreate = async () => {
@@ -221,7 +232,7 @@ export function ChamadosTab() {
             return (
               <>
                 <DialogHeader><DialogTitle>Chamado {detailChamado.numero}</DialogTitle></DialogHeader>
-                {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full h-48 object-cover rounded-lg" />}
+                {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full rounded-lg object-contain max-h-64" />}
                 <div className="space-y-2 text-sm">
                   {maquina && (
                     <div className="grid grid-cols-2 gap-1 text-sm">
