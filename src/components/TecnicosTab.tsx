@@ -49,7 +49,7 @@ export function TecnicosTab() {
               <div className="flex-1 min-w-0 text-sm">
                 <p className="font-medium">{t.nome} {t.sobrenome}</p>
                 <p className="text-muted-foreground">@{t.username}</p>
-                <p className="text-xs text-muted-foreground">{t.telefone}</p>
+                <p className="text-xs text-muted-foreground">{formatPhone(t.telefone)}</p>
               </div>
               {canDelete && (
                 <Button variant="ghost" size="sm" className="text-destructive flex-shrink-0" onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}>
