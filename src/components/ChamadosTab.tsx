@@ -345,11 +345,13 @@ export function ChamadosTab() {
                         <div className="flex gap-2 mb-2">
                           <Input
                             value={novaAcao}
-                            onChange={(e) => setNovaAcao(e.target.value.toUpperCase())}
+                            onChange={(e) => setNovaAcao(e.target.value.toUpperCase().slice(0, MAX_ACAO))}
                             placeholder="DESCREVA A AÇÃO..."
                             className="text-xs"
+                            maxLength={MAX_ACAO}
                             style={{ textTransform: 'uppercase' }}
                           />
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">{novaAcao.length}/{MAX_ACAO}</span>
                           <Button size="sm" onClick={handleAddAcao} disabled={!novaAcao.trim()}>
                             <Plus className="w-4 h-4" />
                           </Button>
