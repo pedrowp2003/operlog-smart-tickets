@@ -37,6 +37,7 @@ export function ChamadosTab() {
   const [status, setStatus] = useState<StatusChamado>('Aberto');
   const [acoes, setAcoes] = useState<{ id: string; descricao: string; created_at: string }[]>([]);
   const [novaAcao, setNovaAcao] = useState('');
+  const MAX_ACAO = 300;
 
   const fetchData = async () => {
     const [cRes, mRes, pRes] = await Promise.all([
