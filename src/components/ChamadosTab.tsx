@@ -368,7 +368,7 @@ export function ChamadosTab() {
                             const dataFormatada = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                             return (
                               <div key={acao.id} className="bg-muted rounded p-2">
-                                <p className="text-xs">{acao.descricao}</p>
+                                <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
                                 <p className="text-[10px] text-muted-foreground mt-1">{dataFormatada}</p>
                               </div>
                             );
