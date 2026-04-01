@@ -250,7 +250,7 @@ export function ChamadosTab() {
 
       {/* Detail Dialog */}
       <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowTecnicoInfo(false); }}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto overflow-x-hidden">
           {detailChamado && (() => {
             const maquina = getMaquina(detailChamado.maquina_id);
             const tecnico = detailChamado.tecnico_id ? getTecnico(detailChamado.tecnico_id) : null;
