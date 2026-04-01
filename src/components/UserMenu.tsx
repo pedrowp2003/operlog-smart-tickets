@@ -58,7 +58,7 @@ export function UserMenu() {
   };
 
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, '');
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
     setTelefone(digits);
   };
 
