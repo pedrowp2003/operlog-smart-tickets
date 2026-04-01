@@ -35,6 +35,8 @@ export function ChamadosTab() {
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
   const [status, setStatus] = useState<StatusChamado>('Aberto');
+  const [acoes, setAcoes] = useState<{ id: string; descricao: string; created_at: string }[]>([]);
+  const [novaAcao, setNovaAcao] = useState('');
 
   const fetchData = async () => {
     const [cRes, mRes, pRes] = await Promise.all([
