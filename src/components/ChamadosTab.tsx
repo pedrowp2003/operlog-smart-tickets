@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Wrench, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Plus, Trash2, Wrench, User, ClipboardList } from 'lucide-react';
 
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
