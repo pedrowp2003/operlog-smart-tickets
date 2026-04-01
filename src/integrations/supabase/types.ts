@@ -107,6 +107,7 @@ export type Database = {
         Row: {
           armazem: string | null
           created_at: string
+          email: string
           foto_url: string | null
           id: string
           nome: string | null
@@ -120,6 +121,7 @@ export type Database = {
         Insert: {
           armazem?: string | null
           created_at?: string
+          email: string
           foto_url?: string | null
           id: string
           nome?: string | null
@@ -133,6 +135,7 @@ export type Database = {
         Update: {
           armazem?: string | null
           created_at?: string
+          email?: string
           foto_url?: string | null
           id?: string
           nome?: string | null
@@ -168,6 +171,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_email_by_username: { Args: { _username: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
