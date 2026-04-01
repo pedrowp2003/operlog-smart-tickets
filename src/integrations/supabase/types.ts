@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      chamado_acoes: {
+        Row: {
+          chamado_id: string
+          created_at: string
+          descricao: string
+          id: string
+          tecnico_id: string
+        }
+        Insert: {
+          chamado_id: string
+          created_at?: string
+          descricao: string
+          id?: string
+          tecnico_id: string
+        }
+        Update: {
+          chamado_id?: string
+          created_at?: string
+          descricao?: string
+          id?: string
+          tecnico_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chamado_acoes_chamado_id_fkey"
+            columns: ["chamado_id"]
+            isOneToOne: false
+            referencedRelation: "chamados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chamados: {
         Row: {
           categoria: string | null
