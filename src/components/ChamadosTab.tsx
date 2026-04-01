@@ -315,7 +315,7 @@ export function ChamadosTab() {
                 </div>
 
                 {showTecnicoInfo && (
-                  <div className="border border-border rounded-lg p-3 mt-2">
+                  <div className="border border-border rounded-lg p-3 mt-2 space-y-3">
                     {tecnico ? (
                       <div className="flex gap-3 items-center">
                         {tecnico.foto_url ? (
