@@ -77,7 +77,7 @@ export function TecnicosTab() {
                 <div className="text-sm space-y-1 text-center">
                   <p className="font-medium text-lg">{detailTecnico.nome} {detailTecnico.sobrenome}</p>
                   <p className="text-muted-foreground">@{detailTecnico.username}</p>
-                  <p className="text-muted-foreground">{detailTecnico.telefone}</p>
+                  <p className="text-muted-foreground">{formatPhone(detailTecnico.telefone)}</p>
                 </div>
               </div>
             </>

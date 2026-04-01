@@ -173,9 +173,9 @@ export function UserMenu() {
             <div>
               <Label>Telefone</Label>
               <Input
-                value={telefone}
+                value={formatPhone(telefone)}
                 onChange={handleTelefoneChange}
-                placeholder="Somente números"
+                placeholder="(XX) XXXXX-XXXX"
                 inputMode="numeric"
               />
             </div>
