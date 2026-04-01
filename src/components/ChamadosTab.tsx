@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Wrench, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Plus, Trash2, Wrench, User, ClipboardList } from 'lucide-react';
 
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
@@ -34,6 +35,8 @@ export function ChamadosTab() {
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
   const [status, setStatus] = useState<StatusChamado>('Aberto');
+  const [acoes, setAcoes] = useState<{ id: string; descricao: string; created_at: string }[]>([]);
+  const [novaAcao, setNovaAcao] = useState('');
 
   const fetchData = async () => {
     const [cRes, mRes, pRes] = await Promise.all([
@@ -47,6 +50,27 @@ export function ChamadosTab() {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  const fetchAcoes = async (chamadoId: string) => {
+    const { data } = await supabase.from('chamado_acoes').select('*').eq('chamado_id', chamadoId).order('created_at', { ascending: false });
+    if (data) setAcoes(data);
+  };
+
+  const handleAddAcao = async () => {
+    if (!detailChamado || !novaAcao.trim()) return;
+    await supabase.from('chamado_acoes').insert({
+      chamado_id: detailChamado.id,
+      tecnico_id: user!.id,
+      descricao: novaAcao.trim().toUpperCase(),
+    });
+    setNovaAcao('');
+    fetchAcoes(detailChamado.id);
+  };
+
+  useEffect(() => {
+    if (detailChamado) fetchAcoes(detailChamado.id);
+    else setAcoes([]);
+  }, [detailChamado?.id]);
 
   if (!user) return null;
 
@@ -291,7 +315,7 @@ export function ChamadosTab() {
                 </div>
 
                 {showTecnicoInfo && (
-                  <div className="border border-border rounded-lg p-3 mt-2">
+                  <div className="border border-border rounded-lg p-3 mt-2 space-y-3">
                     {tecnico ? (
                       <div className="flex gap-3 items-center">
                         {tecnico.foto_url ? (
@@ -310,6 +334,43 @@ export function ChamadosTab() {
                     ) : (
                       <p className="text-sm text-muted-foreground">Nenhum técnico atribuído</p>
                     )}
+
+                    {/* Ações do chamado */}
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-sm font-medium flex items-center gap-1 mb-2">
+                        <ClipboardList className="w-4 h-4" /> Ações realizadas
+                      </p>
+                      {detailChamado.tecnico_id === user?.id && (
+                        <div className="flex gap-2 mb-2">
+                          <Input
+                            value={novaAcao}
+                            onChange={(e) => setNovaAcao(e.target.value.toUpperCase())}
+                            placeholder="DESCREVA A AÇÃO..."
+                            className="text-xs"
+                            style={{ textTransform: 'uppercase' }}
+                          />
+                          <Button size="sm" onClick={handleAddAcao} disabled={!novaAcao.trim()}>
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                      {acoes.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Nenhuma ação registrada</p>
+                      ) : (
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                          {acoes.map((acao) => {
+                            const d = new Date(acao.created_at);
+                            const dataFormatada = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                            return (
+                              <div key={acao.id} className="bg-muted rounded p-2">
+                                <p className="text-xs">{acao.descricao}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{dataFormatada}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </>
