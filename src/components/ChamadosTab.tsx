@@ -100,8 +100,12 @@ export function ChamadosTab() {
       return maq && maq.unidade === user.unidade && maq.armazem === user.armazem;
     });
   }
-  if (user.role === 'tecnico' && meusChamados) {
-    filteredChamados = filteredChamados.filter(c => c.tecnico_id === user.id);
+  if (meusChamados) {
+    if (user.role === 'tecnico') {
+      filteredChamados = filteredChamados.filter(c => c.tecnico_id === user.id);
+    } else {
+      filteredChamados = filteredChamados.filter(c => c.criado_por === user.id);
+    }
   }
 
   const handleCreate = async () => {
