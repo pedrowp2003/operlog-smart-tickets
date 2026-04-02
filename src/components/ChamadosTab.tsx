@@ -160,11 +160,9 @@ export function ChamadosTab() {
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h2 className="text-lg font-bold text-foreground">Chamados</h2>
         <div className="flex gap-2">
-          {user.role === 'tecnico' && (
-            <Button variant={meusChamados ? 'default' : 'outline'} size="sm" onClick={() => setMeusChamados(!meusChamados)}>
-              Meus Chamados
-            </Button>
-          )}
+          <Button variant={meusChamados ? 'default' : 'outline'} size="sm" onClick={() => setMeusChamados(!meusChamados)}>
+            Meus Chamados
+          </Button>
           {canCreate && (
             <Button size="sm" onClick={() => setCreateOpen(true)}>
               <Plus className="w-4 h-4 mr-1" /> Novo Chamado
