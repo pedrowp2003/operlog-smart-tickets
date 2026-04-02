@@ -76,7 +76,7 @@ export function ChamadosTab() {
   if (!user) return null;
 
   const canCreate = user.role !== 'tecnico';
-  const canDelete = user.role === 'gerente';
+  const canDelete = false;
 
   const getMaquina = (id: string) => maquinas.find(m => m.id === id);
   const getTecnico = (id: string) => profiles.find(p => p.id === id);

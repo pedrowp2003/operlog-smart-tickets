@@ -21,7 +21,7 @@ export function TecnicosTab() {
 
   if (!user) return null;
 
-  const canDelete = user.role === 'gerente';
+  const canDelete = false;
 
   const handleDelete = async (id: string) => {
     await supabase.from('profiles').delete().eq('id', id);
