@@ -100,8 +100,12 @@ export function ChamadosTab() {
       return maq && maq.unidade === user.unidade && maq.armazem === user.armazem;
     });
   }
-  if (user.role === 'tecnico' && meusChamados) {
-    filteredChamados = filteredChamados.filter(c => c.tecnico_id === user.id);
+  if (meusChamados) {
+    if (user.role === 'tecnico') {
+      filteredChamados = filteredChamados.filter(c => c.tecnico_id === user.id);
+    } else {
+      filteredChamados = filteredChamados.filter(c => c.criado_por === user.id);
+    }
   }
 
   const handleCreate = async () => {
@@ -156,11 +160,9 @@ export function ChamadosTab() {
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h2 className="text-lg font-bold text-foreground">Chamados</h2>
         <div className="flex gap-2">
-          {user.role === 'tecnico' && (
-            <Button variant={meusChamados ? 'default' : 'outline'} size="sm" onClick={() => setMeusChamados(!meusChamados)}>
-              Meus Chamados
-            </Button>
-          )}
+          <Button variant={meusChamados ? 'default' : 'outline'} size="sm" onClick={() => setMeusChamados(!meusChamados)}>
+            Meus Chamados
+          </Button>
           {canCreate && (
             <Button size="sm" onClick={() => setCreateOpen(true)}>
               <Plus className="w-4 h-4 mr-1" /> Novo Chamado
