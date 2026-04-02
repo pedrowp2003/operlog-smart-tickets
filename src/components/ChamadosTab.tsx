@@ -352,7 +352,7 @@ export function ChamadosTab() {
                           <Input
                             value={novaAcao}
                             onChange={(e) => setNovaAcao(e.target.value.toUpperCase().slice(0, MAX_ACAO))}
-                            placeholder="DESCREVA A AÇÃO..."
+                            placeholder="ADICIONE UMA AÇÃO..."
                             className="text-xs w-full"
                             maxLength={MAX_ACAO}
                             style={{ textTransform: 'uppercase' }}
