@@ -16,20 +16,6 @@ export default function Landing() {
             Gestão de chamados para manutenção
           </p>
 
-          <div className="flex gap-3 mb-12 text-muted-foreground">
-            <div className="flex flex-col items-center gap-1">
-              <ClipboardList className="w-5 h-5 text-primary" />
-              <span className="text-xs">Chamados</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <Wrench className="w-5 h-5 text-primary" />
-              <span className="text-xs">Máquinas</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <Users className="w-5 h-5 text-primary" />
-              <span className="text-xs">Técnicos</span>
-            </div>
-          </div>
 
           <div className="flex flex-col gap-3 w-full max-w-xs">
             <Button size="lg" className="w-full text-base font-semibold" onClick={() => navigate('/login')}>
