@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
 import { Plus, Trash2, Wrench, User, ClipboardList } from 'lucide-react';
 
 type Chamado = Tables<'chamados'>;
@@ -129,6 +130,7 @@ export function ChamadosTab() {
       tecnico_id: user.id,
       categoria,
       status,
+      data_inicio: new Date().toISOString(),
     }).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     setAcceptOpen(false);
@@ -154,6 +156,14 @@ export function ChamadosTab() {
     setDetailChamado(null);
     fetchData();
   };
+
+  const formatDateTime = (iso: string | null) => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const selectedMaquinaForCreate = maquinaId ? getMaquina(maquinaId) : null;
 
   return (
     <div className="space-y-4">
@@ -223,6 +233,9 @@ export function ChamadosTab() {
                   ))}
                 </SelectContent>
               </Select>
+              {selectedMaquinaForCreate?.foto_url && (
+                <img src={selectedMaquinaForCreate.foto_url} alt="" className="w-full rounded-lg object-contain max-h-40 mt-2" />
+              )}
             </div>
             <div>
               <Label>Situação da Máquina *</Label>
@@ -256,9 +269,40 @@ export function ChamadosTab() {
           {detailChamado && (() => {
             const maquina = getMaquina(detailChamado.maquina_id);
             const tecnico = detailChamado.tecnico_id ? getTecnico(detailChamado.tecnico_id) : null;
+            const progresso = (detailChamado as any).progresso ?? 0;
+            const dataInicio = (detailChamado as any).data_inicio;
+            const dataPrevista = (detailChamado as any).data_prevista_termino;
             return (
               <>
                 <DialogHeader><DialogTitle>Chamado {detailChamado.numero}</DialogTitle></DialogHeader>
+
+                {/* Status - first and prominent */}
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  {detailChamado.tecnico_id === user?.id ? (
+                    <Select value={detailChamado.status} onValueChange={(v) => handleStatusChange(v as StatusChamado)}>
+                      <SelectTrigger className="w-auto h-8 text-sm font-semibold"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge className={`text-sm px-3 py-1 font-semibold ${getStatusColor(detailChamado.status as StatusChamado)} ${getStatusBgColor(detailChamado.status as StatusChamado)} border-0`}>
+                      {detailChamado.status}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Progress bar */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Andamento</span>
+                    <span className="text-xs font-medium">{progresso}%</span>
+                  </div>
+                  <Progress value={progresso} className="h-2" />
+                  <p className="text-[10px] text-muted-foreground">Em breve será possível alterar o andamento.</p>
+                </div>
+
                 {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full rounded-lg object-contain max-h-64" />}
                 <div className="space-y-2 text-sm">
                   {maquina && (
@@ -276,21 +320,7 @@ export function ChamadosTab() {
                     <p className="text-muted-foreground">Descrição:</p>
                     <p className="break-words whitespace-pre-wrap">{detailChamado.descricao}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">Status:</span>
-                    {detailChamado.tecnico_id === user?.id ? (
-                      <Select value={detailChamado.status} onValueChange={(v) => handleStatusChange(v as StatusChamado)}>
-                        <SelectTrigger className="w-auto h-7 text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Badge variant="outline" className={`${getStatusColor(detailChamado.status as StatusChamado)} ${getStatusBgColor(detailChamado.status as StatusChamado)} border-0`}>
-                        {detailChamado.status}
-                      </Badge>
-                    )}
-                  </div>
+
                   {detailChamado.categoria && (
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">Categoria:</span>
@@ -306,6 +336,14 @@ export function ChamadosTab() {
                       )}
                     </div>
                   )}
+
+                  {/* Datas */}
+                  <div className="grid grid-cols-2 gap-1 pt-2 border-t border-border">
+                    <span className="text-muted-foreground">Data de Início:</span>
+                    <span>{formatDateTime(dataInicio)}</span>
+                    <span className="text-muted-foreground">Previsão de Término:</span>
+                    <span>{dataPrevista ? formatDateTime(dataPrevista) : <span className="text-muted-foreground text-xs">Em breve</span>}</span>
+                  </div>
                 </div>
 
                 <div className="flex gap-2 flex-wrap pt-2">
@@ -340,7 +378,6 @@ export function ChamadosTab() {
                   </div>
                 )}
 
-                {/* Ações do chamado - separado dos dados do técnico */}
                 {showTecnicoInfo && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
                     <p className="text-sm font-medium flex items-center gap-1 mb-2">

@@ -5,8 +5,12 @@ import { UserMenu } from '@/components/UserMenu';
 import { ChamadosTab } from '@/components/ChamadosTab';
 import { MaquinasTab } from '@/components/MaquinasTab';
 import { TecnicosTab } from '@/components/TecnicosTab';
+import { FornecedoresTab } from '@/components/FornecedoresTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipboardList, Wrench, Users } from 'lucide-react';
+import { ClipboardList, Wrench, Users, Package, Bell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ROLE_LABELS, UserRole } from '@/types';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import logo from '@/assets/operlog-logo.png';
 
 export default function Dashboard() {
@@ -33,13 +37,29 @@ export default function Dashboard() {
             <img src={logo} alt="OperLog" width={28} height={28} />
             <span className="font-bold text-primary text-lg">OperLog</span>
           </div>
-          <UserMenu />
+          <div className="flex items-center gap-1">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64">
+                <p className="text-sm font-medium mb-1">Notificações</p>
+                <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
+              </PopoverContent>
+            </Popover>
+            <div className="hidden sm:flex flex-col items-end mr-1">
+              <span className="text-xs text-muted-foreground leading-tight">{ROLE_LABELS[user.role as UserRole]}</span>
+            </div>
+            <UserMenu />
+          </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-4">
         <Tabs defaultValue="chamados" className="w-full">
-          <TabsList className="w-full grid grid-cols-3 mb-4">
+          <TabsList className="w-full grid grid-cols-4 mb-4">
             <TabsTrigger value="chamados" className="gap-1.5">
               <ClipboardList className="w-4 h-4" /> Chamados
             </TabsTrigger>
@@ -49,11 +69,15 @@ export default function Dashboard() {
             <TabsTrigger value="tecnicos" className="gap-1.5">
               <Users className="w-4 h-4" /> Técnicos
             </TabsTrigger>
+            <TabsTrigger value="fornecedores" className="gap-1.5">
+              <Package className="w-4 h-4" /> Fornecedores
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="chamados"><ChamadosTab /></TabsContent>
           <TabsContent value="maquinas"><MaquinasTab /></TabsContent>
           <TabsContent value="tecnicos"><TecnicosTab /></TabsContent>
+          <TabsContent value="fornecedores"><FornecedoresTab /></TabsContent>
         </Tabs>
       </main>
     </div>
