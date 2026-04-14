@@ -51,10 +51,13 @@ export type Database = {
           categoria: string | null
           created_at: string
           criado_por: string
+          data_inicio: string | null
+          data_prevista_termino: string | null
           descricao: string
           id: string
           maquina_id: string
           numero: string
+          progresso: number
           situacao_maquina: string
           status: string
           tecnico_id: string | null
@@ -64,10 +67,13 @@ export type Database = {
           categoria?: string | null
           created_at?: string
           criado_por: string
+          data_inicio?: string | null
+          data_prevista_termino?: string | null
           descricao: string
           id?: string
           maquina_id: string
           numero: string
+          progresso?: number
           situacao_maquina: string
           status?: string
           tecnico_id?: string | null
@@ -77,10 +83,13 @@ export type Database = {
           categoria?: string | null
           created_at?: string
           criado_por?: string
+          data_inicio?: string | null
+          data_prevista_termino?: string | null
           descricao?: string
           id?: string
           maquina_id?: string
           numero?: string
+          progresso?: number
           situacao_maquina?: string
           status?: string
           tecnico_id?: string | null
