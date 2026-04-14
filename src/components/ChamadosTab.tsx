@@ -293,6 +293,8 @@ export function ChamadosTab() {
                   )}
                 </div>
 
+                {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full rounded-lg object-contain max-h-64" />}
+
                 {/* Progress bar */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
@@ -302,8 +304,6 @@ export function ChamadosTab() {
                   <Progress value={progresso} className="h-2" />
                   <p className="text-[10px] text-muted-foreground">Em breve será possível alterar o andamento.</p>
                 </div>
-
-                {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full rounded-lg object-contain max-h-64" />}
                 <div className="space-y-2 text-sm">
                   {maquina && (
                     <div className="grid grid-cols-2 gap-1 text-sm">

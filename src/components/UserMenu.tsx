@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
-import { User, LogOut, Trash2, Settings } from 'lucide-react';
+import { User, LogOut, Trash2, Settings, Eye, EyeOff } from 'lucide-react';
 
 export function UserMenu() {
   const { user, logout, updateProfile, updateEmail, updatePassword, deleteAccount, uploadImage } = useAuth();
@@ -30,6 +30,7 @@ export function UserMenu() {
   const [fotoPreview, setFotoPreview] = useState<string | undefined>();
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!user) return null;
 
@@ -224,13 +225,19 @@ export function UserMenu() {
             )}
 
             <div>
-              <Label>Nova Senha (deixe vazio para manter)</Label>
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Mínimo 8 dígitos"
-              />
+              <Label>Nova Senha</Label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mínimo 8 dígitos"
+                  className="pr-10"
+                />
+                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
               {passwordError && <p className="text-sm text-destructive mt-1">{passwordError}</p>}
             </div>
 
