@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
 
 export default function Login() {
@@ -13,6 +13,7 @@ export default function Login() {
   const { loginWithUsername } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +41,7 @@ export default function Login() {
           <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-2 self-start">
             <ArrowLeft className="w-4 h-4" /> Voltar
           </Link>
-          <img src={logo} alt="OperLog" width={56} height={56} className="mx-auto mb-2" />
+          <img src={logo} alt="OperLog" width={80} height={80} className="mx-auto mb-2" />
           <CardTitle className="text-xl text-primary">Entrar</CardTitle>
         </CardHeader>
         <CardContent>
@@ -51,7 +52,12 @@ export default function Login() {
             </div>
             <div>
               <Label htmlFor="password">Senha</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Senha" />
+              <div className="relative">
+                <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Senha" className="pr-10" />
+                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading}>

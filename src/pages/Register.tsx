@@ -8,15 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
 import { UserRole, UNIDADES, ARMAZENS, ROLE_LABELS, formatPhone } from '@/types';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
-
 export default function Register() {
   const navigate = useNavigate();
   const { register, uploadImage } = useAuth();
   const [role, setRole] = useState<UserRole | ''>('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
   const [sobrenome, setSobrenome] = useState('');
@@ -99,7 +99,7 @@ export default function Register() {
           <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-2 self-start">
             <ArrowLeft className="w-4 h-4" /> Voltar
           </Link>
-          <img src={logo} alt="OperLog" width={56} height={56} className="mx-auto mb-2" />
+          <img src={logo} alt="OperLog" width={80} height={80} className="mx-auto mb-2" />
           <CardTitle className="text-xl text-primary">Cadastrar-se</CardTitle>
         </CardHeader>
         <CardContent>
@@ -126,7 +126,12 @@ export default function Register() {
             </div>
             <div>
               <Label>Senha *</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 8 dígitos" />
+              <div className="relative">
+                <Input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 8 dígitos" className="pr-10" />
+                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {role === 'tecnico' && (
