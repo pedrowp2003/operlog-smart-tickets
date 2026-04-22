@@ -94,12 +94,12 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
-      <Card className="w-full max-w-sm animate-fade-in">
+      <Card className="w-full max-w-md animate-fade-in">
         <CardHeader className="text-center">
           <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-2 self-start">
             <ArrowLeft className="w-4 h-4" /> Voltar
           </Link>
-          <img src={logo} alt="OperLog" width={280} height={280} className="mx-auto mb-2" />
+          <img src={logo} alt="OperLog" className="mx-auto mb-2 w-full max-w-full h-auto" />
           <CardTitle className="text-xl text-primary">Cadastrar-se</CardTitle>
         </CardHeader>
         <CardContent>
