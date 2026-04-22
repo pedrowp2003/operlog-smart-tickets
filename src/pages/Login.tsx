@@ -36,7 +36,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <Card className="w-full max-w-2xl animate-fade-in">
+      <Card className="w-full max-w-5xl animate-fade-in">
         <CardHeader className="text-center">
           <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-2 self-start">
             <ArrowLeft className="w-4 h-4" /> Voltar
