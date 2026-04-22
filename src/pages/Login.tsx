@@ -41,7 +41,7 @@ export default function Login() {
           <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-2 self-start">
             <ArrowLeft className="w-4 h-4" /> Voltar
           </Link>
-          <img src={logo} alt="OperLog" width={140} height={140} className="mx-auto mb-2" />
+          <img src={logo} alt="OperLog" width={280} height={280} className="mx-auto mb-2" />
           <CardTitle className="text-xl text-primary">Entrar</CardTitle>
         </CardHeader>
         <CardContent>
