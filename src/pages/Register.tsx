@@ -54,7 +54,7 @@ export default function Register() {
       setError('Preencha nome e sobrenome');
       return;
     }
-    if ((role === 'coordenador' || role === 'supervisor') && !unidade) {
+    if (role === 'coordenador' && !unidade) {
       setError('Selecione a unidade');
       return;
     }
@@ -147,7 +147,7 @@ export default function Register() {
               </div>
             )}
 
-            {(role === 'coordenador' || role === 'supervisor') && (
+            {role === 'coordenador' && (
               <div>
                 <Label>Unidade *</Label>
                 <Select value={unidade} onValueChange={setUnidade}>

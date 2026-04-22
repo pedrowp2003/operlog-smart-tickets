@@ -146,22 +146,27 @@ export function MaquinasTab() {
           <SelectContent>{MODELOS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      {showUnidadeSelect && (
+      {(showUnidadeSelect || showArmazemSelect) && (
         <div>
-          <Label>Unidade *</Label>
-          <Select value={unidade} onValueChange={setUnidade}>
-            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-            <SelectContent>{UNIDADES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
-      )}
-      {showArmazemSelect && (
-        <div>
-          <Label>Armazém *</Label>
-          <Select value={armazem} onValueChange={setArmazem}>
-            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-            <SelectContent>{ARMAZENS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
-          </Select>
+          <Label>Unidade / Armazém *</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {showUnidadeSelect ? (
+              <Select value={unidade} onValueChange={setUnidade}>
+                <SelectTrigger><SelectValue placeholder="Unidade" /></SelectTrigger>
+                <SelectContent>{UNIDADES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+              </Select>
+            ) : (
+              <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground">{unidade || '—'}</div>
+            )}
+            {showArmazemSelect ? (
+              <Select value={armazem} onValueChange={setArmazem}>
+                <SelectTrigger><SelectValue placeholder="Armazém" /></SelectTrigger>
+                <SelectContent>{ARMAZENS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
+              </Select>
+            ) : (
+              <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground">{armazem || '—'}</div>
+            )}
+          </div>
         </div>
       )}
       <div>
