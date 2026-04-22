@@ -7,7 +7,7 @@ import { MaquinasTab } from '@/components/MaquinasTab';
 import { TecnicosTab } from '@/components/TecnicosTab';
 import { FornecedoresTab } from '@/components/FornecedoresTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipboardList, Wrench, Users, Package, Bell } from 'lucide-react';
+import { ClipboardList, Wrench, Users, Package, Bell, Medal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -49,8 +49,17 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
               </PopoverContent>
             </Popover>
-            <div className="hidden sm:flex flex-col items-end mr-1">
+            <div className="hidden sm:flex items-center gap-1 mr-1">
               <span className="text-xs text-muted-foreground leading-tight">{ROLE_LABELS[user.role as UserRole]}</span>
+              {user.role === 'gerente' && (
+                <Medal className="w-4 h-4" style={{ color: '#D4AF37' }} aria-label="Gerente" />
+              )}
+              {user.role === 'coordenador' && (
+                <Medal className="w-4 h-4" style={{ color: '#C0C0C0' }} aria-label="Coordenador" />
+              )}
+              {user.role === 'supervisor' && (
+                <Medal className="w-4 h-4" style={{ color: '#CD7F32' }} aria-label="Supervisor" />
+              )}
             </div>
             <UserMenu />
           </div>
