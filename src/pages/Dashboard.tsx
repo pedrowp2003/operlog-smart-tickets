@@ -50,7 +50,9 @@ export default function Dashboard() {
               </PopoverContent>
             </Popover>
             <div className="flex items-center gap-1 mr-1">
-              <span className="hidden sm:inline text-xs text-muted-foreground leading-tight">{ROLE_LABELS[user.role as UserRole]}</span>
+              <span className="text-xs text-muted-foreground leading-tight">
+                {user.role === 'tecnico' ? 'Técnico' : ROLE_LABELS[user.role as UserRole]}
+              </span>
               {user.role === 'gerente' && (
                 <Medal className="w-4 h-4" style={{ color: '#D4AF37' }} aria-label="Gerente" />
               )}
