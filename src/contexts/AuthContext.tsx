@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { translateAuthError } from '@/lib/auth-errors';
 
 export type Profile = Tables<'profiles'>;
 
@@ -57,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<string | null> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return error.message;
+    if (error) return translateAuthError(error.message);
     return null;
   };
 
@@ -76,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: { data: metadata },
     });
-    if (error) return error.message;
+    if (error) return translateAuthError(error.message);
     return null;
   };
 
@@ -93,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateEmail = async (newEmail: string): Promise<string | null> => {
     const { error } = await supabase.auth.updateUser({ email: newEmail });
-    if (error) return error.message;
+    if (error) return translateAuthError(error.message);
     // Also update in profiles
     if (user) {
       await supabase.from('profiles').update({ email: newEmail }).eq('id', user.id);
@@ -104,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updatePassword = async (newPassword: string): Promise<string | null> => {
     if (newPassword.length < 8) return 'A senha deve ter no mínimo 8 dígitos';
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) return error.message;
+    if (error) return translateAuthError(error.message);
     return null;
   };
 
