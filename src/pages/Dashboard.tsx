@@ -7,7 +7,7 @@ import { MaquinasTab } from '@/components/MaquinasTab';
 import { TecnicosTab } from '@/components/TecnicosTab';
 import { FornecedoresTab } from '@/components/FornecedoresTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipboardList, Wrench, Users, Package, Bell, Medal } from 'lucide-react';
+import { ClipboardList, Wrench, Users, Package, Bell, Medal, Hammer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -59,6 +59,9 @@ export default function Dashboard() {
               )}
               {user.role === 'supervisor' && (
                 <Medal className="w-4 h-4" style={{ color: '#CD7F32' }} aria-label="Supervisor" />
+              )}
+              {user.role === 'tecnico' && (
+                <Hammer className="w-4 h-4 text-primary" aria-label="Técnico" />
               )}
             </div>
             <UserMenu />
