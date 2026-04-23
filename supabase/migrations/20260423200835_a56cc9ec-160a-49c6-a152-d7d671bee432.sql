@@ -1,0 +1,1 @@
+UPDATE public.maquinas SET tipo = 'Meclift' WHERE tipo = 'Mecklift';
