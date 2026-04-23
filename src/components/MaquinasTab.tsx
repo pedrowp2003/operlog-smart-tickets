@@ -6,7 +6,7 @@ import { UNIDADES, ARMAZENS, TIPOS_MAQUINA, FROTAS, MARCAS, MODELOS } from '@/ty
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Plus, Trash2, Pencil, Wrench } from 'lucide-react';
@@ -80,7 +80,7 @@ export function MaquinasTab() {
   };
 
   const handleSave = async () => {
-    if (!tipo || !frota || !marca || !modelo || !unidade || !armazem) return;
+    if (!tipo || !frota || !marca || !modelo || (!unidade && !armazem)) return;
 
     if (checkDuplicate()) {
       toast.error('Máquina já cadastrada com essas informações!');
@@ -112,9 +112,14 @@ export function MaquinasTab() {
     fetchMaquinas();
   };
 
-  // Determine which fields user can select
-  const showUnidadeSelect = user.role === 'gerente';
-  const showArmazemSelect = user.role === 'gerente' || user.role === 'coordenador';
+  // Gerente e coordenador escolhem entre unidade OU armazém num único seletor.
+  // Supervisor tem ambos preenchidos automaticamente.
+  const showLocalSelect = user.role === 'gerente' || user.role === 'coordenador';
+  const localValue = unidade ? `u:${unidade}` : armazem ? `a:${armazem}` : '';
+  const handleLocalChange = (val: string) => {
+    if (val.startsWith('u:')) { setUnidade(val.slice(2)); setArmazem(''); }
+    else if (val.startsWith('a:')) { setArmazem(val.slice(2)); setUnidade(''); }
+  };
 
   const formContent = (
     <div className="flex flex-col gap-4">
@@ -146,34 +151,33 @@ export function MaquinasTab() {
           <SelectContent>{MODELOS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      {(showUnidadeSelect || showArmazemSelect) && (
-        <div>
-          <Label>Unidade / Armazém *</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {showUnidadeSelect ? (
-              <Select value={unidade} onValueChange={setUnidade}>
-                <SelectTrigger><SelectValue placeholder="Unidade" /></SelectTrigger>
-                <SelectContent>{UNIDADES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-              </Select>
-            ) : (
-              <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground">{unidade || '—'}</div>
-            )}
-            {showArmazemSelect ? (
-              <Select value={armazem} onValueChange={setArmazem}>
-                <SelectTrigger><SelectValue placeholder="Armazém" /></SelectTrigger>
-                <SelectContent>{ARMAZENS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
-              </Select>
-            ) : (
-              <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground">{armazem || '—'}</div>
-            )}
+      <div>
+        <Label>Unidade / Armazém *</Label>
+        {showLocalSelect ? (
+          <Select value={localValue} onValueChange={handleLocalChange}>
+            <SelectTrigger><SelectValue placeholder="Selecione unidade ou armazém" /></SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Unidades</SelectLabel>
+                {UNIDADES.map(u => <SelectItem key={`u-${u}`} value={`u:${u}`}>{u}</SelectItem>)}
+              </SelectGroup>
+              <SelectGroup>
+                <SelectLabel>Armazéns</SelectLabel>
+                {ARMAZENS.map(a => <SelectItem key={`a-${a}`} value={`a:${a}`}>{a}</SelectItem>)}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground">
+            {unidade || armazem || '—'}
           </div>
-        </div>
-      )}
+        )}
+      </div>
       <div>
         <Label>Foto</Label>
         <ImageUpload value={fotoPreview} onChange={handleFotoChange} label="Foto da máquina" />
       </div>
-      <Button onClick={handleSave} disabled={!tipo || !frota || !marca || !modelo || !unidade || !armazem}>Salvar</Button>
+      <Button onClick={handleSave} disabled={!tipo || !frota || !marca || !modelo || (!unidade && !armazem)}>Salvar</Button>
     </div>
   );
 
