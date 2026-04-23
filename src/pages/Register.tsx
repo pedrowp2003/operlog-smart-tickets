@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
 import { UserRole, UNIDADES, ARMAZENS, ROLE_LABELS, formatPhone } from '@/types';
@@ -100,7 +100,6 @@ export default function Register() {
             <ArrowLeft className="w-4 h-4" /> Voltar
           </Link>
           <img src={logo} alt="OperLog" width={280} height={280} className="mx-auto mb-2" />
-          <CardTitle className="text-xl text-primary">Cadastrar-se</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

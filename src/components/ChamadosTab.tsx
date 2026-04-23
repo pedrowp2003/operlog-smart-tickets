@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Trash2, Wrench, User, ClipboardList } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown } from 'lucide-react';
 
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
@@ -349,6 +349,7 @@ export function ChamadosTab() {
                 <div className="flex gap-2 flex-wrap pt-2">
                   <Button variant="outline" size="sm" onClick={() => setShowTecnicoInfo(!showTecnicoInfo)}>
                     <User className="w-4 h-4 mr-1" /> Dados do Chamado
+                    {showTecnicoInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
                   </Button>
                   {user?.role === 'tecnico' && !detailChamado.tecnico_id && (
                     <Button size="sm" onClick={() => setAcceptOpen(true)}>Aceitar Chamado</Button>

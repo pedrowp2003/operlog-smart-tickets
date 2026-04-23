@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
 
@@ -42,7 +42,6 @@ export default function Login() {
             <ArrowLeft className="w-4 h-4" /> Voltar
           </Link>
           <img src={logo} alt="OperLog" width={280} height={280} className="mx-auto mb-2" />
-          <CardTitle className="text-xl text-primary">Entrar</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

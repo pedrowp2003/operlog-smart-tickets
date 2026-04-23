@@ -65,7 +65,7 @@ export function TecnicosTab() {
         <DialogContent>
           {detailTecnico && (
             <>
-              <DialogHeader><DialogTitle>{detailTecnico.nome} {detailTecnico.sobrenome}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle className="sr-only">{detailTecnico.nome} {detailTecnico.sobrenome}</DialogTitle></DialogHeader>
               <div className="flex flex-col items-center gap-3">
                 {detailTecnico.foto_url ? (
                   <img src={detailTecnico.foto_url} alt="" className="w-40 h-40 rounded-full object-contain bg-muted" />
