@@ -310,9 +310,17 @@ export function ChamadosTab() {
                       <span className="text-muted-foreground">Tipo:</span><span>{maquina.tipo}</span>
                       <span className="text-muted-foreground">Frota:</span><span>{maquina.frota}</span>
                       <span className="text-muted-foreground">Marca:</span><span>{maquina.marca}</span>
-                      <span className="text-muted-foreground">Modelo:</span><span>{maquina.modelo}</span>
-                      <span className="text-muted-foreground">Unidade:</span><span>{maquina.unidade}</span>
-                      <span className="text-muted-foreground">Armazém:</span><span>{maquina.armazem}</span>
+                       <span className="text-muted-foreground">Modelo:</span><span>{maquina.modelo}</span>
+                       {maquina.unidade && (
+                         <>
+                           <span className="text-muted-foreground">Unidade:</span><span>{maquina.unidade}</span>
+                         </>
+                       )}
+                       {maquina.armazem && !maquina.unidade && (
+                         <>
+                           <span className="text-muted-foreground">Armazém:</span><span>{maquina.armazem}</span>
+                         </>
+                       )}
                     </div>
                   )}
                   <div className="pt-2 border-t border-border">
