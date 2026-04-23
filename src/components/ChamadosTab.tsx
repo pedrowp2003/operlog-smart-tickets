@@ -85,7 +85,7 @@ export function ChamadosTab() {
   const availableMaquinas = maquinas.filter((m) => {
     if (user.role === 'gerente') return true;
     if (user.role === 'coordenador') return m.unidade === user.unidade;
-    if (user.role === 'supervisor') return m.unidade === user.unidade && m.armazem === user.armazem;
+    if (user.role === 'supervisor') return m.armazem === user.armazem;
     return false;
   });
 
@@ -98,7 +98,7 @@ export function ChamadosTab() {
   } else if (user.role === 'supervisor') {
     filteredChamados = chamados.filter(c => {
       const maq = getMaquina(c.maquina_id);
-      return maq && maq.unidade === user.unidade && maq.armazem === user.armazem;
+      return maq && maq.armazem === user.armazem;
     });
   }
   if (meusChamados) {
@@ -229,7 +229,7 @@ export function ChamadosTab() {
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
                   {availableMaquinas.map(m => (
-                    <SelectItem key={m.id} value={m.id}>{m.tipo} — {m.frota} ({m.unidade}/{m.armazem})</SelectItem>
+                    <SelectItem key={m.id} value={m.id}>{m.tipo} — {m.frota} ({m.unidade || m.armazem})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
