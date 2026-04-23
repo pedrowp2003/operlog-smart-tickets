@@ -32,12 +32,12 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-card border-b border-border sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <img src={logo} alt="OperLog" width={28} height={28} />
-            <span className="font-bold text-primary text-lg">OperLog</span>
+            <span className="font-bold text-primary text-base sm:text-lg truncate">OperLog</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
@@ -49,22 +49,22 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
               </PopoverContent>
             </Popover>
-            <div className="flex items-center gap-1 mr-1">
-              <span className="text-xs text-muted-foreground leading-tight">
-                {user.role === 'tecnico' ? 'Técnico' : ROLE_LABELS[user.role as UserRole]}
-              </span>
+            <div className="mr-1 flex shrink-0 items-center gap-1 whitespace-nowrap">
               {user.role === 'gerente' && (
-                <Medal className="w-4 h-4" style={{ color: '#D4AF37' }} aria-label="Gerente" />
+                <Medal className="h-4 w-4 shrink-0" style={{ color: '#D4AF37' }} aria-label="Gerente" />
               )}
               {user.role === 'coordenador' && (
-                <Medal className="w-4 h-4" style={{ color: '#C0C0C0' }} aria-label="Coordenador" />
+                <Medal className="h-4 w-4 shrink-0" style={{ color: '#C0C0C0' }} aria-label="Coordenador" />
               )}
               {user.role === 'supervisor' && (
-                <Medal className="w-4 h-4" style={{ color: '#CD7F32' }} aria-label="Supervisor" />
+                <Medal className="h-4 w-4 shrink-0" style={{ color: '#CD7F32' }} aria-label="Supervisor" />
               )}
               {user.role === 'tecnico' && (
-                <Hammer className="w-4 h-4 text-primary" aria-label="Técnico" />
+                <Hammer className="h-4 w-4 shrink-0 text-primary" aria-label="Técnico" />
               )}
+              <span className="shrink-0 text-[11px] leading-tight text-muted-foreground sm:text-xs">
+                {user.role === 'tecnico' ? 'Técnico' : ROLE_LABELS[user.role as UserRole]}
+              </span>
             </div>
             <UserMenu />
           </div>
