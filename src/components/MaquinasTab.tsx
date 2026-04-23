@@ -47,7 +47,7 @@ export function MaquinasTab() {
   const visibleMaquinas = maquinas.filter(m => {
     if (user.role === 'gerente' || user.role === 'tecnico') return true;
     if (user.role === 'coordenador') return m.unidade === user.unidade;
-    if (user.role === 'supervisor') return m.unidade === user.unidade && m.armazem === user.armazem;
+    if (user.role === 'supervisor') return m.armazem === user.armazem;
     return false;
   });
 
@@ -208,7 +208,7 @@ export function MaquinasTab() {
               <div className="flex-1 min-w-0 text-sm">
                 <p className="font-medium">{m.tipo} — {m.frota}</p>
                 <p className="text-muted-foreground">{m.marca} {m.modelo}</p>
-                <p className="text-xs text-muted-foreground">{m.unidade} / {m.armazem}</p>
+                <p className="text-xs text-muted-foreground">{m.unidade || m.armazem}</p>
               </div>
               <div className="flex gap-1 flex-shrink-0">
                 {canEdit && (
@@ -252,8 +252,7 @@ export function MaquinasTab() {
                 <span className="text-muted-foreground">Frota:</span><span>{detailMaquina.frota}</span>
                 <span className="text-muted-foreground">Marca:</span><span>{detailMaquina.marca}</span>
                 <span className="text-muted-foreground">Modelo:</span><span>{detailMaquina.modelo}</span>
-                <span className="text-muted-foreground">Unidade:</span><span>{detailMaquina.unidade}</span>
-                <span className="text-muted-foreground">Armazém:</span><span>{detailMaquina.armazem}</span>
+                <span className="text-muted-foreground">Unidade/Armazém:</span><span>{detailMaquina.unidade || detailMaquina.armazem}</span>
               </div>
             </>
           )}
