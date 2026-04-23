@@ -14,7 +14,7 @@ export type CategoriaChamado =
 
 export const UNIDADES = ['Polo Saúde', 'Pátio'] as const;
 export const ARMAZENS = ['Armazém 1', 'Armazém 2'] as const;
-export const TIPOS_MAQUINA = ['Stacker', 'Mecklift', 'Caminhão', 'Empilhadeira elétrica'] as const;
+export const TIPOS_MAQUINA = ['Stacker', 'Meclift', 'Caminhão', 'Empilhadeira elétrica'] as const;
 export const FROTAS = ['EP-03', 'EP-17', 'EP-39', 'EP-387'] as const;
 export const MARCAS = ['Yale', 'Still', 'Hyster', 'Linde'] as const;
 export const MODELOS = ['GTP050', 'H55XM', 'R17', 'R1.6H'] as const;
