@@ -69,17 +69,17 @@ export default function Dashboard() {
       <main className="max-w-4xl mx-auto px-4 py-4">
         <Tabs defaultValue="chamados" className="w-full">
           <TabsList className="w-full grid grid-cols-4 mb-4">
-            <TabsTrigger value="chamados" className="gap-1.5">
-              <ClipboardList className="w-4 h-4" /> Chamados
+            <TabsTrigger value="chamados" className="gap-1 px-1 text-xs sm:text-sm sm:gap-1.5 sm:px-3">
+              <ClipboardList className="w-4 h-4 shrink-0" /> <span className="truncate">Chamados</span>
             </TabsTrigger>
-            <TabsTrigger value="maquinas" className="gap-1.5">
-              <Wrench className="w-4 h-4" /> Máquinas
+            <TabsTrigger value="maquinas" className="gap-1 px-1 text-xs sm:text-sm sm:gap-1.5 sm:px-3">
+              <Wrench className="w-4 h-4 shrink-0" /> <span className="truncate">Máquinas</span>
             </TabsTrigger>
-            <TabsTrigger value="tecnicos" className="gap-1.5">
-              <Users className="w-4 h-4" /> Técnicos
+            <TabsTrigger value="tecnicos" className="gap-1 px-1 text-xs sm:text-sm sm:gap-1.5 sm:px-3">
+              <Users className="w-4 h-4 shrink-0" /> <span className="truncate">Técnicos</span>
             </TabsTrigger>
-            <TabsTrigger value="fornecedores" className="gap-1.5">
-              <Package className="w-4 h-4" /> Fornecedores
+            <TabsTrigger value="fornecedores" className="gap-1 px-1 text-xs sm:text-sm sm:gap-1.5 sm:px-3">
+              <Package className="w-4 h-4 shrink-0" /> <span className="truncate">Fornecedores</span>
             </TabsTrigger>
           </TabsList>
 
