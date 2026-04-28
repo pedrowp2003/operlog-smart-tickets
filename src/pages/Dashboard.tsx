@@ -5,9 +5,10 @@ import { UserMenu } from '@/components/UserMenu';
 import { ChamadosTab } from '@/components/ChamadosTab';
 import { MaquinasTab } from '@/components/MaquinasTab';
 import { TecnicosTab } from '@/components/TecnicosTab';
+import { UsuariosTab } from '@/components/UsuariosTab';
 import { FornecedoresTab } from '@/components/FornecedoresTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipboardList, Wrench, Users, Package, Bell, Medal, Hammer } from 'lucide-react';
+import { ClipboardList, Wrench, Users, Package, Bell, Medal, Hammer, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -28,6 +29,8 @@ export default function Dashboard() {
   );
 
   if (!user) return null;
+
+  const isAnalista = user.role === 'analista';
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,8 +65,11 @@ export default function Dashboard() {
               {user.role === 'tecnico' && (
                 <Hammer className="h-4 w-4 shrink-0 text-primary" aria-label="Técnico" />
               )}
+              {user.role === 'analista' && (
+                <ClipboardCheck className="h-4 w-4 shrink-0 text-primary" aria-label="Analista" />
+              )}
               <span className="shrink-0 text-[11px] leading-tight text-muted-foreground sm:text-xs">
-                {user.role === 'tecnico' ? 'Técnico' : ROLE_LABELS[user.role as UserRole]}
+                {user.role === 'tecnico' ? 'Técnico' : user.role === 'analista' ? 'Analista' : ROLE_LABELS[user.role as UserRole]}
               </span>
             </div>
             <UserMenu />
@@ -81,7 +87,7 @@ export default function Dashboard() {
               <Wrench className="w-4 h-4 shrink-0" /> <span className="truncate">Máquinas</span>
             </TabsTrigger>
             <TabsTrigger value="tecnicos" className="gap-1 px-1 text-xs sm:text-sm sm:gap-1.5 sm:px-3">
-              <Users className="w-4 h-4 shrink-0" /> <span className="truncate">Técnicos</span>
+              <Users className="w-4 h-4 shrink-0" /> <span className="truncate">{isAnalista ? 'Usuários' : 'Técnicos'}</span>
             </TabsTrigger>
             <TabsTrigger value="fornecedores" className="gap-1 px-1 text-xs sm:text-sm sm:gap-1.5 sm:px-3">
               <Package className="w-4 h-4 shrink-0" /> <span className="truncate">Fornecedores</span>
@@ -90,7 +96,7 @@ export default function Dashboard() {
 
           <TabsContent value="chamados"><ChamadosTab /></TabsContent>
           <TabsContent value="maquinas"><MaquinasTab /></TabsContent>
-          <TabsContent value="tecnicos"><TecnicosTab /></TabsContent>
+          <TabsContent value="tecnicos">{isAnalista ? <UsuariosTab /> : <TecnicosTab />}</TabsContent>
           <TabsContent value="fornecedores"><FornecedoresTab /></TabsContent>
         </Tabs>
       </main>
