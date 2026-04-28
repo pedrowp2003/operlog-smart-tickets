@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth, Profile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { StatusChamado, CategoriaChamado, CATEGORIAS, STATUS_LIST, getStatusColor, getStatusBgColor } from '@/types';
+import { StatusChamado, CategoriaChamado, CATEGORIAS, STATUS_LIST, getStatusColor, getStatusBgColor, formatPhone } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -12,21 +12,27 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
+type Acao = Tables<'chamado_acoes'>;
+type Fornecedor = Tables<'fornecedores'>;
 
 const MAX_DESC = 500;
+const MAX_ACAO = 300;
 
 export function ChamadosTab() {
   const { user } = useAuth();
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [maquinas, setMaquinas] = useState<Maquina[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [detailChamado, setDetailChamado] = useState<Chamado | null>(null);
-  const [showTecnicoInfo, setShowTecnicoInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [meusChamados, setMeusChamados] = useState(false);
 
   const [descricao, setDescricao] = useState('');
@@ -35,20 +41,25 @@ export function ChamadosTab() {
 
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
-  const [status, setStatus] = useState<StatusChamado>('Aberto');
-  const [acoes, setAcoes] = useState<{ id: string; descricao: string; created_at: string }[]>([]);
+
+  const [acoes, setAcoes] = useState<Acao[]>([]);
   const [novaAcao, setNovaAcao] = useState('');
-  const MAX_ACAO = 300;
+  const [novoFornId, setNovoFornId] = useState<string>('none');
+  const [novoValor, setNovoValor] = useState('');
+
+  const [assignOpen, setAssignOpen] = useState(false);
 
   const fetchData = async () => {
-    const [cRes, mRes, pRes] = await Promise.all([
+    const [cRes, mRes, pRes, fRes] = await Promise.all([
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
       supabase.from('maquinas').select('*'),
-      supabase.from('profiles').select('*').eq('role', 'tecnico'),
+      supabase.from('profiles').select('*'),
+      supabase.from('fornecedores').select('*'),
     ]);
     if (cRes.data) setChamados(cRes.data);
     if (mRes.data) setMaquinas(mRes.data);
     if (pRes.data) setProfiles(pRes.data);
+    if (fRes.data) setFornecedores(fRes.data);
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -58,17 +69,6 @@ export function ChamadosTab() {
     if (data) setAcoes(data);
   };
 
-  const handleAddAcao = async () => {
-    if (!detailChamado || !novaAcao.trim()) return;
-    await supabase.from('chamado_acoes').insert({
-      chamado_id: detailChamado.id,
-      tecnico_id: user!.id,
-      descricao: novaAcao.trim().toUpperCase(),
-    });
-    setNovaAcao('');
-    fetchAcoes(detailChamado.id);
-  };
-
   useEffect(() => {
     if (detailChamado) fetchAcoes(detailChamado.id);
     else setAcoes([]);
@@ -76,14 +76,19 @@ export function ChamadosTab() {
 
   if (!user) return null;
 
-  const canCreate = user.role !== 'tecnico';
-  const canDelete = false;
+  const isAnalista = user.role === 'analista';
+  const isTecnico = user.role === 'tecnico';
+  const canCreate = !isTecnico;
+  const canDelete = isAnalista;
 
   const getMaquina = (id: string) => maquinas.find(m => m.id === id);
-  const getTecnico = (id: string) => profiles.find(p => p.id === id);
+  const getProfile = (id: string | null) => id ? profiles.find(p => p.id === id) : null;
+  const getFornecedor = (id: string | null) => id ? fornecedores.find(f => f.id === id) : null;
+
+  const tecnicos = profiles.filter(p => p.role === 'tecnico');
 
   const availableMaquinas = maquinas.filter((m) => {
-    if (user.role === 'gerente') return true;
+    if (user.role === 'gerente' || isAnalista) return true;
     if (user.role === 'coordenador') return m.unidade === user.unidade;
     if (user.role === 'supervisor') return m.armazem === user.armazem;
     return false;
@@ -102,8 +107,8 @@ export function ChamadosTab() {
     });
   }
   if (meusChamados) {
-    if (user.role === 'tecnico') {
-      filteredChamados = filteredChamados.filter(c => c.tecnico_id === user.id);
+    if (isTecnico) {
+      filteredChamados = filteredChamados.filter(c => c.tecnico_id === user.id || c.tecnico2_id === user.id);
     } else {
       filteredChamados = filteredChamados.filter(c => c.criado_por === user.id);
     }
@@ -111,12 +116,14 @@ export function ChamadosTab() {
 
   const handleCreate = async () => {
     if (!descricao.trim() || !maquinaId) return;
+    const now = new Date().toISOString();
     await supabase.from('chamados').insert({
       numero: 'TEMP',
       descricao: descricao.trim().toUpperCase(),
       maquina_id: maquinaId,
       situacao_maquina: situacao,
       criado_por: user.id,
+      data_inicio: now,
     });
     setCreateOpen(false);
     setDescricao('');
@@ -124,36 +131,93 @@ export function ChamadosTab() {
     fetchData();
   };
 
+  // Técnico aceita o chamado
   const handleAccept = async () => {
     if (!detailChamado) return;
-    const { data } = await supabase.from('chamados').update({
-      tecnico_id: user.id,
-      categoria,
-      status,
-      data_inicio: new Date().toISOString(),
-    }).eq('id', detailChamado.id).select().single();
+    const updates: Partial<Chamado> = { categoria, status: 'Em andamento' };
+    if (!detailChamado.tecnico_id) {
+      updates.tecnico_id = user.id;
+    } else if (detailChamado.tecnico_id !== user.id && !detailChamado.tecnico2_id) {
+      updates.tecnico2_id = user.id;
+    } else {
+      toast.error('Este chamado já tem dois técnicos');
+      return;
+    }
+    const { data } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     setAcceptOpen(false);
     fetchData();
   };
 
+  const canEditChamado = (c: Chamado) =>
+    isAnalista || c.tecnico_id === user.id || c.tecnico2_id === user.id;
+
   const handleStatusChange = async (newStatus: StatusChamado) => {
-    if (!detailChamado || detailChamado.tecnico_id !== user.id) return;
-    const { data } = await supabase.from('chamados').update({ status: newStatus }).eq('id', detailChamado.id).select().single();
+    if (!detailChamado || !canEditChamado(detailChamado)) return;
+    const updates: Partial<Chamado> = { status: newStatus };
+    if (newStatus === 'Aberto') updates.progresso = 0;
+    if (newStatus === 'Concluído') updates.progresso = 100;
+    const { data } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
   };
 
   const handleCategoriaChange = async (newCat: CategoriaChamado) => {
-    if (!detailChamado || detailChamado.tecnico_id !== user.id) return;
+    if (!detailChamado || !canEditChamado(detailChamado)) return;
     const { data } = await supabase.from('chamados').update({ categoria: newCat }).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
   };
 
+  const handleProgressoChange = async (val: number) => {
+    if (!detailChamado || !isAnalista) return;
+    const { data } = await supabase.from('chamados').update({ progresso: val }).eq('id', detailChamado.id).select().single();
+    if (data) setDetailChamado(data);
+    fetchData();
+  };
+
+  const handleDataPrevistaChange = async (iso: string) => {
+    if (!detailChamado || !isAnalista) return;
+    const { data } = await supabase.from('chamados').update({ data_prevista_termino: iso || null }).eq('id', detailChamado.id).select().single();
+    if (data) setDetailChamado(data);
+    fetchData();
+  };
+
+  const handleAddAcao = async () => {
+    if (!detailChamado || !novaAcao.trim()) return;
+    const valorNum = novoValor ? parseFloat(novoValor.replace(',', '.')) : null;
+    await supabase.from('chamado_acoes').insert({
+      chamado_id: detailChamado.id,
+      tecnico_id: user.id,
+      descricao: novaAcao.trim().toUpperCase(),
+      fornecedor_id: novoFornId === 'none' ? null : novoFornId,
+      valor: valorNum,
+    });
+    setNovaAcao('');
+    setNovoFornId('none');
+    setNovoValor('');
+    fetchAcoes(detailChamado.id);
+  };
+
   const handleDeleteChamado = async (id: string) => {
+    if (!isAnalista) return;
     await supabase.from('chamados').delete().eq('id', id);
     setDetailChamado(null);
+    fetchData();
+  };
+
+  const handleAssignTecnico = async (slot: 1 | 2, tecnicoId: string | null) => {
+    if (!detailChamado || !isAnalista) return;
+    const updates: Partial<Chamado> = {};
+    if (slot === 1) updates.tecnico_id = tecnicoId;
+    if (slot === 2) updates.tecnico2_id = tecnicoId;
+    // se está atribuindo 1º técnico e está aberto, vai para Em andamento
+    if (slot === 1 && tecnicoId && detailChamado.status === 'Aberto') {
+      updates.status = 'Em andamento';
+    }
+    const { data, error } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
+    if (error) { toast.error(error.message); return; }
+    if (data) setDetailChamado(data);
     fetchData();
   };
 
@@ -163,7 +227,28 @@ export function ChamadosTab() {
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
+  const toLocalInput = (iso: string | null) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   const selectedMaquinaForCreate = maquinaId ? getMaquina(maquinaId) : null;
+
+  // Técnicos disponíveis para atribuição (não estão atrelados a outros chamados não-concluídos)
+  const tecnicosLivres = (excluindoSlot?: 1 | 2): Profile[] => {
+    const ocupadosIds = new Set<string>();
+    chamados.forEach(c => {
+      if (c.id === detailChamado?.id) return;
+      if (c.status === 'Concluído') return;
+      if (c.tecnico_id) ocupadosIds.add(c.tecnico_id);
+      if (c.tecnico2_id) ocupadosIds.add(c.tecnico2_id);
+    });
+    // permitir manter o atual do slot
+    const currentId = detailChamado ? (excluindoSlot === 1 ? detailChamado.tecnico_id : detailChamado.tecnico2_id) : null;
+    return tecnicos.filter(t => !ocupadosIds.has(t.id) || t.id === currentId);
+  };
 
   return (
     <div className="space-y-4">
@@ -218,7 +303,7 @@ export function ChamadosTab() {
         </div>
       )}
 
-      {/* Create Dialog */}
+      {/* Create */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Novo Chamado</DialogTitle></DialogHeader>
@@ -229,7 +314,7 @@ export function ChamadosTab() {
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
                   {availableMaquinas.map(m => (
-                    <SelectItem key={m.id} value={m.id}>{m.tipo} — {m.frota} ({m.unidade || m.armazem})</SelectItem>
+                    <SelectItem key={m.id} value={m.id}>{m.tipo} {m.frota} ({m.unidade || m.armazem})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -263,23 +348,28 @@ export function ChamadosTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowTecnicoInfo(false); }}>
+      {/* Detail */}
+      <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowInfo(false); }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto overflow-x-hidden">
           {detailChamado && (() => {
             const maquina = getMaquina(detailChamado.maquina_id);
-            const tecnico = detailChamado.tecnico_id ? getTecnico(detailChamado.tecnico_id) : null;
-            const progresso = (detailChamado as any).progresso ?? 0;
-            const dataInicio = (detailChamado as any).data_inicio;
-            const dataPrevista = (detailChamado as any).data_prevista_termino;
+            const tecnico = getProfile(detailChamado.tecnico_id);
+            const tecnico2 = getProfile(detailChamado.tecnico2_id);
+            const progresso = detailChamado.progresso ?? 0;
+            const dataInicio = detailChamado.data_inicio;
+            const dataPrevista = detailChamado.data_prevista_termino;
+            const editavel = canEditChamado(detailChamado);
+            const podeAceitar = isTecnico && (
+              !detailChamado.tecnico_id ||
+              (detailChamado.tecnico_id !== user.id && !detailChamado.tecnico2_id)
+            );
             return (
               <>
                 <DialogHeader><DialogTitle>Chamado {detailChamado.numero}</DialogTitle></DialogHeader>
 
-                {/* Status - first and prominent */}
                 <div className="flex items-center gap-3 mb-1">
                   <span className="text-sm text-muted-foreground">Status:</span>
-                  {detailChamado.tecnico_id === user?.id ? (
+                  {editavel ? (
                     <Select value={detailChamado.status} onValueChange={(v) => handleStatusChange(v as StatusChamado)}>
                       <SelectTrigger className="w-auto h-8 text-sm font-semibold"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -295,32 +385,28 @@ export function ChamadosTab() {
 
                 {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full rounded-lg object-contain max-h-64" />}
 
-                {/* Progress bar */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">Andamento</span>
                     <span className="text-xs font-medium">{progresso}%</span>
                   </div>
                   <Progress value={progresso} className="h-2" />
-                  <p className="text-[10px] text-muted-foreground">Em breve será possível alterar o andamento.</p>
+                  {isAnalista && detailChamado.status !== 'Aberto' && detailChamado.status !== 'Concluído' && (
+                    <div className="pt-1">
+                      <Slider value={[progresso]} onValueChange={(v) => handleProgressoChange(v[0])} max={100} step={5} />
+                    </div>
+                  )}
                 </div>
+
                 <div className="space-y-2 text-sm">
                   {maquina && (
                     <div className="grid grid-cols-2 gap-1 text-sm">
                       <span className="text-muted-foreground">Tipo:</span><span>{maquina.tipo}</span>
                       <span className="text-muted-foreground">Frota:</span><span>{maquina.frota}</span>
                       <span className="text-muted-foreground">Marca:</span><span>{maquina.marca}</span>
-                       <span className="text-muted-foreground">Modelo:</span><span>{maquina.modelo}</span>
-                       {maquina.unidade && (
-                         <>
-                           <span className="text-muted-foreground">Unidade:</span><span>{maquina.unidade}</span>
-                         </>
-                       )}
-                       {maquina.armazem && !maquina.unidade && (
-                         <>
-                           <span className="text-muted-foreground">Armazém:</span><span>{maquina.armazem}</span>
-                         </>
-                       )}
+                      <span className="text-muted-foreground">Modelo:</span><span>{maquina.modelo}</span>
+                      {maquina.unidade && (<><span className="text-muted-foreground">Unidade:</span><span>{maquina.unidade}</span></>)}
+                      {maquina.armazem && !maquina.unidade && (<><span className="text-muted-foreground">Armazém:</span><span>{maquina.armazem}</span></>)}
                     </div>
                   )}
                   <div className="pt-2 border-t border-border">
@@ -332,7 +418,7 @@ export function ChamadosTab() {
                   {detailChamado.categoria && (
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">Categoria:</span>
-                      {detailChamado.tecnico_id === user?.id ? (
+                      {editavel ? (
                         <Select value={detailChamado.categoria} onValueChange={(v) => handleCategoriaChange(v as CategoriaChamado)}>
                           <SelectTrigger className="w-auto h-7 text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>
@@ -345,82 +431,117 @@ export function ChamadosTab() {
                     </div>
                   )}
 
-                  {/* Datas */}
-                  <div className="grid grid-cols-2 gap-1 pt-2 border-t border-border">
+                  <div className="grid grid-cols-2 gap-1 pt-2 border-t border-border items-center">
                     <span className="text-muted-foreground">Data de Início:</span>
                     <span>{formatDateTime(dataInicio)}</span>
                     <span className="text-muted-foreground">Previsão de Término:</span>
-                    <span>{dataPrevista ? formatDateTime(dataPrevista) : <span className="text-muted-foreground text-xs">Em breve</span>}</span>
+                    {isAnalista ? (
+                      <Input
+                        type="datetime-local"
+                        value={toLocalInput(dataPrevista)}
+                        onChange={(e) => handleDataPrevistaChange(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                        className="h-7 text-xs"
+                      />
+                    ) : (
+                      <span>{dataPrevista ? formatDateTime(dataPrevista) : <span className="text-muted-foreground text-xs">—</span>}</span>
+                    )}
                   </div>
                 </div>
 
                 <div className="flex gap-2 flex-wrap pt-2">
-                  <Button variant="outline" size="sm" onClick={() => setShowTecnicoInfo(!showTecnicoInfo)}>
+                  <Button variant="outline" size="sm" onClick={() => setShowInfo(!showInfo)}>
                     <User className="w-4 h-4 mr-1" /> Dados do Chamado
-                    {showTecnicoInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
+                    {showInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
                   </Button>
-                  {user?.role === 'tecnico' && !detailChamado.tecnico_id && (
+                  {podeAceitar && (
                     <Button size="sm" onClick={() => setAcceptOpen(true)}>Aceitar Chamado</Button>
+                  )}
+                  {isAnalista && (
+                    <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
                   )}
                 </div>
 
-                {showTecnicoInfo && (
+                {showInfo && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
-                    {tecnico ? (
-                      <div className="flex gap-3 items-center">
-                        {tecnico.foto_url ? (
-                          <img src={tecnico.foto_url} alt="" className="w-14 h-14 rounded-full object-cover" />
-                        ) : (
-                          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                            <User className="w-6 h-6 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="text-sm">
-                          <p className="font-medium">{tecnico.nome} {tecnico.sobrenome}</p>
-                          <p className="text-muted-foreground">@{tecnico.username}</p>
-                          <p className="text-muted-foreground">{tecnico.telefone}</p>
-                        </div>
-                      </div>
-                    ) : (
+                    <p className="text-sm font-medium">Técnicos atribuídos</p>
+                    {!tecnico && !tecnico2 ? (
                       <p className="text-sm text-muted-foreground">Nenhum técnico atribuído</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {tecnico && <TecnicoRow profile={tecnico} />}
+                        {tecnico2 && <TecnicoRow profile={tecnico2} />}
+                      </div>
                     )}
                   </div>
                 )}
 
-                {showTecnicoInfo && (
+                {showInfo && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
                     <p className="text-sm font-medium flex items-center gap-1 mb-2">
                       <ClipboardList className="w-4 h-4" /> Ações realizadas
                     </p>
-                    {detailChamado.tecnico_id === user?.id && (
-                      <div className="flex gap-2 mb-2 items-center min-w-0">
-                        <div className="flex-1 min-w-0">
+                    {editavel && (
+                      <div className="space-y-2 mb-2">
+                        <Textarea
+                          value={novaAcao}
+                          onChange={(e) => setNovaAcao(e.target.value.toUpperCase().slice(0, MAX_ACAO))}
+                          placeholder="DESCREVA A AÇÃO..."
+                          rows={2}
+                          maxLength={MAX_ACAO}
+                          className="text-xs"
+                          style={{ textTransform: 'uppercase' }}
+                        />
+                        <span className="text-[10px] text-muted-foreground">{novaAcao.length}/{MAX_ACAO}</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Select value={novoFornId} onValueChange={setNovoFornId}>
+                            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Fornecedor (opcional)" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Sem fornecedor</SelectItem>
+                              {fornecedores.map(f => <SelectItem key={f.id} value={f.id}>{f.nome}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
                           <Input
-                            value={novaAcao}
-                            onChange={(e) => setNovaAcao(e.target.value.toUpperCase().slice(0, MAX_ACAO))}
-                            placeholder="ADICIONE UMA AÇÃO..."
-                            className="text-xs w-full"
-                            maxLength={MAX_ACAO}
-                            style={{ textTransform: 'uppercase' }}
+                            type="number"
+                            inputMode="decimal"
+                            placeholder="Valor R$"
+                            value={novoValor}
+                            onChange={e => setNovoValor(e.target.value)}
+                            className="h-8 text-xs"
                           />
-                          <span className="text-[10px] text-muted-foreground">{novaAcao.length}/{MAX_ACAO}</span>
                         </div>
-                        <Button size="sm" onClick={handleAddAcao} disabled={!novaAcao.trim()} className="flex-shrink-0">
-                          <Plus className="w-4 h-4" />
+                        <Button size="sm" onClick={handleAddAcao} disabled={!novaAcao.trim()} className="w-full">
+                          <Plus className="w-4 h-4 mr-1" /> Adicionar Ação
                         </Button>
                       </div>
                     )}
                     {acoes.length === 0 ? (
                       <p className="text-xs text-muted-foreground">Nenhuma ação registrada</p>
                     ) : (
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                      <div className="space-y-2 max-h-80 overflow-y-auto">
                         {acoes.map((acao) => {
                           const d = new Date(acao.created_at);
                           const dataFormatada = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                          const fornecedor = getFornecedor(acao.fornecedor_id);
                           return (
-                            <div key={acao.id} className="bg-muted rounded p-2">
+                            <div key={acao.id} className="bg-muted rounded p-2 space-y-1">
                               <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
-                              <p className="text-[10px] text-muted-foreground mt-1">{dataFormatada}</p>
+                              {fornecedor && (
+                                <div className="flex items-center gap-2 pt-1 border-t border-border/40">
+                                  {fornecedor.foto_url ? (
+                                    <img src={fornecedor.foto_url} alt="" className="w-8 h-8 rounded object-contain bg-background" />
+                                  ) : (
+                                    <Package className="w-6 h-6 text-muted-foreground" />
+                                  )}
+                                  <div className="text-[10px] flex-1 min-w-0">
+                                    <p className="font-medium break-words">{fornecedor.nome}</p>
+                                    <p className="text-muted-foreground">{formatPhone(fornecedor.telefone)}</p>
+                                  </div>
+                                </div>
+                              )}
+                              {acao.valor != null && (
+                                <p className="text-[11px] font-medium text-primary">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</p>
+                              )}
+                              <p className="text-[10px] text-muted-foreground">{dataFormatada}</p>
                             </div>
                           );
                         })}
@@ -434,7 +555,7 @@ export function ChamadosTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Accept Dialog */}
+      {/* Accept */}
       <Dialog open={acceptOpen} onOpenChange={setAcceptOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Aceitar Chamado</DialogTitle></DialogHeader>
@@ -448,19 +569,77 @@ export function ChamadosTab() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Status *</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as StatusChamado)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <p className="text-xs text-muted-foreground">Ao aceitar, o status irá para "Em andamento" automaticamente.</p>
             <Button onClick={handleAccept}>Aceitar</Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Assign técnicos (analista) */}
+      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Gerenciar técnicos</DialogTitle></DialogHeader>
+          {detailChamado && (
+            <div className="flex flex-col gap-4">
+              <div>
+                <Label>Técnico principal</Label>
+                <div className="flex gap-2">
+                  <Select value={detailChamado.tecnico_id || 'none'} onValueChange={(v) => handleAssignTecnico(1, v === 'none' ? null : v)}>
+                    <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {tecnicosLivres(1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  {detailChamado.tecnico_id && (
+                    <Button variant="ghost" size="icon" onClick={() => handleAssignTecnico(1, null)}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label>Segundo técnico</Label>
+                <div className="flex gap-2">
+                  <Select value={detailChamado.tecnico2_id || 'none'} onValueChange={(v) => handleAssignTecnico(2, v === 'none' ? null : v)}>
+                    <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {tecnicosLivres(2).filter(t => t.id !== detailChamado.tecnico_id).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  {detailChamado.tecnico2_id && (
+                    <Button variant="ghost" size="icon" onClick={() => handleAssignTecnico(2, null)}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">Apenas técnicos sem chamados ativos aparecem na lista.</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function TecnicoRow({ profile }: { profile: Profile }) {
+  return (
+    <div className="flex gap-3 items-center">
+      {profile.foto_url ? (
+        <img src={profile.foto_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+      ) : (
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+          <User className="w-6 h-6 text-muted-foreground" />
+        </div>
+      )}
+      <div className="text-sm flex-1 min-w-0">
+        <p className="font-medium break-words">{profile.nome} {profile.sobrenome}</p>
+        <p className="text-muted-foreground text-xs">@{profile.username}</p>
+        <p className="text-muted-foreground text-xs">{profile.telefone}</p>
+        {profile.area && <p className="text-xs text-primary">Área: {profile.area}</p>}
+      </div>
     </div>
   );
 }
