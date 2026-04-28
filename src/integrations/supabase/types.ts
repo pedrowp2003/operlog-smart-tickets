@@ -222,7 +222,12 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "gerente" | "coordenador" | "supervisor" | "tecnico"
+      app_role:
+        | "gerente"
+        | "coordenador"
+        | "supervisor"
+        | "tecnico"
+        | "analista"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -350,7 +355,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["gerente", "coordenador", "supervisor", "tecnico"],
+      app_role: ["gerente", "coordenador", "supervisor", "tecnico", "analista"],
     },
   },
 } as const
