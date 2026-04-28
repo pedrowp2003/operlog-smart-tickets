@@ -14,27 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      armazens: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       chamado_acoes: {
         Row: {
           chamado_id: string
           created_at: string
           descricao: string
+          fornecedor_id: string | null
           id: string
           tecnico_id: string
+          valor: number | null
         }
         Insert: {
           chamado_id: string
           created_at?: string
           descricao: string
+          fornecedor_id?: string | null
           id?: string
           tecnico_id: string
+          valor?: number | null
         }
         Update: {
           chamado_id?: string
           created_at?: string
           descricao?: string
+          fornecedor_id?: string | null
           id?: string
           tecnico_id?: string
+          valor?: number | null
         }
         Relationships: [
           {
@@ -61,6 +85,7 @@ export type Database = {
           situacao_maquina: string
           status: string
           tecnico_id: string | null
+          tecnico2_id: string | null
           updated_at: string
         }
         Insert: {
@@ -77,6 +102,7 @@ export type Database = {
           situacao_maquina: string
           status?: string
           tecnico_id?: string | null
+          tecnico2_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -93,6 +119,7 @@ export type Database = {
           situacao_maquina?: string
           status?: string
           tecnico_id?: string | null
+          tecnico2_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -104,6 +131,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fornecedores: {
+        Row: {
+          created_at: string
+          descricao: string
+          foto_url: string | null
+          id: string
+          nome: string
+          telefone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string
+          foto_url?: string | null
+          id?: string
+          nome: string
+          telefone: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          telefone?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       maquinas: {
         Row: {
@@ -146,6 +203,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          area: string | null
           armazem: string | null
           created_at: string
           email: string
@@ -160,6 +218,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          area?: string | null
           armazem?: string | null
           created_at?: string
           email: string
@@ -174,6 +233,7 @@ export type Database = {
           username: string
         }
         Update: {
+          area?: string | null
           armazem?: string | null
           created_at?: string
           email?: string
@@ -186,6 +246,24 @@ export type Database = {
           unidade?: string | null
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      unidades: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
         }
         Relationships: []
       }
@@ -222,7 +300,12 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "gerente" | "coordenador" | "supervisor" | "tecnico"
+      app_role:
+        | "gerente"
+        | "coordenador"
+        | "supervisor"
+        | "tecnico"
+        | "analista"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -350,7 +433,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["gerente", "coordenador", "supervisor", "tecnico"],
+      app_role: ["gerente", "coordenador", "supervisor", "tecnico", "analista"],
     },
   },
 } as const
