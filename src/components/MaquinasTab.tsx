@@ -2,24 +2,32 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { UNIDADES, ARMAZENS, TIPOS_MAQUINA, FROTAS, MARCAS, MODELOS } from '@/types';
+import { TIPOS_MAQUINA, FROTAS, MARCAS, MODELOS } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
-import { Plus, Trash2, Pencil, Wrench } from 'lucide-react';
+import { Plus, Trash2, Pencil, Wrench, Settings, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Maquina = Tables<'maquinas'>;
+type Unidade = Tables<'unidades'>;
+type Armazem = Tables<'armazens'>;
 
 export function MaquinasTab() {
   const { user, uploadImage } = useAuth();
   const [maquinas, setMaquinas] = useState<Maquina[]>([]);
+  const [unidadesList, setUnidadesList] = useState<Unidade[]>([]);
+  const [armazensList, setArmazensList] = useState<Armazem[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [editMaquina, setEditMaquina] = useState<Maquina | null>(null);
   const [detailMaquina, setDetailMaquina] = useState<Maquina | null>(null);
+  const [categoriasOpen, setCategoriasOpen] = useState(false);
+  const [novaUnidade, setNovaUnidade] = useState('');
+  const [novoArmazem, setNovoArmazem] = useState('');
 
   const [tipo, setTipo] = useState('');
   const [frota, setFrota] = useState('');
@@ -35,13 +43,26 @@ export function MaquinasTab() {
     if (data) setMaquinas(data);
   };
 
-  useEffect(() => { fetchMaquinas(); }, []);
+  const fetchCategorias = async () => {
+    const [u, a] = await Promise.all([
+      supabase.from('unidades').select('*').order('nome'),
+      supabase.from('armazens').select('*').order('nome'),
+    ]);
+    if (u.data) setUnidadesList(u.data);
+    if (a.data) setArmazensList(a.data);
+  };
+
+  useEffect(() => { fetchMaquinas(); fetchCategorias(); }, []);
 
   if (!user) return null;
 
-  const canCreate = user.role !== 'tecnico';
-  const canEdit = user.role !== 'tecnico';
-  const canDeleteMaq = user.role === 'gerente' || user.role === 'coordenador' || user.role === 'supervisor';
+  const canCreate = user.role === 'analista';
+  const canEdit = user.role === 'analista';
+  const canDeleteMaq = user.role === 'analista';
+  const canManageCategorias = user.role === 'analista';
+
+  const UNIDADES_NAMES = unidadesList.map(u => u.nome);
+  const ARMAZENS_NAMES = armazensList.map(a => a.nome);
 
   // Filter machines by role
   const visibleMaquinas = maquinas.filter(m => {
@@ -55,8 +76,6 @@ export function MaquinasTab() {
 
   const openCreate = () => {
     resetForm();
-    if (user.role === 'coordenador') setUnidade(user.unidade || '');
-    if (user.role === 'supervisor') { setUnidade(user.unidade || ''); setArmazem(user.armazem || ''); }
     setCreateOpen(true);
   };
 
@@ -112,9 +131,7 @@ export function MaquinasTab() {
     fetchMaquinas();
   };
 
-  // Gerente e coordenador escolhem entre unidade OU armazém num único seletor.
-  // Supervisor tem ambos preenchidos automaticamente.
-  const showLocalSelect = user.role === 'gerente' || user.role === 'coordenador';
+  const showLocalSelect = true;
   const localValue = unidade ? `u:${unidade}` : armazem ? `a:${armazem}` : '';
   const handleLocalChange = (val: string) => {
     if (val.startsWith('u:')) { setUnidade(val.slice(2)); setArmazem(''); }
@@ -159,11 +176,11 @@ export function MaquinasTab() {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Unidades</SelectLabel>
-                {UNIDADES.map(u => <SelectItem key={`u-${u}`} value={`u:${u}`}>{u}</SelectItem>)}
+                {UNIDADES_NAMES.map(u => <SelectItem key={`u-${u}`} value={`u:${u}`}>{u}</SelectItem>)}
               </SelectGroup>
               <SelectGroup>
                 <SelectLabel>Armazéns</SelectLabel>
-                {ARMAZENS.map(a => <SelectItem key={`a-${a}`} value={`a:${a}`}>{a}</SelectItem>)}
+                {ARMAZENS_NAMES.map(a => <SelectItem key={`a-${a}`} value={`a:${a}`}>{a}</SelectItem>)}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -185,11 +202,18 @@ export function MaquinasTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Máquinas</h2>
-        {canCreate && (
-          <Button size="sm" onClick={openCreate}>
-            <Plus className="w-4 h-4 mr-1" /> Nova Máquina
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {canManageCategorias && (
+            <Button variant="outline" size="sm" onClick={() => setCategoriasOpen(true)}>
+              <Settings className="w-4 h-4 mr-1" /> Alterar categorias
+            </Button>
+          )}
+          {canCreate && (
+            <Button size="sm" onClick={openCreate}>
+              <Plus className="w-4 h-4 mr-1" /> Nova Máquina
+            </Button>
+          )}
+        </div>
       </div>
 
       {visibleMaquinas.length === 0 ? (
@@ -258,6 +282,75 @@ export function MaquinasTab() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Alterar categorias dialog */}
+      <Dialog open={categoriasOpen} onOpenChange={setCategoriasOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Alterar categorias</DialogTitle></DialogHeader>
+          <div className="space-y-6">
+            <section>
+              <h3 className="font-semibold mb-2">Unidades</h3>
+              <div className="flex gap-2 mb-2">
+                <Input value={novaUnidade} onChange={e => setNovaUnidade(e.target.value)} placeholder="Nova unidade" />
+                <Button size="sm" onClick={async () => {
+                  if (!novaUnidade.trim()) return;
+                  const { error } = await supabase.from('unidades').insert({ nome: novaUnidade.trim() });
+                  if (error) toast.error(error.message); else { setNovaUnidade(''); fetchCategorias(); }
+                }}><Plus className="w-4 h-4" /></Button>
+              </div>
+              <div className="space-y-1">
+                {unidadesList.map(u => (
+                  <CategoriaItem key={u.id} initial={u.nome} onRename={async (nome) => {
+                    await supabase.from('unidades').update({ nome }).eq('id', u.id);
+                    fetchCategorias();
+                  }} onDelete={async () => {
+                    await supabase.from('unidades').delete().eq('id', u.id);
+                    fetchCategorias();
+                  }} />
+                ))}
+              </div>
+            </section>
+            <section>
+              <h3 className="font-semibold mb-2">Armazéns</h3>
+              <div className="flex gap-2 mb-2">
+                <Input value={novoArmazem} onChange={e => setNovoArmazem(e.target.value)} placeholder="Novo armazém" />
+                <Button size="sm" onClick={async () => {
+                  if (!novoArmazem.trim()) return;
+                  const { error } = await supabase.from('armazens').insert({ nome: novoArmazem.trim() });
+                  if (error) toast.error(error.message); else { setNovoArmazem(''); fetchCategorias(); }
+                }}><Plus className="w-4 h-4" /></Button>
+              </div>
+              <div className="space-y-1">
+                {armazensList.map(a => (
+                  <CategoriaItem key={a.id} initial={a.nome} onRename={async (nome) => {
+                    await supabase.from('armazens').update({ nome }).eq('id', a.id);
+                    fetchCategorias();
+                  }} onDelete={async () => {
+                    await supabase.from('armazens').delete().eq('id', a.id);
+                    fetchCategorias();
+                  }} />
+                ))}
+              </div>
+            </section>
+            <p className="text-xs text-muted-foreground">Tipos, frotas e modelos serão editáveis em breve.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function CategoriaItem({ initial, onRename, onDelete }: { initial: string; onRename: (nome: string) => Promise<void>; onDelete: () => Promise<void> }) {
+  const [val, setVal] = useState(initial);
+  return (
+    <div className="flex gap-2 items-center">
+      <Input value={val} onChange={e => setVal(e.target.value)} className="h-8" />
+      <Button size="sm" variant="outline" disabled={val === initial || !val.trim()} onClick={() => onRename(val.trim())}>
+        <Pencil className="w-3 h-3" />
+      </Button>
+      <Button size="sm" variant="ghost" className="text-destructive" onClick={onDelete}>
+        <X className="w-4 h-4" />
+      </Button>
     </div>
   );
 }
