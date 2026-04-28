@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
-import { UserRole, UNIDADES, ARMAZENS, ROLE_LABELS, formatPhone } from '@/types';
+import { UserRole, UNIDADES, ARMAZENS, AREAS, ROLE_LABELS, formatPhone } from '@/types';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
 export default function Register() {
@@ -25,6 +25,7 @@ export default function Register() {
   const [fotoPreview, setFotoPreview] = useState<string | undefined>();
   const [unidade, setUnidade] = useState('');
   const [armazem, setArmazem] = useState('');
+  const [area, setArea] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -54,6 +55,10 @@ export default function Register() {
       setError('Preencha nome e sobrenome');
       return;
     }
+    if (role === 'tecnico' && !area) {
+      setError('Selecione a área de atuação');
+      return;
+    }
     if (role === 'coordenador' && !unidade) {
       setError('Selecione a unidade');
       return;
@@ -80,6 +85,7 @@ export default function Register() {
       foto_url,
       unidade: unidade || undefined,
       armazem: armazem || undefined,
+      area: area || undefined,
     };
 
     const err = await register(email.trim(), password, metadata);
@@ -105,7 +111,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <Label>Tipo de Usuário *</Label>
-              <Select value={role} onValueChange={(v) => { setRole(v as UserRole); setUnidade(''); setArmazem(''); }}>
+              <Select value={role} onValueChange={(v) => { setRole(v as UserRole); setUnidade(''); setArmazem(''); setArea(''); }}>
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
                   {(Object.keys(ROLE_LABELS) as UserRole[]).map((r) => (
@@ -134,16 +140,27 @@ export default function Register() {
             </div>
 
             {role === 'tecnico' && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Nome *</Label>
-                  <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome" />
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Nome *</Label>
+                    <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome" />
+                  </div>
+                  <div>
+                    <Label>Sobrenome *</Label>
+                    <Input value={sobrenome} onChange={(e) => setSobrenome(e.target.value)} placeholder="Sobrenome" />
+                  </div>
                 </div>
                 <div>
-                  <Label>Sobrenome *</Label>
-                  <Input value={sobrenome} onChange={(e) => setSobrenome(e.target.value)} placeholder="Sobrenome" />
+                  <Label>Área de Atuação *</Label>
+                  <Select value={area} onValueChange={setArea}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      {AREAS.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </div>
+              </>
             )}
 
             {role === 'coordenador' && (
