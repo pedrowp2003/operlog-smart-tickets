@@ -1,4 +1,4 @@
-export type UserRole = 'gerente' | 'coordenador' | 'supervisor' | 'tecnico';
+export type UserRole = 'gerente' | 'coordenador' | 'supervisor' | 'tecnico' | 'analista';
 
 export type SituacaoMaquina = 'Parada' | 'Operando com restrições';
 
@@ -14,6 +14,7 @@ export type CategoriaChamado =
 
 export const UNIDADES = ['Polo Saúde', 'Pátio'] as const;
 export const ARMAZENS = ['Armazém 1', 'Armazém 2'] as const;
+export const AREAS = ['Armazém 1', 'Armazém 2', 'Polo Saúde', 'Pátio'] as const;
 export const TIPOS_MAQUINA = ['Stacker', 'Meclift', 'Caminhão', 'Empilhadeira elétrica'] as const;
 export const FROTAS = ['EP-03', 'EP-17', 'EP-39', 'EP-387'] as const;
 export const MARCAS = ['Yale', 'Still', 'Hyster', 'Linde'] as const;
@@ -41,6 +42,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   coordenador: 'Coordenador',
   supervisor: 'Supervisor',
   tecnico: 'Técnico de Manutenção',
+  analista: 'Analista de Manutenção',
 };
 
 export function getStatusColor(status: StatusChamado): string {
