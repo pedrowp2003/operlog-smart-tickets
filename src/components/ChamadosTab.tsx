@@ -457,6 +457,20 @@ export function ChamadosTab() {
                     <p className="text-muted-foreground">Situação: <span className="text-foreground">{detailChamado.situacao_maquina}</span></p>
                     <p className="text-muted-foreground">Descrição:</p>
                     <p className="break-words whitespace-pre-wrap">{detailChamado.descricao}</p>
+                    {detailChamado.codigo_erro && (
+                      <p className="mt-2"><span className="text-muted-foreground">Código de erro: </span><span className="font-semibold">{detailChamado.codigo_erro}</span></p>
+                    )}
+                    {detailChamado.foto_defeito_url && (
+                      <div className="mt-2">
+                        <p className="text-muted-foreground mb-1">Foto do defeito:</p>
+                        <img
+                          src={detailChamado.foto_defeito_url}
+                          alt="Defeito"
+                          className="w-full rounded-lg object-contain max-h-64 cursor-zoom-in border border-border"
+                          onClick={() => setZoomImg(detailChamado.foto_defeito_url!)}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {detailChamado.categoria && (
