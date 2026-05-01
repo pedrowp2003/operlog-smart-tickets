@@ -254,11 +254,26 @@ export function ChamadosTab() {
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
-  const toLocalInput = (iso: string | null) => {
+  const toDateInput = (iso: string | null) => {
     if (!iso) return '';
     const d = new Date(iso);
     const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  };
+  const toTimeInput = (iso: string | null) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const combineDateTime = (dateStr: string, timeStr: string): string | null => {
+    // dateStr: DD/MM/YYYY ; timeStr: HH:MM
+    const dm = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const tm = timeStr.match(/^(\d{2}):(\d{2})$/);
+    if (!dm || !tm) return null;
+    const d = new Date(Number(dm[3]), Number(dm[2]) - 1, Number(dm[1]), Number(tm[1]), Number(tm[2]));
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
   };
 
   const selectedMaquinaForCreate = maquinaId ? getMaquina(maquinaId) : null;
