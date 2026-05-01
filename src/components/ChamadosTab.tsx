@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { ImageUpload } from '@/components/ImageUpload';
 
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
@@ -23,6 +24,7 @@ type Fornecedor = Tables<'fornecedores'>;
 
 const MAX_DESC = 500;
 const MAX_ACAO = 300;
+const MAX_COD_ERRO = 50;
 
 export function ChamadosTab() {
   const { user } = useAuth();
@@ -38,6 +40,10 @@ export function ChamadosTab() {
   const [descricao, setDescricao] = useState('');
   const [maquinaId, setMaquinaId] = useState('');
   const [situacao, setSituacao] = useState<'Parada' | 'Operando com restrições'>('Parada');
+  const [fotoDefeito, setFotoDefeito] = useState<string | undefined>(undefined);
+  const [fotoDefeitoFile, setFotoDefeitoFile] = useState<File | null>(null);
+  const [codigoErro, setCodigoErro] = useState('');
+  const [zoomImg, setZoomImg] = useState<string | null>(null);
 
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
@@ -117,6 +123,17 @@ export function ChamadosTab() {
   const handleCreate = async () => {
     if (!descricao.trim() || !maquinaId) return;
     const now = new Date().toISOString();
+    let fotoUrl: string | null = null;
+    if (fotoDefeitoFile) {
+      const ext = fotoDefeitoFile.name.split('.').pop() || 'jpg';
+      const path = `chamados/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('images').upload(path, fotoDefeitoFile);
+      if (upErr) {
+        toast.error('Erro ao enviar foto do defeito');
+      } else {
+        fotoUrl = supabase.storage.from('images').getPublicUrl(path).data.publicUrl;
+      }
+    }
     await supabase.from('chamados').insert({
       numero: 'TEMP',
       descricao: descricao.trim().toUpperCase(),
@@ -124,10 +141,15 @@ export function ChamadosTab() {
       situacao_maquina: situacao,
       criado_por: user.id,
       data_inicio: now,
+      foto_defeito_url: fotoUrl,
+      codigo_erro: codigoErro.trim() ? codigoErro.trim().toUpperCase() : null,
     });
     setCreateOpen(false);
     setDescricao('');
     setMaquinaId('');
+    setFotoDefeito(undefined);
+    setFotoDefeitoFile(null);
+    setCodigoErro('');
     fetchData();
   };
 
