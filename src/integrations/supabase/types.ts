@@ -73,11 +73,13 @@ export type Database = {
       chamados: {
         Row: {
           categoria: string | null
+          codigo_erro: string | null
           created_at: string
           criado_por: string
           data_inicio: string | null
           data_prevista_termino: string | null
           descricao: string
+          foto_defeito_url: string | null
           id: string
           maquina_id: string
           numero: string
@@ -90,11 +92,13 @@ export type Database = {
         }
         Insert: {
           categoria?: string | null
+          codigo_erro?: string | null
           created_at?: string
           criado_por: string
           data_inicio?: string | null
           data_prevista_termino?: string | null
           descricao: string
+          foto_defeito_url?: string | null
           id?: string
           maquina_id: string
           numero: string
@@ -107,11 +111,13 @@ export type Database = {
         }
         Update: {
           categoria?: string | null
+          codigo_erro?: string | null
           created_at?: string
           criado_por?: string
           data_inicio?: string | null
           data_prevista_termino?: string | null
           descricao?: string
+          foto_defeito_url?: string | null
           id?: string
           maquina_id?: string
           numero?: string

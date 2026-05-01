@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { ImageUpload } from '@/components/ImageUpload';
 
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
@@ -23,6 +24,7 @@ type Fornecedor = Tables<'fornecedores'>;
 
 const MAX_DESC = 500;
 const MAX_ACAO = 300;
+const MAX_COD_ERRO = 50;
 
 export function ChamadosTab() {
   const { user } = useAuth();
@@ -38,6 +40,10 @@ export function ChamadosTab() {
   const [descricao, setDescricao] = useState('');
   const [maquinaId, setMaquinaId] = useState('');
   const [situacao, setSituacao] = useState<'Parada' | 'Operando com restrições'>('Parada');
+  const [fotoDefeito, setFotoDefeito] = useState<string | undefined>(undefined);
+  const [fotoDefeitoFile, setFotoDefeitoFile] = useState<File | null>(null);
+  const [codigoErro, setCodigoErro] = useState('');
+  const [zoomImg, setZoomImg] = useState<string | null>(null);
 
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
@@ -117,6 +123,17 @@ export function ChamadosTab() {
   const handleCreate = async () => {
     if (!descricao.trim() || !maquinaId) return;
     const now = new Date().toISOString();
+    let fotoUrl: string | null = null;
+    if (fotoDefeitoFile) {
+      const ext = fotoDefeitoFile.name.split('.').pop() || 'jpg';
+      const path = `chamados/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('images').upload(path, fotoDefeitoFile);
+      if (upErr) {
+        toast.error('Erro ao enviar foto do defeito');
+      } else {
+        fotoUrl = supabase.storage.from('images').getPublicUrl(path).data.publicUrl;
+      }
+    }
     await supabase.from('chamados').insert({
       numero: 'TEMP',
       descricao: descricao.trim().toUpperCase(),
@@ -124,10 +141,15 @@ export function ChamadosTab() {
       situacao_maquina: situacao,
       criado_por: user.id,
       data_inicio: now,
+      foto_defeito_url: fotoUrl,
+      codigo_erro: codigoErro.trim() ? codigoErro.trim().toUpperCase() : null,
     });
     setCreateOpen(false);
     setDescricao('');
     setMaquinaId('');
+    setFotoDefeito(undefined);
+    setFotoDefeitoFile(null);
+    setCodigoErro('');
     fetchData();
   };
 
@@ -343,6 +365,28 @@ export function ChamadosTab() {
                 style={{ textTransform: 'uppercase' }}
               />
             </div>
+            <div>
+              <Label>Código de erro (opcional)</Label>
+              <Input
+                value={codigoErro}
+                onChange={(e) => setCodigoErro(e.target.value.toUpperCase().slice(0, MAX_COD_ERRO))}
+                placeholder="EX: E-204"
+                maxLength={MAX_COD_ERRO}
+                style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+            <div>
+              <Label>Foto do defeito (opcional)</Label>
+              <ImageUpload
+                value={fotoDefeito}
+                onChange={(val, file) => {
+                  setFotoDefeito(val);
+                  setFotoDefeitoFile(file ?? null);
+                }}
+                label="Tirar, anexar ou arrastar foto"
+                className="mt-1"
+              />
+            </div>
             <Button onClick={handleCreate} disabled={!descricao.trim() || !maquinaId}>Criar Chamado</Button>
           </div>
         </DialogContent>
@@ -413,6 +457,20 @@ export function ChamadosTab() {
                     <p className="text-muted-foreground">Situação: <span className="text-foreground">{detailChamado.situacao_maquina}</span></p>
                     <p className="text-muted-foreground">Descrição:</p>
                     <p className="break-words whitespace-pre-wrap">{detailChamado.descricao}</p>
+                    {detailChamado.codigo_erro && (
+                      <p className="mt-2"><span className="text-muted-foreground">Código de erro: </span><span className="font-semibold">{detailChamado.codigo_erro}</span></p>
+                    )}
+                    {detailChamado.foto_defeito_url && (
+                      <div className="mt-2">
+                        <p className="text-muted-foreground mb-1">Foto do defeito:</p>
+                        <img
+                          src={detailChamado.foto_defeito_url}
+                          alt="Defeito"
+                          className="w-full rounded-lg object-contain max-h-64 cursor-zoom-in border border-border"
+                          onClick={() => setZoomImg(detailChamado.foto_defeito_url!)}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {detailChamado.categoria && (
@@ -618,6 +676,13 @@ export function ChamadosTab() {
               <p className="text-xs text-muted-foreground">Apenas técnicos sem chamados ativos aparecem na lista.</p>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Zoom de imagem */}
+      <Dialog open={!!zoomImg} onOpenChange={() => setZoomImg(null)}>
+        <DialogContent className="max-w-4xl p-2">
+          {zoomImg && <img src={zoomImg} alt="" className="w-full h-auto object-contain max-h-[85vh]" />}
         </DialogContent>
       </Dialog>
     </div>
