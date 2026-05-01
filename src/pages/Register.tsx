@@ -51,7 +51,7 @@ export default function Register() {
       setError('A senha deve ter no mínimo 8 dígitos');
       return;
     }
-    if (role === 'tecnico' && (!nome.trim() || !sobrenome.trim())) {
+    if (!nome.trim() || !sobrenome.trim()) {
       setError('Preencha nome e sobrenome');
       return;
     }
@@ -139,18 +139,21 @@ export default function Register() {
               </div>
             </div>
 
+            {role && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Nome *</Label>
+                  <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome" />
+                </div>
+                <div>
+                  <Label>Sobrenome *</Label>
+                  <Input value={sobrenome} onChange={(e) => setSobrenome(e.target.value)} placeholder="Sobrenome" />
+                </div>
+              </div>
+            )}
+
             {role === 'tecnico' && (
               <>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Nome *</Label>
-                    <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome" />
-                  </div>
-                  <div>
-                    <Label>Sobrenome *</Label>
-                    <Input value={sobrenome} onChange={(e) => setSobrenome(e.target.value)} placeholder="Sobrenome" />
-                  </div>
-                </div>
                 <div>
                   <Label>Área de Atuação *</Label>
                   <Select value={area} onValueChange={setArea}>
