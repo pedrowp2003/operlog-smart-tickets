@@ -55,6 +55,9 @@ export function ChamadosTab() {
 
   const [assignOpen, setAssignOpen] = useState(false);
 
+  const [prevDataStr, setPrevDataStr] = useState('');
+  const [prevHoraStr, setPrevHoraStr] = useState('');
+
   const fetchData = async () => {
     const [cRes, mRes, pRes, fRes] = await Promise.all([
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
@@ -79,6 +82,12 @@ export function ChamadosTab() {
     if (detailChamado) fetchAcoes(detailChamado.id);
     else setAcoes([]);
   }, [detailChamado?.id]);
+
+  useEffect(() => {
+    setPrevDataStr(detailChamado ? toDateInput(detailChamado.data_prevista_termino) : '');
+    setPrevHoraStr(detailChamado ? toTimeInput(detailChamado.data_prevista_termino) : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detailChamado?.id, detailChamado?.data_prevista_termino]);
 
   if (!user) return null;
 
@@ -454,11 +463,10 @@ export function ChamadosTab() {
                     <span className="text-xs text-muted-foreground">Andamento</span>
                     <span className="text-xs font-medium">{progresso}%</span>
                   </div>
-                  <Progress value={progresso} className="h-2" />
-                  {isAnalista && detailChamado.status !== 'Aberto' && detailChamado.status !== 'Concluído' && (
-                    <div className="pt-1">
-                      <Slider value={[progresso]} onValueChange={(v) => handleProgressoChange(v[0])} max={100} step={5} />
-                    </div>
+                  {isAnalista && editavel && detailChamado.status !== 'Aberto' && detailChamado.status !== 'Concluído' ? (
+                    <Slider value={[progresso]} onValueChange={(v) => handleProgressoChange(v[0])} max={100} step={5} />
+                  ) : (
+                    <Progress value={progresso} className="h-2" />
                   )}
                 </div>
 
@@ -513,13 +521,32 @@ export function ChamadosTab() {
                     <span className="text-muted-foreground">Data de Início:</span>
                     <span>{formatDateTime(dataInicio)}</span>
                     <span className="text-muted-foreground">Previsão de Término:</span>
-                    {isAnalista ? (
-                      <Input
-                        type="datetime-local"
-                        value={toLocalInput(dataPrevista)}
-                        onChange={(e) => handleDataPrevistaChange(e.target.value ? new Date(e.target.value).toISOString() : '')}
-                        className="h-7 text-xs"
-                      />
+                    {isAnalista && editavel ? (
+                      <div className="flex gap-1">
+                        <Input
+                          value={prevDataStr}
+                          onChange={(e) => setPrevDataStr(e.target.value)}
+                          onBlur={() => {
+                            const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
+                            if (iso) handleDataPrevistaChange(iso);
+                            else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
+                          }}
+                          placeholder="DD/MM/AAAA"
+                          className="h-7 text-xs"
+                          inputMode="numeric"
+                        />
+                        <Input
+                          value={prevHoraStr}
+                          onChange={(e) => setPrevHoraStr(e.target.value)}
+                          onBlur={() => {
+                            const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
+                            if (iso) handleDataPrevistaChange(iso);
+                          }}
+                          placeholder="HH:MM"
+                          className="h-7 text-xs w-20"
+                          inputMode="numeric"
+                        />
+                      </div>
                     ) : (
                       <span>{dataPrevista ? formatDateTime(dataPrevista) : <span className="text-muted-foreground text-xs">—</span>}</span>
                     )}
