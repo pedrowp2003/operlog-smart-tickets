@@ -66,7 +66,7 @@ export function MaquinasTab() {
 
   // Filter machines by role
   const visibleMaquinas = maquinas.filter(m => {
-    if (user.role === 'gerente' || user.role === 'tecnico') return true;
+    if (user.role === 'gerente' || user.role === 'tecnico' || user.role === 'analista') return true;
     if (user.role === 'coordenador') return m.unidade === user.unidade;
     if (user.role === 'supervisor') return m.armazem === user.armazem;
     return false;
