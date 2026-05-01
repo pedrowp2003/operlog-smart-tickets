@@ -55,6 +55,9 @@ export function ChamadosTab() {
 
   const [assignOpen, setAssignOpen] = useState(false);
 
+  const [prevDataStr, setPrevDataStr] = useState('');
+  const [prevHoraStr, setPrevHoraStr] = useState('');
+
   const fetchData = async () => {
     const [cRes, mRes, pRes, fRes] = await Promise.all([
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
@@ -79,6 +82,12 @@ export function ChamadosTab() {
     if (detailChamado) fetchAcoes(detailChamado.id);
     else setAcoes([]);
   }, [detailChamado?.id]);
+
+  useEffect(() => {
+    setPrevDataStr(detailChamado ? toDateInput(detailChamado.data_prevista_termino) : '');
+    setPrevHoraStr(detailChamado ? toTimeInput(detailChamado.data_prevista_termino) : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detailChamado?.id, detailChamado?.data_prevista_termino]);
 
   if (!user) return null;
 
@@ -171,8 +180,11 @@ export function ChamadosTab() {
     fetchData();
   };
 
-  const canEditChamado = (c: Chamado) =>
-    isAnalista || c.tecnico_id === user.id || c.tecnico2_id === user.id;
+  const canEditChamado = (c: Chamado) => {
+    // Analista só pode alterar quando houver pelo menos um técnico no chamado
+    if (isAnalista) return !!(c.tecnico_id || c.tecnico2_id);
+    return c.tecnico_id === user.id || c.tecnico2_id === user.id;
+  };
 
   const handleStatusChange = async (newStatus: StatusChamado) => {
     if (!detailChamado || !canEditChamado(detailChamado)) return;
@@ -193,6 +205,7 @@ export function ChamadosTab() {
 
   const handleProgressoChange = async (val: number) => {
     if (!detailChamado || !isAnalista) return;
+    if (!canEditChamado(detailChamado)) return;
     const { data } = await supabase.from('chamados').update({ progresso: val }).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
@@ -200,6 +213,7 @@ export function ChamadosTab() {
 
   const handleDataPrevistaChange = async (iso: string) => {
     if (!detailChamado || !isAnalista) return;
+    if (!canEditChamado(detailChamado)) return;
     const { data } = await supabase.from('chamados').update({ data_prevista_termino: iso || null }).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
@@ -249,11 +263,26 @@ export function ChamadosTab() {
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
-  const toLocalInput = (iso: string | null) => {
+  const toDateInput = (iso: string | null) => {
     if (!iso) return '';
     const d = new Date(iso);
     const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  };
+  const toTimeInput = (iso: string | null) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const combineDateTime = (dateStr: string, timeStr: string): string | null => {
+    // dateStr: DD/MM/YYYY ; timeStr: HH:MM
+    const dm = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const tm = timeStr.match(/^(\d{2}):(\d{2})$/);
+    if (!dm || !tm) return null;
+    const d = new Date(Number(dm[3]), Number(dm[2]) - 1, Number(dm[1]), Number(tm[1]), Number(tm[2]));
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
   };
 
   const selectedMaquinaForCreate = maquinaId ? getMaquina(maquinaId) : null;
@@ -434,11 +463,10 @@ export function ChamadosTab() {
                     <span className="text-xs text-muted-foreground">Andamento</span>
                     <span className="text-xs font-medium">{progresso}%</span>
                   </div>
-                  <Progress value={progresso} className="h-2" />
-                  {isAnalista && detailChamado.status !== 'Aberto' && detailChamado.status !== 'Concluído' && (
-                    <div className="pt-1">
-                      <Slider value={[progresso]} onValueChange={(v) => handleProgressoChange(v[0])} max={100} step={5} />
-                    </div>
+                  {isAnalista && editavel && detailChamado.status !== 'Aberto' && detailChamado.status !== 'Concluído' ? (
+                    <Slider value={[progresso]} onValueChange={(v) => handleProgressoChange(v[0])} max={100} step={5} />
+                  ) : (
+                    <Progress value={progresso} className="h-2" />
                   )}
                 </div>
 
@@ -493,13 +521,32 @@ export function ChamadosTab() {
                     <span className="text-muted-foreground">Data de Início:</span>
                     <span>{formatDateTime(dataInicio)}</span>
                     <span className="text-muted-foreground">Previsão de Término:</span>
-                    {isAnalista ? (
-                      <Input
-                        type="datetime-local"
-                        value={toLocalInput(dataPrevista)}
-                        onChange={(e) => handleDataPrevistaChange(e.target.value ? new Date(e.target.value).toISOString() : '')}
-                        className="h-7 text-xs"
-                      />
+                    {isAnalista && editavel ? (
+                      <div className="flex gap-1">
+                        <Input
+                          value={prevDataStr}
+                          onChange={(e) => setPrevDataStr(e.target.value)}
+                          onBlur={() => {
+                            const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
+                            if (iso) handleDataPrevistaChange(iso);
+                            else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
+                          }}
+                          placeholder="DD/MM/AAAA"
+                          className="h-7 text-xs"
+                          inputMode="numeric"
+                        />
+                        <Input
+                          value={prevHoraStr}
+                          onChange={(e) => setPrevHoraStr(e.target.value)}
+                          onBlur={() => {
+                            const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
+                            if (iso) handleDataPrevistaChange(iso);
+                          }}
+                          placeholder="HH:MM"
+                          className="h-7 text-xs w-20"
+                          inputMode="numeric"
+                        />
+                      </div>
                     ) : (
                       <span>{dataPrevista ? formatDateTime(dataPrevista) : <span className="text-muted-foreground text-xs">—</span>}</span>
                     )}

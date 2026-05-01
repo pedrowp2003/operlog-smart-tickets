@@ -87,10 +87,8 @@ export function UserMenu() {
       foto_url,
     };
 
-    if (isTecnico) {
-      updates.nome = nome.trim();
-      updates.sobrenome = sobrenome.trim();
-    }
+    updates.nome = nome.trim();
+    updates.sobrenome = sobrenome.trim();
     if (isCoordenador || isSupervisor) {
       updates.unidade = unidade;
     }
@@ -181,24 +179,20 @@ export function UserMenu() {
               />
             </div>
 
-            {isTecnico && (
-              <>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Nome</Label>
-                    <Input value={nome} onChange={(e) => setNome(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label>Sobrenome</Label>
-                    <Input value={sobrenome} onChange={(e) => setSobrenome(e.target.value)} />
-                  </div>
-                </div>
-                <div>
-                  <Label>Foto</Label>
-                  <ImageUpload value={fotoPreview} onChange={handleFotoChange} label="Sua foto" />
-                </div>
-              </>
-            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Nome</Label>
+                <Input value={nome} onChange={(e) => setNome(e.target.value)} />
+              </div>
+              <div>
+                <Label>Sobrenome</Label>
+                <Input value={sobrenome} onChange={(e) => setSobrenome(e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <Label>Foto (opcional)</Label>
+              <ImageUpload value={fotoPreview} onChange={handleFotoChange} label="Sua foto" />
+            </div>
 
             {(isCoordenador || isSupervisor) && (
               <div>
