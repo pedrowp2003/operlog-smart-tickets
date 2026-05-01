@@ -682,10 +682,6 @@ export function ChamadosTab() {
   );
 }
 
-// Wrapper de zoom inserido via portal seria ideal, mas para simplicidade usamos
-// um Dialog dentro do componente principal. Como já fechamos o JSX acima,
-// movemos o zoom para dentro do return principal via fragment seria invasivo.
-
 function TecnicoRow({ profile }: { profile: Profile }) {
   return (
     <div className="flex gap-3 items-center">
