@@ -171,8 +171,11 @@ export function ChamadosTab() {
     fetchData();
   };
 
-  const canEditChamado = (c: Chamado) =>
-    isAnalista || c.tecnico_id === user.id || c.tecnico2_id === user.id;
+  const canEditChamado = (c: Chamado) => {
+    // Analista só pode alterar quando houver pelo menos um técnico no chamado
+    if (isAnalista) return !!(c.tecnico_id || c.tecnico2_id);
+    return c.tecnico_id === user.id || c.tecnico2_id === user.id;
+  };
 
   const handleStatusChange = async (newStatus: StatusChamado) => {
     if (!detailChamado || !canEditChamado(detailChamado)) return;
@@ -193,6 +196,7 @@ export function ChamadosTab() {
 
   const handleProgressoChange = async (val: number) => {
     if (!detailChamado || !isAnalista) return;
+    if (!canEditChamado(detailChamado)) return;
     const { data } = await supabase.from('chamados').update({ progresso: val }).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
@@ -200,6 +204,7 @@ export function ChamadosTab() {
 
   const handleDataPrevistaChange = async (iso: string) => {
     if (!detailChamado || !isAnalista) return;
+    if (!canEditChamado(detailChamado)) return;
     const { data } = await supabase.from('chamados').update({ data_prevista_termino: iso || null }).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
