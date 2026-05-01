@@ -365,6 +365,28 @@ export function ChamadosTab() {
                 style={{ textTransform: 'uppercase' }}
               />
             </div>
+            <div>
+              <Label>Código de erro (opcional)</Label>
+              <Input
+                value={codigoErro}
+                onChange={(e) => setCodigoErro(e.target.value.toUpperCase().slice(0, MAX_COD_ERRO))}
+                placeholder="EX: E-204"
+                maxLength={MAX_COD_ERRO}
+                style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+            <div>
+              <Label>Foto do defeito (opcional)</Label>
+              <ImageUpload
+                value={fotoDefeito}
+                onChange={(val, file) => {
+                  setFotoDefeito(val);
+                  setFotoDefeitoFile(file ?? null);
+                }}
+                label="Tirar, anexar ou arrastar foto"
+                className="mt-1"
+              />
+            </div>
             <Button onClick={handleCreate} disabled={!descricao.trim() || !maquinaId}>Criar Chamado</Button>
           </div>
         </DialogContent>
