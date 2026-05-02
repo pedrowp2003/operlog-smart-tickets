@@ -823,6 +823,43 @@ export function ChamadosTab() {
           {zoomImg && <img src={zoomImg} alt="" className="w-full h-auto object-contain max-h-[85vh]" />}
         </DialogContent>
       </Dialog>
+
+      {/* Editar ação */}
+      <Dialog open={!!editAcao} onOpenChange={() => setEditAcao(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar ação</DialogTitle></DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Textarea
+              value={editAcaoDesc}
+              onChange={(e) => setEditAcaoDesc(e.target.value.toUpperCase().slice(0, MAX_ACAO))}
+              rows={3}
+              maxLength={MAX_ACAO}
+              style={{ textTransform: 'uppercase' }}
+            />
+            <Select value={editAcaoForn} onValueChange={setEditAcaoForn}>
+              <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sem fornecedor</SelectItem>
+                {fornecedores.map(f => <SelectItem key={f.id} value={f.id}>{f.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Input
+              inputMode="decimal"
+              placeholder="Valor R$"
+              value={editAcaoValor}
+              onChange={(e) => setEditAcaoValor(e.target.value.replace(/[^\d.,]/g, ''))}
+            />
+            <Button onClick={handleSaveEditAcao}>Salvar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* dummy to close earlier dialog block */}
+      <Dialog open={false} onOpenChange={() => {}}>
+        <DialogContent className="max-w-4xl p-2">
+          {zoomImg && <img src={zoomImg} alt="" className="w-full h-auto object-contain max-h-[85vh]" />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
