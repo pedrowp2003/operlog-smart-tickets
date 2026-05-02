@@ -237,6 +237,12 @@ export function ChamadosTab() {
   const handleDataPrevistaChange = async (iso: string) => {
     if (!detailChamado || !isAnalista) return;
     if (!canEditChamado(detailChamado)) return;
+    if (iso && detailChamado.data_inicio && new Date(iso) < new Date(detailChamado.data_inicio)) {
+      toast.error('Previsão de término não pode ser anterior à data de início');
+      setPrevDataStr(toDateInput(detailChamado.data_prevista_termino));
+      setPrevHoraStr(toTimeInput(detailChamado.data_prevista_termino));
+      return;
+    }
     const { data } = await supabase.from('chamados').update({ data_prevista_termino: iso || null }).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
@@ -265,19 +271,57 @@ export function ChamadosTab() {
     fetchData();
   };
 
-  const handleAssignTecnico = async (slot: 1 | 2, tecnicoId: string | null) => {
+  const handleSaveAssign = async () => {
     if (!detailChamado || !isAnalista) return;
-    const updates: Partial<Chamado> = {};
-    if (slot === 1) updates.tecnico_id = tecnicoId;
-    if (slot === 2) updates.tecnico2_id = tecnicoId;
-    // se está atribuindo 1º técnico e está aberto, vai para Em andamento
-    if (slot === 1 && tecnicoId && detailChamado.status === 'Aberto') {
+    const t1 = assignTec1 === 'none' ? null : assignTec1;
+    const t2 = assignTec2 === 'none' ? null : assignTec2;
+    const hadAnyTec = !!(detailChamado.tecnico_id || detailChamado.tecnico2_id);
+    const willHaveAny = !!(t1 || t2);
+    const updates: Partial<Chamado> = { tecnico_id: t1, tecnico2_id: t2, categoria: assignCategoria };
+    if (!hadAnyTec && willHaveAny && detailChamado.status === 'Aberto') {
       updates.status = 'Em andamento';
+    }
+    if (hadAnyTec && !willHaveAny) {
+      updates.status = 'Aguardando mão de obra';
     }
     const { data, error } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
     if (error) { toast.error(error.message); return; }
     if (data) setDetailChamado(data);
+    setAssignOpen(false);
     fetchData();
+  };
+
+  const openEditAcao = (a: Acao) => {
+    setEditAcao(a);
+    setEditAcaoDesc(a.descricao);
+    setEditAcaoForn(a.fornecedor_id || 'none');
+    setEditAcaoValor(a.valor != null ? String(a.valor) : '');
+  };
+  const handleSaveEditAcao = async () => {
+    if (!editAcao) return;
+    const valorNum = editAcaoValor ? parseFloat(editAcaoValor.replace(',', '.')) : null;
+    await supabase.from('chamado_acoes').update({
+      descricao: editAcaoDesc.trim().toUpperCase(),
+      fornecedor_id: editAcaoForn === 'none' ? null : editAcaoForn,
+      valor: valorNum,
+    }).eq('id', editAcao.id);
+    setEditAcao(null);
+    if (detailChamado) fetchAcoes(detailChamado.id);
+  };
+  const handleDeleteAcao = async (id: string) => {
+    await supabase.from('chamado_acoes').delete().eq('id', id);
+    if (detailChamado) fetchAcoes(detailChamado.id);
+  };
+  const maskDate = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 8);
+    if (d.length <= 2) return d;
+    if (d.length <= 4) return `${d.slice(0,2)}/${d.slice(2)}`;
+    return `${d.slice(0,2)}/${d.slice(2,4)}/${d.slice(4)}`;
+  };
+  const maskTime = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 4);
+    if (d.length <= 2) return d;
+    return `${d.slice(0,2)}:${d.slice(2)}`;
   };
 
   const formatDateTime = (iso: string | null) => {
