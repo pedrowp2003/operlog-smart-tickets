@@ -684,11 +684,10 @@ export function ChamadosTab() {
                             </SelectContent>
                           </Select>
                           <Input
-                            type="number"
                             inputMode="decimal"
                             placeholder="Valor R$"
                             value={novoValor}
-                            onChange={e => setNovoValor(e.target.value)}
+                            onChange={e => setNovoValor(e.target.value.replace(/[^\d.,]/g, ''))}
                             className="h-8 text-xs"
                           />
                         </div>
