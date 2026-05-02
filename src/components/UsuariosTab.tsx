@@ -18,6 +18,7 @@ export function UsuariosTab() {
   const [detail, setDetail] = useState<Profile | null>(null);
   const [editUser, setEditUser] = useState<Profile | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [filterRole, setFilterRole] = useState<UserRole | 'todos'>('todos');
 
   // Form state
   const [role, setRole] = useState<UserRole | ''>('');
@@ -124,6 +125,8 @@ export function UsuariosTab() {
 
   const roleEmoji = (r: string) => ROLE_LABELS[r as UserRole] || r;
 
+  const usuariosFiltrados = filterRole === 'todos' ? usuarios : usuarios.filter(u => u.role === filterRole);
+
   const editForm = (
     <div className="flex flex-col gap-3">
       <div><Label>Nome de usuário</Label><Input value={username} onChange={e => setUsername(e.target.value)} /></div>
@@ -226,8 +229,21 @@ export function UsuariosTab() {
         </Button>
       </div>
 
+      <div className="flex items-center gap-2">
+        <Label className="text-xs text-muted-foreground">Filtrar por tipo:</Label>
+        <Select value={filterRole} onValueChange={(v) => setFilterRole(v as UserRole | 'todos')}>
+          <SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos</SelectItem>
+            {(Object.keys(ROLE_LABELS) as UserRole[]).map(r => (
+              <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2">
-        {usuarios.map(u => (
+        {usuariosFiltrados.map(u => (
           <Card key={u.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-center" onClick={() => setDetail(u)}>
             {u.foto_url ? (
               <img src={u.foto_url} alt="" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
