@@ -2,7 +2,7 @@ export type UserRole = 'gerente' | 'coordenador' | 'supervisor' | 'tecnico' | 'a
 
 export type SituacaoMaquina = 'Parada' | 'Operando com restrições';
 
-export type StatusChamado = 'Aberto' | 'Em andamento' | 'Aguardando mão de obra' | 'Aguardando peças' | 'Concluído';
+export type StatusChamado = 'Aberto' | 'Agendado' | 'Em andamento' | 'Aguardando mão de obra' | 'Aguardando peças' | 'Concluído';
 
 export type CategoriaChamado =
   | 'Manutenção corretiva'
@@ -31,6 +31,7 @@ export const CATEGORIAS: CategoriaChamado[] = [
 
 export const STATUS_LIST: StatusChamado[] = [
   'Aberto',
+  'Agendado',
   'Em andamento',
   'Aguardando mão de obra',
   'Aguardando peças',
@@ -48,6 +49,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 export function getStatusColor(status: StatusChamado): string {
   switch (status) {
     case 'Aberto': return 'status-open';
+    case 'Agendado': return 'status-scheduled';
     case 'Em andamento': return 'status-progress';
     case 'Aguardando mão de obra': return 'status-waiting';
     case 'Aguardando peças': return 'status-waiting';
@@ -59,6 +61,7 @@ export function getStatusColor(status: StatusChamado): string {
 export function getStatusBgColor(status: StatusChamado): string {
   switch (status) {
     case 'Aberto': return 'bg-status-open';
+    case 'Agendado': return 'bg-status-scheduled';
     case 'Em andamento': return 'bg-status-progress';
     case 'Aguardando mão de obra': return 'bg-status-waiting';
     case 'Aguardando peças': return 'bg-status-waiting';
