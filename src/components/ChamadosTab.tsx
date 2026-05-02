@@ -842,7 +842,6 @@ function TecnicoRow({ profile }: { profile: Profile }) {
         <p className="font-medium break-words">{profile.nome} {profile.sobrenome}</p>
         <p className="text-muted-foreground text-xs">@{profile.username}</p>
         <p className="text-muted-foreground text-xs">{profile.telefone}</p>
-        {profile.area && <p className="text-xs text-primary">Área: {profile.area}</p>}
       </div>
     </div>
   );
