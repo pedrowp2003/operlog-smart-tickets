@@ -757,16 +757,20 @@ export function ChamadosTab() {
         <DialogContent>
           <DialogHeader><DialogTitle>Aceitar Chamado</DialogTitle></DialogHeader>
           <div className="flex flex-col gap-4">
-            <div>
-              <Label>Categoria *</Label>
-              <Select value={categoria} onValueChange={(v) => setCategoria(v as CategoriaChamado)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-xs text-muted-foreground">Ao aceitar, o status irá para "Em andamento" automaticamente.</p>
+            {detailChamado && !detailChamado.tecnico_id && (
+              <>
+                <div>
+                  <Label>Tipo de serviço *</Label>
+                  <Select value={categoria} onValueChange={(v) => setCategoria(v as CategoriaChamado)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">Ao aceitar, o status irá para "Em andamento" automaticamente.</p>
+              </>
+            )}
             <Button onClick={handleAccept}>Aceitar</Button>
           </div>
         </DialogContent>
@@ -779,40 +783,36 @@ export function ChamadosTab() {
           {detailChamado && (
             <div className="flex flex-col gap-4">
               <div>
+                <Label>Tipo de serviço *</Label>
+                <Select value={assignCategoria} onValueChange={(v) => setAssignCategoria(v as CategoriaChamado)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>Técnico principal</Label>
-                <div className="flex gap-2">
-                  <Select value={detailChamado.tecnico_id || 'none'} onValueChange={(v) => handleAssignTecnico(1, v === 'none' ? null : v)}>
-                    <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhum</SelectItem>
-                      {tecnicosLivres(1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {detailChamado.tecnico_id && (
-                    <Button variant="ghost" size="icon" onClick={() => handleAssignTecnico(1, null)}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
+                <Select value={assignTec1} onValueChange={setAssignTec1}>
+                  <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {tecnicosLivres(1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Segundo técnico</Label>
-                <div className="flex gap-2">
-                  <Select value={detailChamado.tecnico2_id || 'none'} onValueChange={(v) => handleAssignTecnico(2, v === 'none' ? null : v)}>
-                    <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhum</SelectItem>
-                      {tecnicosLivres(2).filter(t => t.id !== detailChamado.tecnico_id).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {detailChamado.tecnico2_id && (
-                    <Button variant="ghost" size="icon" onClick={() => handleAssignTecnico(2, null)}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
+                <Select value={assignTec2} onValueChange={setAssignTec2}>
+                  <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {tecnicosLivres(2).filter(t => t.id !== assignTec1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <p className="text-xs text-muted-foreground">Apenas técnicos sem chamados ativos aparecem na lista.</p>
+              <Button onClick={handleSaveAssign}>Salvar</Button>
             </div>
           )}
         </DialogContent>
