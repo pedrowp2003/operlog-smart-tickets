@@ -37,6 +37,7 @@
     --radius: 0.625rem;
 
     --status-open: 210 85% 32%;
+    --status-scheduled: 270 70% 50%;
     --status-progress: 45 100% 45%;
     --status-waiting: 0 80% 50%;
     --status-done: 145 65% 36%;
@@ -97,6 +98,9 @@
   .status-open {
     color: hsl(var(--status-open));
   }
+  .status-scheduled {
+    color: hsl(var(--status-scheduled));
+  }
   .status-progress {
     color: hsl(var(--status-progress));
   }
@@ -108,6 +112,9 @@
   }
   .bg-status-open {
     background-color: hsl(var(--status-open) / 0.1);
+  }
+  .bg-status-scheduled {
+    background-color: hsl(var(--status-scheduled) / 0.1);
   }
   .bg-status-progress {
     background-color: hsl(var(--status-progress) / 0.1);

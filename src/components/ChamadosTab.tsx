@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 
@@ -54,6 +54,14 @@ export function ChamadosTab() {
   const [novoValor, setNovoValor] = useState('');
 
   const [assignOpen, setAssignOpen] = useState(false);
+  const [assignTec1, setAssignTec1] = useState<string>('none');
+  const [assignTec2, setAssignTec2] = useState<string>('none');
+  const [assignCategoria, setAssignCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
+  const [editAcao, setEditAcao] = useState<Acao | null>(null);
+  const [editAcaoDesc, setEditAcaoDesc] = useState('');
+  const [editAcaoForn, setEditAcaoForn] = useState<string>('none');
+  const [editAcaoValor, setEditAcaoValor] = useState('');
+  const [progressoLocal, setProgressoLocal] = useState<number | null>(null);
 
   const [prevDataStr, setPrevDataStr] = useState('');
   const [prevHoraStr, setPrevHoraStr] = useState('');
@@ -88,6 +96,18 @@ export function ChamadosTab() {
     setPrevHoraStr(detailChamado ? toTimeInput(detailChamado.data_prevista_termino) : '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detailChamado?.id, detailChamado?.data_prevista_termino]);
+
+  useEffect(() => {
+    if (detailChamado && assignOpen) {
+      setAssignTec1(detailChamado.tecnico_id || 'none');
+      setAssignTec2(detailChamado.tecnico2_id || 'none');
+      setAssignCategoria((detailChamado.categoria as CategoriaChamado) || 'Manutenção corretiva');
+    }
+  }, [detailChamado?.id, assignOpen]);
+
+  useEffect(() => {
+    setProgressoLocal(detailChamado?.progresso ?? null);
+  }, [detailChamado?.id, detailChamado?.progresso]);
 
   if (!user) return null;
 
@@ -165,24 +185,27 @@ export function ChamadosTab() {
   // Técnico aceita o chamado
   const handleAccept = async () => {
     if (!detailChamado) return;
-    const updates: Partial<Chamado> = { categoria, status: 'Em andamento' };
+    const isSecond = !!(detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id);
+    const updates: Partial<Chamado> = {};
+    if (!isSecond) updates.categoria = categoria;
     if (!detailChamado.tecnico_id) {
       updates.tecnico_id = user.id;
+      updates.status = 'Em andamento';
     } else if (detailChamado.tecnico_id !== user.id && !detailChamado.tecnico2_id) {
       updates.tecnico2_id = user.id;
     } else {
       toast.error('Este chamado já tem dois técnicos');
       return;
     }
-    const { data } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
+    const { data, error } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
+    if (error) { toast.error(error.message); return; }
     if (data) setDetailChamado(data);
     setAcceptOpen(false);
     fetchData();
   };
 
   const canEditChamado = (c: Chamado) => {
-    // Analista só pode alterar quando houver pelo menos um técnico no chamado
-    if (isAnalista) return !!(c.tecnico_id || c.tecnico2_id);
+    if (isAnalista) return true;
     return c.tecnico_id === user.id || c.tecnico2_id === user.id;
   };
 
@@ -214,6 +237,12 @@ export function ChamadosTab() {
   const handleDataPrevistaChange = async (iso: string) => {
     if (!detailChamado || !isAnalista) return;
     if (!canEditChamado(detailChamado)) return;
+    if (iso && detailChamado.data_inicio && new Date(iso) < new Date(detailChamado.data_inicio)) {
+      toast.error('Previsão de término não pode ser anterior à data de início');
+      setPrevDataStr(toDateInput(detailChamado.data_prevista_termino));
+      setPrevHoraStr(toTimeInput(detailChamado.data_prevista_termino));
+      return;
+    }
     const { data } = await supabase.from('chamados').update({ data_prevista_termino: iso || null }).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
@@ -242,19 +271,57 @@ export function ChamadosTab() {
     fetchData();
   };
 
-  const handleAssignTecnico = async (slot: 1 | 2, tecnicoId: string | null) => {
+  const handleSaveAssign = async () => {
     if (!detailChamado || !isAnalista) return;
-    const updates: Partial<Chamado> = {};
-    if (slot === 1) updates.tecnico_id = tecnicoId;
-    if (slot === 2) updates.tecnico2_id = tecnicoId;
-    // se está atribuindo 1º técnico e está aberto, vai para Em andamento
-    if (slot === 1 && tecnicoId && detailChamado.status === 'Aberto') {
+    const t1 = assignTec1 === 'none' ? null : assignTec1;
+    const t2 = assignTec2 === 'none' ? null : assignTec2;
+    const hadAnyTec = !!(detailChamado.tecnico_id || detailChamado.tecnico2_id);
+    const willHaveAny = !!(t1 || t2);
+    const updates: Partial<Chamado> = { tecnico_id: t1, tecnico2_id: t2, categoria: assignCategoria };
+    if (!hadAnyTec && willHaveAny && detailChamado.status === 'Aberto') {
       updates.status = 'Em andamento';
+    }
+    if (hadAnyTec && !willHaveAny) {
+      updates.status = 'Aguardando mão de obra';
     }
     const { data, error } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
     if (error) { toast.error(error.message); return; }
     if (data) setDetailChamado(data);
+    setAssignOpen(false);
     fetchData();
+  };
+
+  const openEditAcao = (a: Acao) => {
+    setEditAcao(a);
+    setEditAcaoDesc(a.descricao);
+    setEditAcaoForn(a.fornecedor_id || 'none');
+    setEditAcaoValor(a.valor != null ? String(a.valor) : '');
+  };
+  const handleSaveEditAcao = async () => {
+    if (!editAcao) return;
+    const valorNum = editAcaoValor ? parseFloat(editAcaoValor.replace(',', '.')) : null;
+    await supabase.from('chamado_acoes').update({
+      descricao: editAcaoDesc.trim().toUpperCase(),
+      fornecedor_id: editAcaoForn === 'none' ? null : editAcaoForn,
+      valor: valorNum,
+    }).eq('id', editAcao.id);
+    setEditAcao(null);
+    if (detailChamado) fetchAcoes(detailChamado.id);
+  };
+  const handleDeleteAcao = async (id: string) => {
+    await supabase.from('chamado_acoes').delete().eq('id', id);
+    if (detailChamado) fetchAcoes(detailChamado.id);
+  };
+  const maskDate = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 8);
+    if (d.length <= 2) return d;
+    if (d.length <= 4) return `${d.slice(0,2)}/${d.slice(2)}`;
+    return `${d.slice(0,2)}/${d.slice(2,4)}/${d.slice(4)}`;
+  };
+  const maskTime = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 4);
+    if (d.length <= 2) return d;
+    return `${d.slice(0,2)}:${d.slice(2)}`;
   };
 
   const formatDateTime = (iso: string | null) => {
@@ -338,6 +405,7 @@ export function ChamadosTab() {
                     <Badge variant="outline" className={`text-xs ${getStatusColor(chamado.status as StatusChamado)} ${getStatusBgColor(chamado.status as StatusChamado)} border-0`}>
                       {chamado.status}
                     </Badge>
+                    <span className="text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
                   </div>
                   {maquina && <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota} ({maquina.marca})</p>}
                   <p className="text-xs text-muted-foreground truncate">{chamado.descricao}</p>
@@ -461,10 +529,16 @@ export function ChamadosTab() {
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">Andamento</span>
-                    <span className="text-xs font-medium">{progresso}%</span>
+                    <span className="text-xs font-medium">{progressoLocal ?? progresso}%</span>
                   </div>
                   {isAnalista && editavel && detailChamado.status !== 'Aberto' && detailChamado.status !== 'Concluído' ? (
-                    <Slider value={[progresso]} onValueChange={(v) => handleProgressoChange(v[0])} max={100} step={5} />
+                    <Slider
+                      value={[progressoLocal ?? progresso]}
+                      onValueChange={(v) => setProgressoLocal(v[0])}
+                      onValueCommit={(v) => handleProgressoChange(v[0])}
+                      max={100}
+                      step={5}
+                    />
                   ) : (
                     <Progress value={progresso} className="h-2" />
                   )}
@@ -502,7 +576,7 @@ export function ChamadosTab() {
                   </div>
 
                   {detailChamado.categoria && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-muted-foreground">Categoria:</span>
                       {editavel ? (
                         <Select value={detailChamado.categoria} onValueChange={(v) => handleCategoriaChange(v as CategoriaChamado)}>
@@ -517,39 +591,43 @@ export function ChamadosTab() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-1 pt-2 border-t border-border items-center">
-                    <span className="text-muted-foreground">Data de Início:</span>
-                    <span>{formatDateTime(dataInicio)}</span>
-                    <span className="text-muted-foreground">Previsão de Término:</span>
-                    {isAnalista && editavel ? (
-                      <div className="flex gap-1">
-                        <Input
-                          value={prevDataStr}
-                          onChange={(e) => setPrevDataStr(e.target.value)}
-                          onBlur={() => {
-                            const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
-                            if (iso) handleDataPrevistaChange(iso);
-                            else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
-                          }}
-                          placeholder="DD/MM/AAAA"
-                          className="h-7 text-xs"
-                          inputMode="numeric"
-                        />
-                        <Input
-                          value={prevHoraStr}
-                          onChange={(e) => setPrevHoraStr(e.target.value)}
-                          onBlur={() => {
-                            const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
-                            if (iso) handleDataPrevistaChange(iso);
-                          }}
-                          placeholder="HH:MM"
-                          className="h-7 text-xs w-20"
-                          inputMode="numeric"
-                        />
-                      </div>
-                    ) : (
-                      <span>{dataPrevista ? formatDateTime(dataPrevista) : <span className="text-muted-foreground text-xs">—</span>}</span>
-                    )}
+                  <div className="pt-2 border-t border-border space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Data de Início:</span>
+                      <span>{formatDateTime(dataInicio)}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className="text-muted-foreground w-full sm:w-auto">Previsão de Término:</span>
+                      {isAnalista && editavel ? (
+                        <div className="flex gap-1 flex-1 min-w-0">
+                          <Input
+                            value={prevDataStr}
+                            onChange={(e) => setPrevDataStr(maskDate(e.target.value))}
+                            onBlur={() => {
+                              const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
+                              if (iso) handleDataPrevistaChange(iso);
+                              else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
+                            }}
+                            placeholder="__/__/____"
+                            className="h-8 text-xs flex-1 min-w-0"
+                            inputMode="numeric"
+                          />
+                          <Input
+                            value={prevHoraStr}
+                            onChange={(e) => setPrevHoraStr(maskTime(e.target.value))}
+                            onBlur={() => {
+                              const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
+                              if (iso) handleDataPrevistaChange(iso);
+                            }}
+                            placeholder="00:00"
+                            className="h-8 text-xs w-16 flex-shrink-0"
+                            inputMode="numeric"
+                          />
+                        </div>
+                      ) : (
+                        <span>{dataPrevista ? formatDateTime(dataPrevista) : '__/__/____ 00:00'}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -606,11 +684,10 @@ export function ChamadosTab() {
                             </SelectContent>
                           </Select>
                           <Input
-                            type="number"
                             inputMode="decimal"
                             placeholder="Valor R$"
                             value={novoValor}
-                            onChange={e => setNovoValor(e.target.value)}
+                            onChange={e => setNovoValor(e.target.value.replace(/[^\d.,]/g, ''))}
                             className="h-8 text-xs"
                           />
                         </div>
@@ -631,13 +708,15 @@ export function ChamadosTab() {
                             <div key={acao.id} className="bg-muted rounded p-2 space-y-1">
                               <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
                               {fornecedor && (
-                                <div className="flex items-center gap-2 pt-1 border-t border-border/40">
+                                <div className="flex items-center gap-3 pt-1 border-t border-border/40">
                                   {fornecedor.foto_url ? (
-                                    <img src={fornecedor.foto_url} alt="" className="w-8 h-8 rounded object-contain bg-background" />
+                                    <img src={fornecedor.foto_url} alt="" className="w-12 h-12 rounded-full object-contain bg-background flex-shrink-0" />
                                   ) : (
-                                    <Package className="w-6 h-6 text-muted-foreground" />
+                                    <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center flex-shrink-0">
+                                      <Package className="w-6 h-6 text-muted-foreground" />
+                                    </div>
                                   )}
-                                  <div className="text-[10px] flex-1 min-w-0">
+                                  <div className="text-xs flex-1 min-w-0">
                                     <p className="font-medium break-words">{fornecedor.nome}</p>
                                     <p className="text-muted-foreground">{formatPhone(fornecedor.telefone)}</p>
                                   </div>
@@ -646,7 +725,19 @@ export function ChamadosTab() {
                               {acao.valor != null && (
                                 <p className="text-[11px] font-medium text-primary">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</p>
                               )}
-                              <p className="text-[10px] text-muted-foreground">{dataFormatada}</p>
+                              <div className="flex items-center justify-between">
+                                <p className="text-[10px] text-muted-foreground">{dataFormatada}</p>
+                                {isAnalista && acao.fornecedor_id && (
+                                  <div className="flex gap-1">
+                                    <Button variant="ghost" size="sm" className="h-6 px-1" onClick={() => openEditAcao(acao)}>
+                                      <Pencil className="w-3 h-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="sm" className="h-6 px-1 text-destructive" onClick={() => handleDeleteAcao(acao.id)}>
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
@@ -665,16 +756,20 @@ export function ChamadosTab() {
         <DialogContent>
           <DialogHeader><DialogTitle>Aceitar Chamado</DialogTitle></DialogHeader>
           <div className="flex flex-col gap-4">
-            <div>
-              <Label>Categoria *</Label>
-              <Select value={categoria} onValueChange={(v) => setCategoria(v as CategoriaChamado)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-xs text-muted-foreground">Ao aceitar, o status irá para "Em andamento" automaticamente.</p>
+            {detailChamado && !detailChamado.tecnico_id && (
+              <>
+                <div>
+                  <Label>Tipo de serviço *</Label>
+                  <Select value={categoria} onValueChange={(v) => setCategoria(v as CategoriaChamado)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">Ao aceitar, o status irá para "Em andamento" automaticamente.</p>
+              </>
+            )}
             <Button onClick={handleAccept}>Aceitar</Button>
           </div>
         </DialogContent>
@@ -687,40 +782,36 @@ export function ChamadosTab() {
           {detailChamado && (
             <div className="flex flex-col gap-4">
               <div>
+                <Label>Tipo de serviço *</Label>
+                <Select value={assignCategoria} onValueChange={(v) => setAssignCategoria(v as CategoriaChamado)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>Técnico principal</Label>
-                <div className="flex gap-2">
-                  <Select value={detailChamado.tecnico_id || 'none'} onValueChange={(v) => handleAssignTecnico(1, v === 'none' ? null : v)}>
-                    <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhum</SelectItem>
-                      {tecnicosLivres(1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {detailChamado.tecnico_id && (
-                    <Button variant="ghost" size="icon" onClick={() => handleAssignTecnico(1, null)}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
+                <Select value={assignTec1} onValueChange={setAssignTec1}>
+                  <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {tecnicosLivres(1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Segundo técnico</Label>
-                <div className="flex gap-2">
-                  <Select value={detailChamado.tecnico2_id || 'none'} onValueChange={(v) => handleAssignTecnico(2, v === 'none' ? null : v)}>
-                    <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhum</SelectItem>
-                      {tecnicosLivres(2).filter(t => t.id !== detailChamado.tecnico_id).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {detailChamado.tecnico2_id && (
-                    <Button variant="ghost" size="icon" onClick={() => handleAssignTecnico(2, null)}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
+                <Select value={assignTec2} onValueChange={setAssignTec2}>
+                  <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {tecnicosLivres(2).filter(t => t.id !== assignTec1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <p className="text-xs text-muted-foreground">Apenas técnicos sem chamados ativos aparecem na lista.</p>
+              <Button onClick={handleSaveAssign}>Salvar</Button>
             </div>
           )}
         </DialogContent>
@@ -732,6 +823,37 @@ export function ChamadosTab() {
           {zoomImg && <img src={zoomImg} alt="" className="w-full h-auto object-contain max-h-[85vh]" />}
         </DialogContent>
       </Dialog>
+
+      {/* Editar ação */}
+      <Dialog open={!!editAcao} onOpenChange={() => setEditAcao(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar ação</DialogTitle></DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Textarea
+              value={editAcaoDesc}
+              onChange={(e) => setEditAcaoDesc(e.target.value.toUpperCase().slice(0, MAX_ACAO))}
+              rows={3}
+              maxLength={MAX_ACAO}
+              style={{ textTransform: 'uppercase' }}
+            />
+            <Select value={editAcaoForn} onValueChange={setEditAcaoForn}>
+              <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sem fornecedor</SelectItem>
+                {fornecedores.map(f => <SelectItem key={f.id} value={f.id}>{f.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Input
+              inputMode="decimal"
+              placeholder="Valor R$"
+              value={editAcaoValor}
+              onChange={(e) => setEditAcaoValor(e.target.value.replace(/[^\d.,]/g, ''))}
+            />
+            <Button onClick={handleSaveEditAcao}>Salvar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
@@ -750,7 +872,6 @@ function TecnicoRow({ profile }: { profile: Profile }) {
         <p className="font-medium break-words">{profile.nome} {profile.sobrenome}</p>
         <p className="text-muted-foreground text-xs">@{profile.username}</p>
         <p className="text-muted-foreground text-xs">{profile.telefone}</p>
-        {profile.area && <p className="text-xs text-primary">Área: {profile.area}</p>}
       </div>
     </div>
   );

@@ -66,7 +66,7 @@ export function FornecedoresTab() {
       foto_url = null;
     }
     const payload = {
-      nome: nome.trim().toUpperCase(),
+      nome: nome.trim(),
       telefone: telefone.replace(/\D/g, '').slice(0, 11),
       descricao: descricao.trim().toUpperCase().slice(0, MAX_DESC),
       foto_url,
@@ -96,7 +96,7 @@ export function FornecedoresTab() {
     <div className="flex flex-col gap-4">
       <div>
         <Label>Nome *</Label>
-        <Input value={nome} onChange={(e) => setNome(e.target.value.toUpperCase())} placeholder="NOME DO FORNECEDOR" style={{ textTransform: 'uppercase' }} />
+        <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome do fornecedor" />
       </div>
       <div>
         <Label>Telefone *</Label>
