@@ -405,6 +405,7 @@ export function ChamadosTab() {
                     <Badge variant="outline" className={`text-xs ${getStatusColor(chamado.status as StatusChamado)} ${getStatusBgColor(chamado.status as StatusChamado)} border-0`}>
                       {chamado.status}
                     </Badge>
+                    <span className="text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
                   </div>
                   {maquina && <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota} ({maquina.marca})</p>}
                   <p className="text-xs text-muted-foreground truncate">{chamado.descricao}</p>
