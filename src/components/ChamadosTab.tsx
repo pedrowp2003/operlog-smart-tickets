@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 
@@ -54,6 +54,14 @@ export function ChamadosTab() {
   const [novoValor, setNovoValor] = useState('');
 
   const [assignOpen, setAssignOpen] = useState(false);
+  const [assignTec1, setAssignTec1] = useState<string>('none');
+  const [assignTec2, setAssignTec2] = useState<string>('none');
+  const [assignCategoria, setAssignCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
+  const [editAcao, setEditAcao] = useState<Acao | null>(null);
+  const [editAcaoDesc, setEditAcaoDesc] = useState('');
+  const [editAcaoForn, setEditAcaoForn] = useState<string>('none');
+  const [editAcaoValor, setEditAcaoValor] = useState('');
+  const [progressoLocal, setProgressoLocal] = useState<number | null>(null);
 
   const [prevDataStr, setPrevDataStr] = useState('');
   const [prevHoraStr, setPrevHoraStr] = useState('');
@@ -88,6 +96,18 @@ export function ChamadosTab() {
     setPrevHoraStr(detailChamado ? toTimeInput(detailChamado.data_prevista_termino) : '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detailChamado?.id, detailChamado?.data_prevista_termino]);
+
+  useEffect(() => {
+    if (detailChamado && assignOpen) {
+      setAssignTec1(detailChamado.tecnico_id || 'none');
+      setAssignTec2(detailChamado.tecnico2_id || 'none');
+      setAssignCategoria((detailChamado.categoria as CategoriaChamado) || 'Manutenção corretiva');
+    }
+  }, [detailChamado?.id, assignOpen]);
+
+  useEffect(() => {
+    setProgressoLocal(detailChamado?.progresso ?? null);
+  }, [detailChamado?.id, detailChamado?.progresso]);
 
   if (!user) return null;
 
