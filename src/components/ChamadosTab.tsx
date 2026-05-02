@@ -185,24 +185,27 @@ export function ChamadosTab() {
   // Técnico aceita o chamado
   const handleAccept = async () => {
     if (!detailChamado) return;
-    const updates: Partial<Chamado> = { categoria, status: 'Em andamento' };
+    const isSecond = !!(detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id);
+    const updates: Partial<Chamado> = {};
+    if (!isSecond) updates.categoria = categoria;
     if (!detailChamado.tecnico_id) {
       updates.tecnico_id = user.id;
+      updates.status = 'Em andamento';
     } else if (detailChamado.tecnico_id !== user.id && !detailChamado.tecnico2_id) {
       updates.tecnico2_id = user.id;
     } else {
       toast.error('Este chamado já tem dois técnicos');
       return;
     }
-    const { data } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
+    const { data, error } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
+    if (error) { toast.error(error.message); return; }
     if (data) setDetailChamado(data);
     setAcceptOpen(false);
     fetchData();
   };
 
   const canEditChamado = (c: Chamado) => {
-    // Analista só pode alterar quando houver pelo menos um técnico no chamado
-    if (isAnalista) return !!(c.tecnico_id || c.tecnico2_id);
+    if (isAnalista) return true;
     return c.tecnico_id === user.id || c.tecnico2_id === user.id;
   };
 
