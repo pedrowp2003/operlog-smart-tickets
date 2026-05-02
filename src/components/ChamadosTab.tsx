@@ -854,12 +854,6 @@ export function ChamadosTab() {
         </DialogContent>
       </Dialog>
 
-      {/* dummy to close earlier dialog block */}
-      <Dialog open={false} onOpenChange={() => {}}>
-        <DialogContent className="max-w-4xl p-2">
-          {zoomImg && <img src={zoomImg} alt="" className="w-full h-auto object-contain max-h-[85vh]" />}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
