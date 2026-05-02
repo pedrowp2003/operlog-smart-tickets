@@ -529,10 +529,16 @@ export function ChamadosTab() {
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">Andamento</span>
-                    <span className="text-xs font-medium">{progresso}%</span>
+                    <span className="text-xs font-medium">{progressoLocal ?? progresso}%</span>
                   </div>
                   {isAnalista && editavel && detailChamado.status !== 'Aberto' && detailChamado.status !== 'Concluído' ? (
-                    <Slider value={[progresso]} onValueChange={(v) => handleProgressoChange(v[0])} max={100} step={5} />
+                    <Slider
+                      value={[progressoLocal ?? progresso]}
+                      onValueChange={(v) => setProgressoLocal(v[0])}
+                      onValueCommit={(v) => handleProgressoChange(v[0])}
+                      max={100}
+                      step={5}
+                    />
                   ) : (
                     <Progress value={progresso} className="h-2" />
                   )}
@@ -570,7 +576,7 @@ export function ChamadosTab() {
                   </div>
 
                   {detailChamado.categoria && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-muted-foreground">Categoria:</span>
                       {editavel ? (
                         <Select value={detailChamado.categoria} onValueChange={(v) => handleCategoriaChange(v as CategoriaChamado)}>
@@ -585,39 +591,43 @@ export function ChamadosTab() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-1 pt-2 border-t border-border items-center">
-                    <span className="text-muted-foreground">Data de Início:</span>
-                    <span>{formatDateTime(dataInicio)}</span>
-                    <span className="text-muted-foreground">Previsão de Término:</span>
-                    {isAnalista && editavel ? (
-                      <div className="flex gap-1">
-                        <Input
-                          value={prevDataStr}
-                          onChange={(e) => setPrevDataStr(e.target.value)}
-                          onBlur={() => {
-                            const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
-                            if (iso) handleDataPrevistaChange(iso);
-                            else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
-                          }}
-                          placeholder="DD/MM/AAAA"
-                          className="h-7 text-xs"
-                          inputMode="numeric"
-                        />
-                        <Input
-                          value={prevHoraStr}
-                          onChange={(e) => setPrevHoraStr(e.target.value)}
-                          onBlur={() => {
-                            const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
-                            if (iso) handleDataPrevistaChange(iso);
-                          }}
-                          placeholder="HH:MM"
-                          className="h-7 text-xs w-20"
-                          inputMode="numeric"
-                        />
-                      </div>
-                    ) : (
-                      <span>{dataPrevista ? formatDateTime(dataPrevista) : <span className="text-muted-foreground text-xs">—</span>}</span>
-                    )}
+                  <div className="pt-2 border-t border-border space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Data de Início:</span>
+                      <span>{formatDateTime(dataInicio)}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className="text-muted-foreground w-full sm:w-auto">Previsão de Término:</span>
+                      {isAnalista && editavel ? (
+                        <div className="flex gap-1 flex-1 min-w-0">
+                          <Input
+                            value={prevDataStr}
+                            onChange={(e) => setPrevDataStr(maskDate(e.target.value))}
+                            onBlur={() => {
+                              const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
+                              if (iso) handleDataPrevistaChange(iso);
+                              else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
+                            }}
+                            placeholder="__/__/____"
+                            className="h-8 text-xs flex-1 min-w-0"
+                            inputMode="numeric"
+                          />
+                          <Input
+                            value={prevHoraStr}
+                            onChange={(e) => setPrevHoraStr(maskTime(e.target.value))}
+                            onBlur={() => {
+                              const iso = combineDateTime(prevDataStr, prevHoraStr || '00:00');
+                              if (iso) handleDataPrevistaChange(iso);
+                            }}
+                            placeholder="00:00"
+                            className="h-8 text-xs w-16 flex-shrink-0"
+                            inputMode="numeric"
+                          />
+                        </div>
+                      ) : (
+                        <span>{dataPrevista ? formatDateTime(dataPrevista) : '__/__/____ 00:00'}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
