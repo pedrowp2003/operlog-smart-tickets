@@ -789,15 +789,17 @@ export function ChamadosTab() {
           <DialogHeader><DialogTitle>Gerenciar técnicos</DialogTitle></DialogHeader>
           {detailChamado && (
             <div className="flex flex-col gap-4">
-              <div>
-                <Label>Tipo de serviço *</Label>
-                <Select value={assignCategoria} onValueChange={(v) => setAssignCategoria(v as CategoriaChamado)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!detailChamado.categoria && (
+                <div>
+                  <Label>Tipo de serviço *</Label>
+                  <Select value={assignCategoria} onValueChange={(v) => setAssignCategoria(v as CategoriaChamado)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <Label>Técnico principal</Label>
                 <Select value={assignTec1} onValueChange={setAssignTec1}>
