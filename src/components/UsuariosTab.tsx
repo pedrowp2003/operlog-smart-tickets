@@ -273,10 +273,12 @@ export function UsuariosTab() {
               <p className="text-xs text-primary">{roleEmoji(u.role)}</p>
             </div>
             <div className="flex gap-1 flex-shrink-0">
-              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEdit(u); }}>
-                <Pencil className="w-4 h-4" />
-              </Button>
-              {u.id !== user.id && (
+              {!(user.role === 'analista' && u.role === 'analista' && u.id !== user.id) && (
+                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEdit(u); }}>
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              )}
+              {u.id !== user.id && !(user.role === 'analista' && u.role === 'analista') && (
                 <Button variant="ghost" size="sm" className="text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(u.id); }}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
