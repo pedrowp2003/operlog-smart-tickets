@@ -35,6 +35,7 @@ export function ChamadosTab() {
   const [createOpen, setCreateOpen] = useState(false);
   const [detailChamado, setDetailChamado] = useState<Chamado | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [showFornecedores, setShowFornecedores] = useState(false);
   const [meusChamados, setMeusChamados] = useState(false);
 
   const [descricao, setDescricao] = useState('');
