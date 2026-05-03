@@ -638,10 +638,6 @@ export function ChamadosTab() {
                     <User className="w-4 h-4 mr-1" /> Dados do Chamado
                     {showInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setShowFornecedores(!showFornecedores)}>
-                    <Package className="w-4 h-4 mr-1" /> Fornecedores
-                    {showFornecedores ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
-                  </Button>
                   {podeAceitar && (
                     <Button size="sm" onClick={() => {
                       if (detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id) {
@@ -670,6 +666,39 @@ export function ChamadosTab() {
                     )}
                   </div>
                 )}
+
+                {showInfo && (() => {
+                  const ids = Array.from(new Set(acoes.map(a => a.fornecedor_id).filter(Boolean) as string[]));
+                  const list = ids.map(id => getFornecedor(id)).filter(Boolean) as Fornecedor[];
+                  return (
+                    <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
+                      <p className="text-sm font-medium flex items-center gap-1">
+                        <Package className="w-4 h-4" /> Fornecedores
+                      </p>
+                      {list.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Nenhum fornecedor envolvido</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {list.map(f => (
+                            <div key={f.id} className="flex items-center gap-3">
+                              {f.foto_url ? (
+                                <img src={f.foto_url} alt="" className="w-12 h-12 rounded-full object-contain bg-muted flex-shrink-0" />
+                              ) : (
+                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                  <Package className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="text-sm flex-1 min-w-0">
+                                <p className="font-medium break-words">{f.nome}</p>
+                                <p className="text-muted-foreground text-xs">{formatPhone(f.telefone)}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {showInfo && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
@@ -721,12 +750,15 @@ export function ChamadosTab() {
                             <div key={acao.id} className="bg-muted rounded p-2 space-y-1">
                               <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
                               {fornecedor && (
-                                <p className="text-xs pt-1 border-t border-border/40 flex items-center gap-2">
+                                <div className="text-xs pt-1 border-t border-border/40 flex items-center gap-2">
                                   <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                  <span className="font-medium break-words">{fornecedor.nome}</span>
-                                </p>
+                                  <span className="font-medium break-words flex-1 min-w-0">{fornecedor.nome}</span>
+                                  {acao.valor != null && (
+                                    <span className="text-[11px] font-medium text-primary flex-shrink-0">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</span>
+                                  )}
+                                </div>
                               )}
-                              {acao.valor != null && (
+                              {!fornecedor && acao.valor != null && (
                                 <p className="text-[11px] font-medium text-primary">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</p>
                               )}
                               <div className="flex items-center justify-between">
@@ -750,38 +782,6 @@ export function ChamadosTab() {
                   </div>
                 )}
 
-                {showFornecedores && (() => {
-                  const ids = Array.from(new Set(acoes.map(a => a.fornecedor_id).filter(Boolean) as string[]));
-                  const list = ids.map(id => getFornecedor(id)).filter(Boolean) as Fornecedor[];
-                  return (
-                    <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
-                      <p className="text-sm font-medium flex items-center gap-1">
-                        <Package className="w-4 h-4" /> Fornecedores
-                      </p>
-                      {list.length === 0 ? (
-                        <p className="text-xs text-muted-foreground">Nenhum fornecedor envolvido</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {list.map(f => (
-                            <div key={f.id} className="flex items-center gap-3">
-                              {f.foto_url ? (
-                                <img src={f.foto_url} alt="" className="w-12 h-12 rounded-full object-contain bg-muted flex-shrink-0" />
-                              ) : (
-                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                                  <Package className="w-6 h-6 text-muted-foreground" />
-                                </div>
-                              )}
-                              <div className="text-sm flex-1 min-w-0">
-                                <p className="font-medium break-words">{f.nome}</p>
-                                <p className="text-muted-foreground text-xs">{formatPhone(f.telefone)}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
               </>
             );
           })()}
