@@ -50,6 +50,10 @@ export function UsuariosTab() {
   };
 
   const openEdit = (u: Profile) => {
+    if (user?.role === 'analista' && u.role === 'analista' && u.id !== user.id) {
+      toast.error('Analistas não podem editar outras contas de analista');
+      return;
+    }
     setRole(u.role as UserRole);
     setUsername(u.username);
     setEmail(u.email);
@@ -66,6 +70,11 @@ export function UsuariosTab() {
 
   const handleDelete = async (id: string) => {
     if (id === user.id) { toast.error('Você não pode excluir seu próprio usuário'); return; }
+    const target = usuarios.find(u => u.id === id);
+    if (user.role === 'analista' && target?.role === 'analista') {
+      toast.error('Analistas não podem excluir outras contas de analista');
+      return;
+    }
     await supabase.from('profiles').delete().eq('id', id);
     setDetail(null);
     fetch();
@@ -98,6 +107,10 @@ export function UsuariosTab() {
   const handleCreate = async () => {
     if (!role || !username.trim() || !email.trim() || !password.trim() || !telefone.trim()) {
       toast.error('Preencha todos os campos obrigatórios'); return;
+    }
+    if (user.role === 'analista' && role === 'analista') {
+      toast.error('Analistas não podem cadastrar outras contas de analista');
+      return;
     }
     if (password.length < 8) { toast.error('Senha mínima de 8 dígitos'); return; }
     let foto_url: string | undefined;
