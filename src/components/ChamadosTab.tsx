@@ -403,7 +403,8 @@ export function ChamadosTab() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-muted-foreground">{chamado.numero}</span>
                     <Badge variant="outline" className={`text-xs ${getStatusColor(chamado.status as StatusChamado)} ${getStatusBgColor(chamado.status as StatusChamado)} border-0`}>
-                      {chamado.status}
+                      <span className="sm:hidden">{chamado.status.replace(/^Aguardando/, 'Ag')}</span>
+                      <span className="hidden sm:inline">{chamado.status}</span>
                     </Badge>
                     <span className="text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
                   </div>
