@@ -638,7 +638,14 @@ export function ChamadosTab() {
                     {showInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
                   </Button>
                   {podeAceitar && (
-                    <Button size="sm" onClick={() => setAcceptOpen(true)}>Aceitar Chamado</Button>
+                    <Button size="sm" onClick={() => {
+                      if (detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id) {
+                        // Segundo técnico aceita direto, sem janela
+                        handleAccept();
+                      } else {
+                        setAcceptOpen(true);
+                      }
+                    }}>Aceitar Chamado</Button>
                   )}
                   {isAnalista && (
                     <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
