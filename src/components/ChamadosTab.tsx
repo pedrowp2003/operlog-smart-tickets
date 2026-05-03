@@ -638,6 +638,10 @@ export function ChamadosTab() {
                     <User className="w-4 h-4 mr-1" /> Dados do Chamado
                     {showInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
                   </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowFornecedores(!showFornecedores)}>
+                    <Package className="w-4 h-4 mr-1" /> Fornecedores
+                    {showFornecedores ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
+                  </Button>
                   {podeAceitar && (
                     <Button size="sm" onClick={() => {
                       if (detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id) {
