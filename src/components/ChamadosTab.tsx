@@ -35,6 +35,7 @@ export function ChamadosTab() {
   const [createOpen, setCreateOpen] = useState(false);
   const [detailChamado, setDetailChamado] = useState<Chamado | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [showFornecedores, setShowFornecedores] = useState(false);
   const [meusChamados, setMeusChamados] = useState(false);
 
   const [descricao, setDescricao] = useState('');
@@ -403,7 +404,8 @@ export function ChamadosTab() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-muted-foreground">{chamado.numero}</span>
                     <Badge variant="outline" className={`text-xs ${getStatusColor(chamado.status as StatusChamado)} ${getStatusBgColor(chamado.status as StatusChamado)} border-0`}>
-                      {chamado.status}
+                      <span className="sm:hidden">{chamado.status.replace(/^Aguardando/, 'Ag')}</span>
+                      <span className="hidden sm:inline">{chamado.status}</span>
                     </Badge>
                     <span className="text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
                   </div>
@@ -490,7 +492,7 @@ export function ChamadosTab() {
       </Dialog>
 
       {/* Detail */}
-      <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowInfo(false); }}>
+      <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowInfo(false); setShowFornecedores(false); }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto overflow-x-hidden">
           {detailChamado && (() => {
             const maquina = getMaquina(detailChamado.maquina_id);
@@ -599,7 +601,7 @@ export function ChamadosTab() {
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="text-muted-foreground w-full sm:w-auto">Previsão de Término:</span>
                       {isAnalista && editavel ? (
-                        <div className="flex gap-1 flex-1 min-w-0">
+                        <div className="flex gap-1 items-center flex-shrink-0">
                           <Input
                             value={prevDataStr}
                             onChange={(e) => setPrevDataStr(maskDate(e.target.value))}
@@ -609,7 +611,7 @@ export function ChamadosTab() {
                               else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
                             }}
                             placeholder="__/__/____"
-                            className="h-8 text-xs flex-1 min-w-0"
+                            className="h-8 text-xs w-[110px] flex-shrink-0"
                             inputMode="numeric"
                           />
                           <Input
@@ -620,7 +622,7 @@ export function ChamadosTab() {
                               if (iso) handleDataPrevistaChange(iso);
                             }}
                             placeholder="00:00"
-                            className="h-8 text-xs w-16 flex-shrink-0"
+                            className="h-8 text-xs w-[64px] flex-shrink-0"
                             inputMode="numeric"
                           />
                         </div>
@@ -636,8 +638,19 @@ export function ChamadosTab() {
                     <User className="w-4 h-4 mr-1" /> Dados do Chamado
                     {showInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
                   </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowFornecedores(!showFornecedores)}>
+                    <Package className="w-4 h-4 mr-1" /> Fornecedores
+                    {showFornecedores ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
+                  </Button>
                   {podeAceitar && (
-                    <Button size="sm" onClick={() => setAcceptOpen(true)}>Aceitar Chamado</Button>
+                    <Button size="sm" onClick={() => {
+                      if (detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id) {
+                        // Segundo técnico aceita direto, sem janela
+                        handleAccept();
+                      } else {
+                        setAcceptOpen(true);
+                      }
+                    }}>Aceitar Chamado</Button>
                   )}
                   {isAnalista && (
                     <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
@@ -708,19 +721,10 @@ export function ChamadosTab() {
                             <div key={acao.id} className="bg-muted rounded p-2 space-y-1">
                               <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
                               {fornecedor && (
-                                <div className="flex items-center gap-3 pt-1 border-t border-border/40">
-                                  {fornecedor.foto_url ? (
-                                    <img src={fornecedor.foto_url} alt="" className="w-12 h-12 rounded-full object-contain bg-background flex-shrink-0" />
-                                  ) : (
-                                    <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center flex-shrink-0">
-                                      <Package className="w-6 h-6 text-muted-foreground" />
-                                    </div>
-                                  )}
-                                  <div className="text-xs flex-1 min-w-0">
-                                    <p className="font-medium break-words">{fornecedor.nome}</p>
-                                    <p className="text-muted-foreground">{formatPhone(fornecedor.telefone)}</p>
-                                  </div>
-                                </div>
+                                <p className="text-xs pt-1 border-t border-border/40 flex items-center gap-2">
+                                  <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                                  <span className="font-medium break-words">{fornecedor.nome}</span>
+                                </p>
                               )}
                               {acao.valor != null && (
                                 <p className="text-[11px] font-medium text-primary">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</p>
@@ -745,6 +749,39 @@ export function ChamadosTab() {
                     )}
                   </div>
                 )}
+
+                {showFornecedores && (() => {
+                  const ids = Array.from(new Set(acoes.map(a => a.fornecedor_id).filter(Boolean) as string[]));
+                  const list = ids.map(id => getFornecedor(id)).filter(Boolean) as Fornecedor[];
+                  return (
+                    <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
+                      <p className="text-sm font-medium flex items-center gap-1">
+                        <Package className="w-4 h-4" /> Fornecedores
+                      </p>
+                      {list.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Nenhum fornecedor envolvido</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {list.map(f => (
+                            <div key={f.id} className="flex items-center gap-3">
+                              {f.foto_url ? (
+                                <img src={f.foto_url} alt="" className="w-12 h-12 rounded-full object-contain bg-muted flex-shrink-0" />
+                              ) : (
+                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                  <Package className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="text-sm flex-1 min-w-0">
+                                <p className="font-medium break-words">{f.nome}</p>
+                                <p className="text-muted-foreground text-xs">{formatPhone(f.telefone)}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </>
             );
           })()}
@@ -781,15 +818,17 @@ export function ChamadosTab() {
           <DialogHeader><DialogTitle>Gerenciar técnicos</DialogTitle></DialogHeader>
           {detailChamado && (
             <div className="flex flex-col gap-4">
-              <div>
-                <Label>Tipo de serviço *</Label>
-                <Select value={assignCategoria} onValueChange={(v) => setAssignCategoria(v as CategoriaChamado)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!detailChamado.categoria && (
+                <div>
+                  <Label>Tipo de serviço *</Label>
+                  <Select value={assignCategoria} onValueChange={(v) => setAssignCategoria(v as CategoriaChamado)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <Label>Técnico principal</Label>
                 <Select value={assignTec1} onValueChange={setAssignTec1}>
@@ -871,7 +910,7 @@ function TecnicoRow({ profile }: { profile: Profile }) {
       <div className="text-sm flex-1 min-w-0">
         <p className="font-medium break-words">{profile.nome} {profile.sobrenome}</p>
         <p className="text-muted-foreground text-xs">@{profile.username}</p>
-        <p className="text-muted-foreground text-xs">{profile.telefone}</p>
+        <p className="text-muted-foreground text-xs">{formatPhone(profile.telefone)}</p>
       </div>
     </div>
   );

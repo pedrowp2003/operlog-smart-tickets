@@ -50,6 +50,10 @@ export function UsuariosTab() {
   };
 
   const openEdit = (u: Profile) => {
+    if (user?.role === 'analista' && u.role === 'analista' && u.id !== user.id) {
+      toast.error('Analistas não podem editar outras contas de analista');
+      return;
+    }
     setRole(u.role as UserRole);
     setUsername(u.username);
     setEmail(u.email);
@@ -66,6 +70,11 @@ export function UsuariosTab() {
 
   const handleDelete = async (id: string) => {
     if (id === user.id) { toast.error('Você não pode excluir seu próprio usuário'); return; }
+    const target = usuarios.find(u => u.id === id);
+    if (user.role === 'analista' && target?.role === 'analista') {
+      toast.error('Analistas não podem excluir outras contas de analista');
+      return;
+    }
     await supabase.from('profiles').delete().eq('id', id);
     setDetail(null);
     fetch();
@@ -98,6 +107,10 @@ export function UsuariosTab() {
   const handleCreate = async () => {
     if (!role || !username.trim() || !email.trim() || !password.trim() || !telefone.trim()) {
       toast.error('Preencha todos os campos obrigatórios'); return;
+    }
+    if (user.role === 'analista' && role === 'analista') {
+      toast.error('Analistas não podem cadastrar outras contas de analista');
+      return;
     }
     if (password.length < 8) { toast.error('Senha mínima de 8 dígitos'); return; }
     let foto_url: string | undefined;
@@ -174,7 +187,9 @@ export function UsuariosTab() {
         <Select value={role} onValueChange={(v) => { setRole(v as UserRole); setUnidade(''); setArmazem(''); setArea(''); }}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
           <SelectContent>
-            {(Object.keys(ROLE_LABELS) as UserRole[]).map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}
+            {(Object.keys(ROLE_LABELS) as UserRole[])
+              .filter(r => !(user?.role === 'analista' && r === 'analista'))
+              .map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -258,10 +273,12 @@ export function UsuariosTab() {
               <p className="text-xs text-primary">{roleEmoji(u.role)}</p>
             </div>
             <div className="flex gap-1 flex-shrink-0">
-              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEdit(u); }}>
-                <Pencil className="w-4 h-4" />
-              </Button>
-              {u.id !== user.id && (
+              {!(user.role === 'analista' && u.role === 'analista' && u.id !== user.id) && (
+                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEdit(u); }}>
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              )}
+              {u.id !== user.id && !(user.role === 'analista' && u.role === 'analista') && (
                 <Button variant="ghost" size="sm" className="text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(u.id); }}>
                   <Trash2 className="w-4 h-4" />
                 </Button>

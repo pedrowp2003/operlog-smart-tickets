@@ -204,8 +204,8 @@ export function MaquinasTab() {
         <h2 className="text-lg font-bold text-foreground">Máquinas</h2>
         <div className="flex gap-2">
           {canManageCategorias && (
-            <Button variant="outline" size="sm" onClick={() => setCategoriasOpen(true)}>
-              <Settings className="w-4 h-4 mr-1" /> Alterar categorias
+            <Button variant="outline" size="sm" onClick={() => setCategoriasOpen(true)} aria-label="Alterar categorias" title="Alterar categorias">
+              <Settings className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Alterar categorias</span>
             </Button>
           )}
           {canCreate && (
