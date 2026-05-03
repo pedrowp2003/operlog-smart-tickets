@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Plus, Trash2, Pencil, Package } from 'lucide-react';
 import { formatPhone } from '@/types';
+import { toast } from 'sonner';
 
 type Fornecedor = Tables<'fornecedores'>;
 
@@ -58,6 +59,14 @@ export function FornecedoresTab() {
 
   const handleSave = async () => {
     if (!nome.trim() || !telefone.trim()) return;
+    const dupe = fornecedores.some(f =>
+      f.nome.trim().toLowerCase() === nome.trim().toLowerCase() &&
+      (!editFornecedor || f.id !== editFornecedor.id)
+    );
+    if (dupe) {
+      toast.error('Fornecedor já cadastrado com esse nome');
+      return;
+    }
     let foto_url = editFornecedor?.foto_url || null;
     if (fotoFile) {
       const url = await uploadImage(fotoFile, 'fornecedores');
