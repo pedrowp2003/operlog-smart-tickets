@@ -881,7 +881,7 @@ function TecnicoRow({ profile }: { profile: Profile }) {
       <div className="text-sm flex-1 min-w-0">
         <p className="font-medium break-words">{profile.nome} {profile.sobrenome}</p>
         <p className="text-muted-foreground text-xs">@{profile.username}</p>
-        <p className="text-muted-foreground text-xs">{profile.telefone}</p>
+        <p className="text-muted-foreground text-xs">{formatPhone(profile.telefone)}</p>
       </div>
     </div>
   );
