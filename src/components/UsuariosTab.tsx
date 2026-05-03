@@ -187,7 +187,9 @@ export function UsuariosTab() {
         <Select value={role} onValueChange={(v) => { setRole(v as UserRole); setUnidade(''); setArmazem(''); setArea(''); }}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
           <SelectContent>
-            {(Object.keys(ROLE_LABELS) as UserRole[]).map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}
+            {(Object.keys(ROLE_LABELS) as UserRole[])
+              .filter(r => !(user?.role === 'analista' && r === 'analista'))
+              .map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
