@@ -716,19 +716,10 @@ export function ChamadosTab() {
                             <div key={acao.id} className="bg-muted rounded p-2 space-y-1">
                               <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
                               {fornecedor && (
-                                <div className="flex items-center gap-3 pt-1 border-t border-border/40">
-                                  {fornecedor.foto_url ? (
-                                    <img src={fornecedor.foto_url} alt="" className="w-12 h-12 rounded-full object-contain bg-background flex-shrink-0" />
-                                  ) : (
-                                    <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center flex-shrink-0">
-                                      <Package className="w-6 h-6 text-muted-foreground" />
-                                    </div>
-                                  )}
-                                  <div className="text-xs flex-1 min-w-0">
-                                    <p className="font-medium break-words">{fornecedor.nome}</p>
-                                    <p className="text-muted-foreground">{formatPhone(fornecedor.telefone)}</p>
-                                  </div>
-                                </div>
+                                <p className="text-xs pt-1 border-t border-border/40 flex items-center gap-2">
+                                  <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                                  <span className="font-medium break-words">{fornecedor.nome}</span>
+                                </p>
                               )}
                               {acao.valor != null && (
                                 <p className="text-[11px] font-medium text-primary">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</p>
