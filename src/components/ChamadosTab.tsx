@@ -600,7 +600,7 @@ export function ChamadosTab() {
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="text-muted-foreground w-full sm:w-auto">Previsão de Término:</span>
                       {isAnalista && editavel ? (
-                        <div className="flex gap-1 flex-1 min-w-0">
+                        <div className="flex gap-1 items-center flex-shrink-0">
                           <Input
                             value={prevDataStr}
                             onChange={(e) => setPrevDataStr(maskDate(e.target.value))}
@@ -610,7 +610,7 @@ export function ChamadosTab() {
                               else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
                             }}
                             placeholder="__/__/____"
-                            className="h-8 text-xs flex-1 min-w-0"
+                            className="h-8 text-xs w-[110px] flex-shrink-0"
                             inputMode="numeric"
                           />
                           <Input
@@ -621,7 +621,7 @@ export function ChamadosTab() {
                               if (iso) handleDataPrevistaChange(iso);
                             }}
                             placeholder="00:00"
-                            className="h-8 text-xs w-16 flex-shrink-0"
+                            className="h-8 text-xs w-[64px] flex-shrink-0"
                             inputMode="numeric"
                           />
                         </div>
