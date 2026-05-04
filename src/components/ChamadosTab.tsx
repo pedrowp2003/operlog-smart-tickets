@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 
@@ -404,20 +404,23 @@ export function ChamadosTab() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-muted-foreground">{chamado.numero}</span>
                     <Badge variant="outline" className={`text-xs ${getStatusColor(chamado.status as StatusChamado)} ${getStatusBgColor(chamado.status as StatusChamado)} border-0`}>
-                      <span className="sm:hidden">{chamado.status.replace(/^Aguardando/, 'Ag')}</span>
+                      <span className="sm:hidden">{chamado.status.replace(/^Aguardando/, 'Ag.')}</span>
                       <span className="hidden sm:inline">{chamado.status}</span>
                     </Badge>
-                    <span className="text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
+                    <span className="hidden sm:inline text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
                   </div>
                   {maquina && <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota} ({maquina.marca})</p>}
                   <p className="text-xs text-muted-foreground truncate">{chamado.descricao}</p>
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
-                {canDelete && (
-                  <Button variant="ghost" size="sm" className="text-destructive flex-shrink-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  {canDelete && (
+                    <Button variant="ghost" size="sm" className="text-destructive h-7 w-7 p-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <span className="sm:hidden text-xs font-medium text-primary">{chamado.progresso ?? 0}%</span>
+                </div>
               </Card>
             );
           })}
