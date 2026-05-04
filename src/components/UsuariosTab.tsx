@@ -261,7 +261,7 @@ export function UsuariosTab() {
         {usuariosFiltrados.map(u => (
           <Card key={u.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-center" onClick={() => setDetail(u)}>
             {u.foto_url ? (
-              <img src={u.foto_url} alt="" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+              <img src={u.foto_url} alt="" width={56} height={56} loading="lazy" decoding="async" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
             ) : (
               <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                 <UserIcon className="w-6 h-6 text-muted-foreground" />
