@@ -79,7 +79,7 @@ export default function Dashboard() {
 
       <main className="max-w-4xl mx-auto px-4 py-4">
         <Tabs defaultValue="chamados" className="w-full">
-          <TabsList className="w-full grid grid-cols-4 mb-4">
+          <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 h-auto mb-4">
             <TabsTrigger value="chamados" className="gap-1 px-1 text-xs sm:text-sm sm:gap-1.5 sm:px-3">
               <ClipboardList className="w-4 h-4 shrink-0" /> <span className="truncate">Chamados</span>
             </TabsTrigger>
