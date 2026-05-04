@@ -394,7 +394,7 @@ export function ChamadosTab() {
             return (
               <Card key={chamado.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailChamado(chamado)}>
                 {maquina?.foto_url ? (
-                  <img src={maquina.foto_url} alt="" className="w-16 h-16 rounded object-cover flex-shrink-0" />
+                  <img src={maquina.foto_url} alt="" width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-16 h-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
                     <Wrench className="w-6 h-6 text-muted-foreground" />
@@ -689,7 +689,7 @@ export function ChamadosTab() {
                           {list.map(f => (
                             <div key={f.id} className="flex items-center gap-2">
                               {f.foto_url ? (
-                                <img src={f.foto_url} alt="" className="w-10 h-10 rounded-full object-contain bg-muted flex-shrink-0" />
+                                <img src={f.foto_url} alt="" width={40} height={40} loading="lazy" decoding="async" className="w-10 h-10 rounded-full object-contain bg-muted flex-shrink-0" />
                               ) : (
                                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                                   <Package className="w-5 h-5 text-muted-foreground" />
@@ -908,7 +908,7 @@ function TecnicoRow({ profile }: { profile: Profile }) {
   return (
     <div className="flex gap-2 items-center w-full min-w-0">
       {profile.foto_url ? (
-        <img src={profile.foto_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+        <img src={profile.foto_url} alt="" width={40} height={40} loading="lazy" decoding="async" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
       ) : (
         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
           <User className="w-5 h-5 text-muted-foreground" />

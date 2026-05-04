@@ -148,7 +148,7 @@ export function FornecedoresTab() {
           {fornecedores.map(f => (
             <Card key={f.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailFornecedor(f)}>
               {f.foto_url ? (
-                <img src={f.foto_url} alt="" className="w-16 h-16 rounded object-contain bg-muted flex-shrink-0" />
+                <img src={f.foto_url} alt="" width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 rounded object-contain bg-muted flex-shrink-0" />
               ) : (
                 <div className="w-16 h-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
                   <Package className="w-6 h-6 text-muted-foreground" />
