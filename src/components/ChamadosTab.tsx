@@ -429,7 +429,7 @@ export function ChamadosTab() {
 
       {/* Create */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Novo Chamado</DialogTitle></DialogHeader>
           <div className="flex flex-col gap-4">
             <div>
@@ -496,7 +496,7 @@ export function ChamadosTab() {
 
       {/* Detail */}
       <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowInfo(false); setShowFornecedores(false); }}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto overflow-x-hidden">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
           {detailChamado && (() => {
             const maquina = getMaquina(detailChamado.maquina_id);
             const tecnico = getProfile(detailChamado.tecnico_id);
@@ -656,7 +656,7 @@ export function ChamadosTab() {
                 </div>
 
                 {showInfo && (
-                  <div className="border border-border rounded-lg p-3 mt-2 space-y-2 overflow-hidden w-full">
+                  <div className="border border-border rounded-lg p-3 mt-2 space-y-2 w-full">
                     <p className="text-sm font-medium flex items-center gap-1">
                       <Hammer className="w-4 h-4 flex-shrink-0" /> Técnicos atribuídos
                     </p>
@@ -675,12 +675,12 @@ export function ChamadosTab() {
                   const ids = Array.from(new Set(acoes.map(a => a.fornecedor_id).filter(Boolean) as string[]));
                   const list = ids.map(id => getFornecedor(id)).filter(Boolean) as Fornecedor[];
                   return (
-                    <div className="border border-border rounded-lg p-3 mt-2 space-y-2 overflow-hidden w-full">
+                    <div className="border border-border rounded-lg p-3 mt-2 space-y-2 w-full">
                       <p className="text-sm font-medium flex items-center gap-1">
                         <Package className="w-4 h-4 flex-shrink-0" /> Fornecedores
                       </p>
                       {list.length === 0 ? (
-                        <p className="text-xs text-muted-foreground">Nenhum fornecedor envolvido</p>
+                        <p className="text-sm text-muted-foreground">Nenhum fornecedor envolvido</p>
                       ) : (
                         <div className="space-y-2">
                           {list.map(f => (
@@ -705,7 +705,7 @@ export function ChamadosTab() {
                 })()}
 
                 {showInfo && (
-                  <div className="border border-border rounded-lg p-3 mt-2 space-y-2 overflow-hidden w-full">
+                  <div className="border border-border rounded-lg p-3 mt-2 space-y-2 w-full">
                     <p className="text-sm font-medium flex items-center gap-1">
                       <ClipboardList className="w-4 h-4 flex-shrink-0" /> Ações realizadas
                     </p>
