@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 
@@ -404,20 +404,23 @@ export function ChamadosTab() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-muted-foreground">{chamado.numero}</span>
                     <Badge variant="outline" className={`text-xs ${getStatusColor(chamado.status as StatusChamado)} ${getStatusBgColor(chamado.status as StatusChamado)} border-0`}>
-                      <span className="sm:hidden">{chamado.status.replace(/^Aguardando/, 'Ag')}</span>
+                      <span className="sm:hidden">{chamado.status.replace(/^Aguardando/, 'Ag.')}</span>
                       <span className="hidden sm:inline">{chamado.status}</span>
                     </Badge>
-                    <span className="text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
+                    <span className="hidden sm:inline text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
                   </div>
                   {maquina && <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota} ({maquina.marca})</p>}
                   <p className="text-xs text-muted-foreground truncate">{chamado.descricao}</p>
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
-                {canDelete && (
-                  <Button variant="ghost" size="sm" className="text-destructive flex-shrink-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  {canDelete && (
+                    <Button variant="ghost" size="sm" className="text-destructive h-7 w-7 p-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <span className="sm:hidden text-xs font-medium text-primary">{chamado.progresso ?? 0}%</span>
+                </div>
               </Card>
             );
           })}
@@ -598,10 +601,10 @@ export function ChamadosTab() {
                       <span className="text-muted-foreground">Data de Início:</span>
                       <span>{formatDateTime(dataInicio)}</span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="text-muted-foreground w-full sm:w-auto">Previsão de Término:</span>
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <span className="text-muted-foreground flex-shrink-0">Previsão de Término:</span>
                       {isAnalista && editavel ? (
-                        <div className="flex gap-1 items-center flex-shrink-0">
+                        <div className="flex gap-1 items-center flex-shrink-0 ml-auto">
                           <Input
                             value={prevDataStr}
                             onChange={(e) => setPrevDataStr(maskDate(e.target.value))}
@@ -627,21 +630,16 @@ export function ChamadosTab() {
                           />
                         </div>
                       ) : (
-                        <span>{dataPrevista ? formatDateTime(dataPrevista) : '__/__/____ 00:00'}</span>
+                        <span className="ml-auto">{dataPrevista ? formatDateTime(dataPrevista) : '__/__/____ 00:00'}</span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 flex-wrap pt-2">
-                  <Button variant="outline" size="sm" onClick={() => setShowInfo(!showInfo)}>
-                    <User className="w-4 h-4 mr-1" /> Dados do Chamado
-                    {showInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
-                  </Button>
+                <div className="flex gap-2 flex-wrap pt-2 flex-col sm:flex-row">
                   {podeAceitar && (
-                    <Button size="sm" onClick={() => {
+                    <Button size="sm" className="order-1 sm:order-2" onClick={() => {
                       if (detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id) {
-                        // Segundo técnico aceita direto, sem janela
                         handleAccept();
                       } else {
                         setAcceptOpen(true);
@@ -649,13 +647,19 @@ export function ChamadosTab() {
                     }}>Aceitar Chamado</Button>
                   )}
                   {isAnalista && (
-                    <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
+                    <Button size="sm" variant="outline" className="order-1 sm:order-3" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
                   )}
+                  <Button variant="outline" size="sm" className="order-2 sm:order-1" onClick={() => setShowInfo(!showInfo)}>
+                    <User className="w-4 h-4 mr-1" /> Dados do Chamado
+                    {showInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
+                  </Button>
                 </div>
 
                 {showInfo && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
-                    <p className="text-sm font-medium">Técnicos atribuídos</p>
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      <Hammer className="w-4 h-4" /> Técnicos atribuídos
+                    </p>
                     {!tecnico && !tecnico2 ? (
                       <p className="text-sm text-muted-foreground">Nenhum técnico atribuído</p>
                     ) : (
