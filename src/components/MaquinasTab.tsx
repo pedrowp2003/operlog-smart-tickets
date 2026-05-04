@@ -252,14 +252,14 @@ export function MaquinasTab() {
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Nova Máquina</DialogTitle></DialogHeader>
           {formContent}
         </DialogContent>
       </Dialog>
 
       <Dialog open={!!editMaquina} onOpenChange={() => { setEditMaquina(null); resetForm(); }}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Editar Máquina</DialogTitle></DialogHeader>
           {formContent}
         </DialogContent>
