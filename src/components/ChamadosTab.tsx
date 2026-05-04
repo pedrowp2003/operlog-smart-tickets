@@ -903,18 +903,18 @@ export function ChamadosTab() {
 
 function TecnicoRow({ profile }: { profile: Profile }) {
   return (
-    <div className="flex gap-3 items-center">
+    <div className="flex gap-2 items-center w-full min-w-0">
       {profile.foto_url ? (
-        <img src={profile.foto_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+        <img src={profile.foto_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
       ) : (
-        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-          <User className="w-6 h-6 text-muted-foreground" />
+        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+          <User className="w-5 h-5 text-muted-foreground" />
         </div>
       )}
       <div className="text-sm flex-1 min-w-0">
-        <p className="font-medium break-words">{profile.nome} {profile.sobrenome}</p>
-        <p className="text-muted-foreground text-xs">@{profile.username}</p>
-        <p className="text-muted-foreground text-xs">{formatPhone(profile.telefone)}</p>
+        <p className="font-medium break-words leading-tight">{profile.nome} {profile.sobrenome}</p>
+        <p className="text-muted-foreground text-xs break-all">@{profile.username}</p>
+        <p className="text-muted-foreground text-xs break-all">{formatPhone(profile.telefone)}</p>
       </div>
     </div>
   );
