@@ -223,7 +223,7 @@ export function MaquinasTab() {
           {visibleMaquinas.map(m => (
             <Card key={m.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailMaquina(m)}>
               {m.foto_url ? (
-                <img src={m.foto_url} alt="" className="w-16 h-16 rounded object-cover flex-shrink-0" />
+                <img src={m.foto_url} alt="" width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover flex-shrink-0" />
               ) : (
                 <div className="w-16 h-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
                   <Wrench className="w-6 h-6 text-muted-foreground" />
