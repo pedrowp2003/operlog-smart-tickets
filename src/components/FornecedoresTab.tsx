@@ -175,14 +175,14 @@ export function FornecedoresTab() {
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Novo Fornecedor</DialogTitle></DialogHeader>
           {formContent}
         </DialogContent>
       </Dialog>
 
       <Dialog open={!!editFornecedor} onOpenChange={() => { setEditFornecedor(null); resetForm(); }}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Editar Fornecedor</DialogTitle></DialogHeader>
           {formContent}
         </DialogContent>
