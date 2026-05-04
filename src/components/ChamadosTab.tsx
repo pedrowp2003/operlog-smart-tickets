@@ -569,7 +569,7 @@ export function ChamadosTab() {
                         <span className="text-muted-foreground">Tipo de serviço:</span>
                         {editavel ? (
                           <Select value={detailChamado.categoria} onValueChange={(v) => handleCategoriaChange(v as CategoriaChamado)}>
-                            <SelectTrigger className="w-auto h-7 text-xs"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-auto h-8 text-sm"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                             </SelectContent>
@@ -641,7 +641,7 @@ export function ChamadosTab() {
 
                 <div className="flex gap-2 flex-wrap pt-2 sm:flex-row">
                   {podeAceitar && (
-                    <Button size="sm" className="order-1 sm:order-2 px-3 text-xs sm:text-sm" onClick={() => {
+                    <Button size="sm" className="order-1 sm:order-2 px-3 text-sm" onClick={() => {
                       if (detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id) {
                         handleAccept();
                       } else {
@@ -650,9 +650,9 @@ export function ChamadosTab() {
                     }}>Aceitar Chamado</Button>
                   )}
                   {isAnalista && (
-                    <Button size="sm" variant="outline" className="order-1 sm:order-3 px-3 text-xs sm:text-sm" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
+                    <Button size="sm" variant="outline" className="order-1 sm:order-3 px-3 text-sm" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
                   )}
-                  <Button variant="outline" size="sm" className="order-2 sm:order-1 px-3 text-xs sm:text-sm" onClick={() => setShowInfo(!showInfo)}>
+                  <Button variant="outline" size="sm" className="order-2 sm:order-1 px-3 text-sm" onClick={() => setShowInfo(!showInfo)}>
                     <User className="w-3.5 h-3.5 mr-1" /> Dados do Chamado
                     {showInfo ? <ChevronDown className="w-3.5 h-3.5 ml-1" /> : <ChevronUp className="w-3.5 h-3.5 ml-1" />}
                   </Button>
