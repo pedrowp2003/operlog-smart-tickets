@@ -564,6 +564,21 @@ export function ChamadosTab() {
                     <p className="text-muted-foreground">Situação: <span className="text-foreground">{detailChamado.situacao_maquina}</span></p>
                     <p className="text-muted-foreground">Descrição:</p>
                     <p className="break-words whitespace-pre-wrap">{detailChamado.descricao}</p>
+                    {detailChamado.categoria && (
+                      <div className="flex items-center gap-2 flex-wrap mt-2">
+                        <span className="text-muted-foreground">Tipo de serviço:</span>
+                        {editavel ? (
+                          <Select value={detailChamado.categoria} onValueChange={(v) => handleCategoriaChange(v as CategoriaChamado)}>
+                            <SelectTrigger className="w-auto h-7 text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <span>{detailChamado.categoria}</span>
+                        )}
+                      </div>
+                    )}
                     {detailChamado.codigo_erro && (
                       <p className="mt-2"><span className="text-muted-foreground">Código de erro: </span><span className="font-semibold">{detailChamado.codigo_erro}</span></p>
                     )}
@@ -574,27 +589,15 @@ export function ChamadosTab() {
                           src={detailChamado.foto_defeito_url}
                           alt="Defeito"
                           className="w-full rounded-lg object-contain max-h-64 cursor-zoom-in border border-border"
+                          loading="eager"
+                          decoding="async"
+                          // @ts-ignore
+                          fetchpriority="high"
                           onClick={() => setZoomImg(detailChamado.foto_defeito_url!)}
                         />
                       </div>
                     )}
                   </div>
-
-                  {detailChamado.categoria && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-muted-foreground">Categoria:</span>
-                      {editavel ? (
-                        <Select value={detailChamado.categoria} onValueChange={(v) => handleCategoriaChange(v as CategoriaChamado)}>
-                          <SelectTrigger className="w-auto h-7 text-xs"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <span>{detailChamado.categoria}</span>
-                      )}
-                    </div>
-                  )}
 
                   <div className="pt-2 border-t border-border space-y-2">
                     <div className="flex justify-between items-center text-sm">
@@ -636,9 +639,9 @@ export function ChamadosTab() {
                   </div>
                 </div>
 
-                <div className="flex gap-2 flex-wrap pt-2 flex-col sm:flex-row">
+                <div className="flex gap-2 flex-wrap pt-2 sm:flex-row">
                   {podeAceitar && (
-                    <Button size="sm" className="order-1 sm:order-2" onClick={() => {
+                    <Button size="sm" className="order-1 sm:order-2 px-3 text-xs sm:text-sm" onClick={() => {
                       if (detailChamado.tecnico_id && detailChamado.tecnico_id !== user.id) {
                         handleAccept();
                       } else {
@@ -647,11 +650,11 @@ export function ChamadosTab() {
                     }}>Aceitar Chamado</Button>
                   )}
                   {isAnalista && (
-                    <Button size="sm" variant="outline" className="order-1 sm:order-3" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
+                    <Button size="sm" variant="outline" className="order-1 sm:order-3 px-3 text-xs sm:text-sm" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
                   )}
-                  <Button variant="outline" size="sm" className="order-2 sm:order-1" onClick={() => setShowInfo(!showInfo)}>
-                    <User className="w-4 h-4 mr-1" /> Dados do Chamado
-                    {showInfo ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronUp className="w-4 h-4 ml-1" />}
+                  <Button variant="outline" size="sm" className="order-2 sm:order-1 px-3 text-xs sm:text-sm" onClick={() => setShowInfo(!showInfo)}>
+                    <User className="w-3.5 h-3.5 mr-1" /> Dados do Chamado
+                    {showInfo ? <ChevronDown className="w-3.5 h-3.5 ml-1" /> : <ChevronUp className="w-3.5 h-3.5 ml-1" />}
                   </Button>
                 </div>
 
