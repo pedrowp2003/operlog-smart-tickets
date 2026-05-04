@@ -656,9 +656,9 @@ export function ChamadosTab() {
                 </div>
 
                 {showInfo && (
-                  <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
+                  <div className="border border-border rounded-lg p-3 mt-2 space-y-2 overflow-hidden w-full">
                     <p className="text-sm font-medium flex items-center gap-1">
-                      <Hammer className="w-4 h-4" /> Técnicos atribuídos
+                      <Hammer className="w-4 h-4 flex-shrink-0" /> Técnicos atribuídos
                     </p>
                     {!tecnico && !tecnico2 ? (
                       <p className="text-sm text-muted-foreground">Nenhum técnico atribuído</p>
@@ -675,21 +675,21 @@ export function ChamadosTab() {
                   const ids = Array.from(new Set(acoes.map(a => a.fornecedor_id).filter(Boolean) as string[]));
                   const list = ids.map(id => getFornecedor(id)).filter(Boolean) as Fornecedor[];
                   return (
-                    <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
+                    <div className="border border-border rounded-lg p-3 mt-2 space-y-2 overflow-hidden w-full">
                       <p className="text-sm font-medium flex items-center gap-1">
-                        <Package className="w-4 h-4" /> Fornecedores
+                        <Package className="w-4 h-4 flex-shrink-0" /> Fornecedores
                       </p>
                       {list.length === 0 ? (
                         <p className="text-xs text-muted-foreground">Nenhum fornecedor envolvido</p>
                       ) : (
                         <div className="space-y-2">
                           {list.map(f => (
-                            <div key={f.id} className="flex items-center gap-3">
+                            <div key={f.id} className="flex items-center gap-2">
                               {f.foto_url ? (
-                                <img src={f.foto_url} alt="" className="w-12 h-12 rounded-full object-contain bg-muted flex-shrink-0" />
+                                <img src={f.foto_url} alt="" className="w-10 h-10 rounded-full object-contain bg-muted flex-shrink-0" />
                               ) : (
-                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                                  <Package className="w-6 h-6 text-muted-foreground" />
+                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                  <Package className="w-5 h-5 text-muted-foreground" />
                                 </div>
                               )}
                               <div className="text-sm flex-1 min-w-0">
@@ -705,9 +705,9 @@ export function ChamadosTab() {
                 })()}
 
                 {showInfo && (
-                  <div className="border border-border rounded-lg p-3 mt-2 space-y-3 overflow-hidden">
-                    <p className="text-sm font-medium flex items-center gap-1 mb-2">
-                      <ClipboardList className="w-4 h-4" /> Ações realizadas
+                  <div className="border border-border rounded-lg p-3 mt-2 space-y-2 overflow-hidden w-full">
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      <ClipboardList className="w-4 h-4 flex-shrink-0" /> Ações realizadas
                     </p>
                     {editavel && (
                       <div className="space-y-2 mb-2">
@@ -721,7 +721,7 @@ export function ChamadosTab() {
                           style={{ textTransform: 'uppercase' }}
                         />
                         <span className="text-[10px] text-muted-foreground">{novaAcao.length}/{MAX_ACAO}</span>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <Select value={novoFornId} onValueChange={setNovoFornId}>
                             <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Fornecedor (opcional)" /></SelectTrigger>
                             <SelectContent>
@@ -754,21 +754,21 @@ export function ChamadosTab() {
                             <div key={acao.id} className="bg-muted rounded p-2 space-y-1">
                               <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
                               {fornecedor && (
-                                <div className="text-xs pt-1 border-t border-border/40 flex items-center gap-2">
+                                <div className="text-xs pt-1 border-t border-border/40 flex items-center gap-2 flex-wrap">
                                   <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                  <span className="font-medium break-words flex-1 min-w-0">{fornecedor.nome}</span>
+                                  <span className="font-medium break-all flex-1 min-w-0">{fornecedor.nome}</span>
                                   {acao.valor != null && (
-                                    <span className="text-[11px] font-medium text-primary flex-shrink-0">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</span>
+                                    <span className="text-[11px] font-medium text-primary flex-shrink-0 ml-auto">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</span>
                                   )}
                                 </div>
                               )}
                               {!fornecedor && acao.valor != null && (
                                 <p className="text-[11px] font-medium text-primary">R$ {Number(acao.valor).toFixed(2).replace('.', ',')}</p>
                               )}
-                              <div className="flex items-center justify-between">
-                                <p className="text-[10px] text-muted-foreground">{dataFormatada}</p>
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <p className="text-[10px] text-muted-foreground break-all">{dataFormatada}</p>
                                 {isAnalista && acao.fornecedor_id && (
-                                  <div className="flex gap-1">
+                                  <div className="flex gap-1 ml-auto">
                                     <Button variant="ghost" size="sm" className="h-6 px-1" onClick={() => openEditAcao(acao)}>
                                       <Pencil className="w-3 h-3" />
                                     </Button>
@@ -903,18 +903,18 @@ export function ChamadosTab() {
 
 function TecnicoRow({ profile }: { profile: Profile }) {
   return (
-    <div className="flex gap-3 items-center">
+    <div className="flex gap-2 items-center w-full min-w-0">
       {profile.foto_url ? (
-        <img src={profile.foto_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+        <img src={profile.foto_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
       ) : (
-        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-          <User className="w-6 h-6 text-muted-foreground" />
+        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+          <User className="w-5 h-5 text-muted-foreground" />
         </div>
       )}
       <div className="text-sm flex-1 min-w-0">
-        <p className="font-medium break-words">{profile.nome} {profile.sobrenome}</p>
-        <p className="text-muted-foreground text-xs">@{profile.username}</p>
-        <p className="text-muted-foreground text-xs">{formatPhone(profile.telefone)}</p>
+        <p className="font-medium break-words leading-tight">{profile.nome} {profile.sobrenome}</p>
+        <p className="text-muted-foreground text-xs break-all">@{profile.username}</p>
+        <p className="text-muted-foreground text-xs break-all">{formatPhone(profile.telefone)}</p>
       </div>
     </div>
   );
