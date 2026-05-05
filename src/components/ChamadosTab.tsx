@@ -686,6 +686,7 @@ export function ChamadosTab() {
                               )}
                               <div className="text-sm flex-1 min-w-0">
                                 <p className="font-medium break-words">{f.nome}</p>
+                                <p className="text-muted-foreground text-xs break-words">{(f as any).natureza}</p>
                                 <p className="text-muted-foreground text-xs">{formatPhone(f.telefone)}</p>
                               </div>
                             </div>
