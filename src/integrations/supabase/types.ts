@@ -144,6 +144,7 @@ export type Database = {
           descricao: string
           foto_url: string | null
           id: string
+          natureza: string
           nome: string
           telefone: string
           updated_at: string
@@ -153,6 +154,7 @@ export type Database = {
           descricao?: string
           foto_url?: string | null
           id?: string
+          natureza?: string
           nome: string
           telefone: string
           updated_at?: string
@@ -162,6 +164,7 @@ export type Database = {
           descricao?: string
           foto_url?: string | null
           id?: string
+          natureza?: string
           nome?: string
           telefone?: string
           updated_at?: string
