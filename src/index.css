@@ -126,9 +126,3 @@
     background-color: hsl(var(--status-done) / 0.1);
   }
 }
-
-@media (min-width: 768px) {
-  .desktop-zoom-2x {
-    zoom: 2;
-  }
-}
