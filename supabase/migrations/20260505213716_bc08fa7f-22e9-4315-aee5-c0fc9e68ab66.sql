@@ -1,0 +1,1 @@
+UPDATE chamados SET descricao = 'PNEU DIANTEIRO ESQUERDO FURADO' WHERE id = 'bd161496-52df-4783-84e6-8c3c1dec48db';
