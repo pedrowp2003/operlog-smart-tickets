@@ -846,7 +846,6 @@ export function ChamadosTab() {
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-xs text-muted-foreground">Apenas técnicos sem chamados ativos aparecem na lista.</p>
               <Button onClick={handleSaveAssign}>Salvar</Button>
             </div>
           )}
