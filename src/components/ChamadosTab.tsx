@@ -402,9 +402,9 @@ export function ChamadosTab() {
                   <p className="text-xs text-muted-foreground truncate">{chamado.descricao}</p>
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
-                <div className="flex flex-col items-center gap-1 flex-shrink-0 -mr-2 sm:mr-0">
+                <div className="flex flex-col items-center gap-1 flex-shrink-0 -mr-3 sm:mr-0">
                   {canDelete && (
-                    <Button variant="ghost" size="sm" className="text-destructive" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
+                    <Button variant="ghost" size="sm" className="text-destructive h-8 w-8 p-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   )}
