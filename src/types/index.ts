@@ -20,6 +20,9 @@ export const FROTAS = ['EP-03', 'EP-17', 'EP-39', 'EP-387'] as const;
 export const MARCAS = ['Yale', 'Still', 'Hyster', 'Linde'] as const;
 export const MODELOS = ['GTP050', 'H55XM', 'R17', 'R1.6H'] as const;
 
+export const NATUREZAS = ['Tornearia', 'Hidráulica', 'Solda', 'Eletrônica', 'Serv. Concessionária'] as const;
+export type NaturezaFornecedor = typeof NATUREZAS[number];
+
 export const CATEGORIAS: CategoriaChamado[] = [
   'Manutenção corretiva',
   'Manutenção preditiva',

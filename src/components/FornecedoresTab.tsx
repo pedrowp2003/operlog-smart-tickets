@@ -7,15 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Plus, Trash2, Pencil, Package } from 'lucide-react';
-import { formatPhone } from '@/types';
+import { formatPhone, NATUREZAS, NaturezaFornecedor } from '@/types';
 import { toast } from 'sonner';
 
 type Fornecedor = Tables<'fornecedores'>;
-
-const MAX_DESC = 300;
 
 export function FornecedoresTab() {
   const { user, uploadImage } = useAuth();
@@ -26,7 +24,7 @@ export function FornecedoresTab() {
 
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [descricao, setDescricao] = useState('');
+  const [natureza, setNatureza] = useState<NaturezaFornecedor>('Tornearia');
   const [fotoPreview, setFotoPreview] = useState<string | undefined>();
   const [fotoFile, setFotoFile] = useState<File | null>(null);
 
@@ -41,12 +39,12 @@ export function FornecedoresTab() {
 
   const canManage = user.role === 'analista';
 
-  const resetForm = () => { setNome(''); setTelefone(''); setDescricao(''); setFotoPreview(undefined); setFotoFile(null); };
+  const resetForm = () => { setNome(''); setTelefone(''); setNatureza('Tornearia'); setFotoPreview(undefined); setFotoFile(null); };
 
   const openEdit = (f: Fornecedor) => {
     setNome(f.nome);
     setTelefone(f.telefone);
-    setDescricao(f.descricao);
+    setNatureza(((f as any).natureza as NaturezaFornecedor) || 'Tornearia');
     setFotoPreview(f.foto_url || undefined);
     setFotoFile(null);
     setEditFornecedor(f);
@@ -77,9 +75,10 @@ export function FornecedoresTab() {
     const payload = {
       nome: nome.trim(),
       telefone: telefone.replace(/\D/g, '').slice(0, 11),
-      descricao: descricao.trim().toUpperCase().slice(0, MAX_DESC),
+      descricao: '',
+      natureza,
       foto_url,
-    };
+    } as any;
     if (editFornecedor) {
       await supabase.from('fornecedores').update(payload).eq('id', editFornecedor.id);
       setEditFornecedor(null);
@@ -112,15 +111,13 @@ export function FornecedoresTab() {
         <Input value={formatPhone(telefone)} onChange={handleTelefone} placeholder="(XX) XXXXX-XXXX" inputMode="numeric" />
       </div>
       <div>
-        <Label>Descrição ({descricao.length}/{MAX_DESC})</Label>
-        <Textarea
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value.toUpperCase().slice(0, MAX_DESC))}
-          rows={3}
-          maxLength={MAX_DESC}
-          style={{ textTransform: 'uppercase' }}
-          placeholder="DESCRIÇÃO DO FORNECEDOR..."
-        />
+        <Label>Natureza da atividade *</Label>
+        <Select value={natureza} onValueChange={(v) => setNatureza(v as NaturezaFornecedor)}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {NATUREZAS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <Label>Logo</Label>
@@ -157,7 +154,7 @@ export function FornecedoresTab() {
               <div className="flex-1 min-w-0 text-sm">
                 <p className="font-medium break-words">{f.nome}</p>
                 <p className="text-muted-foreground">{formatPhone(f.telefone)}</p>
-                {f.descricao && <p className="text-xs text-muted-foreground break-words line-clamp-2">{f.descricao}</p>}
+                {(f as any).natureza && <p className="text-xs text-muted-foreground break-words">{(f as any).natureza}</p>}
               </div>
               {canManage && (
                 <div className="flex gap-1 flex-shrink-0">
@@ -203,11 +200,8 @@ export function FornecedoresTab() {
                 )}
                 <div className="text-sm space-y-1 w-full">
                   <p><span className="text-muted-foreground">Telefone:</span> {formatPhone(detailFornecedor.telefone)}</p>
-                  {detailFornecedor.descricao && (
-                    <div>
-                      <p className="text-muted-foreground">Descrição:</p>
-                      <p className="break-words whitespace-pre-wrap">{detailFornecedor.descricao}</p>
-                    </div>
+                  {(detailFornecedor as any).natureza && (
+                    <p><span className="text-muted-foreground">Natureza da atividade:</span> {(detailFornecedor as any).natureza}</p>
                   )}
                 </div>
               </div>
