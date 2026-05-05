@@ -355,19 +355,8 @@ export function ChamadosTab() {
 
   const selectedMaquinaForCreate = maquinaId ? getMaquina(maquinaId) : null;
 
-  // Técnicos disponíveis para atribuição (não estão atrelados a outros chamados não-concluídos)
-  const tecnicosLivres = (excluindoSlot?: 1 | 2): Profile[] => {
-    const ocupadosIds = new Set<string>();
-    chamados.forEach(c => {
-      if (c.id === detailChamado?.id) return;
-      if (c.status === 'Concluído') return;
-      if (c.tecnico_id) ocupadosIds.add(c.tecnico_id);
-      if (c.tecnico2_id) ocupadosIds.add(c.tecnico2_id);
-    });
-    // permitir manter o atual do slot
-    const currentId = detailChamado ? (excluindoSlot === 1 ? detailChamado.tecnico_id : detailChamado.tecnico2_id) : null;
-    return tecnicos.filter(t => !ocupadosIds.has(t.id) || t.id === currentId);
-  };
+  // Técnicos podem ser atrelados a múltiplos chamados simultaneamente
+  const tecnicosLivres = (_excluindoSlot?: 1 | 2): Profile[] => tecnicos;
 
   return (
     <div className="space-y-4">
