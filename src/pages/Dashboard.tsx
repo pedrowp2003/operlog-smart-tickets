@@ -33,7 +33,7 @@ export default function Dashboard() {
   const isAnalista = user.role === 'analista';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background desktop-zoom-2x">
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
