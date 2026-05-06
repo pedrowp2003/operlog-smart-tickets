@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
-import { Plus, Trash2, Pencil, Wrench, Settings, X } from 'lucide-react';
+import { Plus, Trash2, Pencil, Wrench, Settings, X, Filter, Search } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 
 type Maquina = Tables<'maquinas'>;
@@ -28,6 +29,12 @@ export function MaquinasTab() {
   const [categoriasOpen, setCategoriasOpen] = useState(false);
   const [novaUnidade, setNovaUnidade] = useState('');
   const [novoArmazem, setNovoArmazem] = useState('');
+  const [filterTipo, setFilterTipo] = useState('todos');
+  const [filterFrota, setFilterFrota] = useState('todos');
+  const [filterMarca, setFilterMarca] = useState('todos');
+  const [filterModelo, setFilterModelo] = useState('todos');
+  const [filterLocal, setFilterLocal] = useState('todos');
+  const [search, setSearch] = useState('');
 
   const [tipo, setTipo] = useState('');
   const [frota, setFrota] = useState('');
@@ -70,6 +77,23 @@ export function MaquinasTab() {
     if (user.role === 'coordenador') return m.unidade === user.unidade;
     if (user.role === 'supervisor') return m.armazem === user.armazem;
     return false;
+  });
+
+  const maquinasFiltradas = visibleMaquinas.filter(m => {
+    if (filterTipo !== 'todos' && m.tipo !== filterTipo) return false;
+    if (filterFrota !== 'todos' && m.frota !== filterFrota) return false;
+    if (filterMarca !== 'todos' && m.marca !== filterMarca) return false;
+    if (filterModelo !== 'todos' && m.modelo !== filterModelo) return false;
+    if (filterLocal !== 'todos') {
+      if (filterLocal.startsWith('u:') && m.unidade !== filterLocal.slice(2)) return false;
+      if (filterLocal.startsWith('a:') && m.armazem !== filterLocal.slice(2)) return false;
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const full = `${m.tipo} ${m.frota} ${m.marca} ${m.modelo} ${m.unidade || ''} ${m.armazem || ''}`.toLowerCase();
+      if (!full.includes(q)) return false;
+    }
+    return true;
   });
 
   const resetForm = () => { setTipo(''); setFrota(''); setMarca(''); setModelo(''); setUnidade(''); setArmazem(''); setFotoPreview(undefined); setFotoFile(null); };
@@ -202,25 +226,69 @@ export function MaquinasTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Máquinas</h2>
-        <div className="flex gap-2">
+        <div className="flex gap-1 items-center">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Filtrar"><Filter className="w-4 h-4" /></Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-64 space-y-2">
+              <div><Label className="text-xs">Tipo</Label>
+                <Select value={filterTipo} onValueChange={setFilterTipo}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{TIPOS_MAQUINA.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Frota</Label>
+                <Select value={filterFrota} onValueChange={setFilterFrota}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{FROTAS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Marca</Label>
+                <Select value={filterMarca} onValueChange={setFilterMarca}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{MARCAS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Modelo</Label>
+                <Select value={filterModelo} onValueChange={setFilterModelo}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{MODELOS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Unidade / Armazém</Label>
+                <Select value={filterLocal} onValueChange={setFilterLocal}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {UNIDADES_NAMES.map(u => <SelectItem key={`u-${u}`} value={`u:${u}`}>{u}</SelectItem>)}
+                    {ARMAZENS_NAMES.map(a => <SelectItem key={`a-${a}`} value={`a:${a}`}>{a}</SelectItem>)}
+                  </SelectContent>
+                </Select></div>
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Pesquisar"><Search className="w-4 h-4" /></Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56">
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar máquina..." className="h-8 text-xs" />
+            </PopoverContent>
+          </Popover>
           {canManageCategorias && (
             <Button variant="outline" size="sm" onClick={() => setCategoriasOpen(true)} aria-label="Alterar categorias" title="Alterar categorias">
-              <Settings className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Alterar categorias</span>
+              <Settings className="w-4 h-4 sm:mr-1" /> <span className="hidden lg:inline">Alterar categorias</span>
             </Button>
           )}
           {canCreate && (
             <Button size="sm" onClick={openCreate}>
-              <Plus className="w-4 h-4 mr-1" /> Nova Máquina
+              <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Nova Máquina</span>
             </Button>
           )}
         </div>
       </div>
 
-      {visibleMaquinas.length === 0 ? (
+      {maquinasFiltradas.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhuma máquina cadastrada</p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {visibleMaquinas.map(m => (
+          {maquinasFiltradas.map(m => (
             <Card key={m.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailMaquina(m)}>
               {m.foto_url ? (
                 <img src={m.foto_url} alt="" width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover flex-shrink-0" />

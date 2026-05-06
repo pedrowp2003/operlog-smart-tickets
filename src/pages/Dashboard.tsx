@@ -8,7 +8,7 @@ import { TecnicosTab } from '@/components/TecnicosTab';
 import { UsuariosTab } from '@/components/UsuariosTab';
 import { FornecedoresTab } from '@/components/FornecedoresTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipboardList, Wrench, Users, Package, Bell, Medal, Hammer, ClipboardCheck } from 'lucide-react';
+import { ClipboardList, Wrench, Users, Package, Bell, Medal, Hammer, ClipboardCheck, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -43,7 +43,18 @@ export default function Dashboard() {
           <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Chat interno">
+                  <MessageSquare className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64">
+                <p className="text-sm font-medium mb-1">Chat interno</p>
+                <p className="text-xs text-muted-foreground">Em breve você poderá conversar com sua equipe aqui.</p>
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative lg:hidden">
                   <Bell className="w-4 h-4" />
                 </Button>
               </PopoverTrigger>
@@ -77,7 +88,21 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-4">
+      {/* Desktop side panels */}
+      <aside className="hidden lg:flex fixed left-0 top-14 bottom-0 w-60 border-r border-border bg-card flex-col p-4 gap-2 z-40">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <MessageSquare className="w-4 h-4" /> Chat interno
+        </div>
+        <p className="text-xs text-muted-foreground">Em breve novas funções aparecerão aqui.</p>
+      </aside>
+      <aside className="hidden lg:flex fixed right-0 top-14 bottom-0 w-60 border-l border-border bg-card flex-col p-4 gap-2 z-40">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Bell className="w-4 h-4" /> Notificações
+        </div>
+        <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
+      </aside>
+
+      <main className="max-w-4xl mx-auto px-4 py-4 lg:px-8 lg:ml-60 lg:mr-60 lg:max-w-none">
         <Tabs defaultValue="chamados" className="w-full">
           <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 h-auto mb-4">
             <TabsTrigger value="chamados" className="gap-1 px-1 text-xs sm:text-sm sm:gap-1.5 sm:px-3">

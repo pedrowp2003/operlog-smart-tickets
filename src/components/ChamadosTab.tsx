@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth, Profile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { StatusChamado, CategoriaChamado, CATEGORIAS, STATUS_LIST, getStatusColor, getStatusBgColor, formatPhone } from '@/types';
+import { StatusChamado, CategoriaChamado, CATEGORIAS, STATUS_LIST, getStatusColor, getStatusBgColor, formatPhone, UNIDADES, ARMAZENS } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -13,7 +13,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 
@@ -37,6 +39,14 @@ export function ChamadosTab() {
   const [showInfo, setShowInfo] = useState(false);
   const [showFornecedores, setShowFornecedores] = useState(false);
   const [meusChamados, setMeusChamados] = useState(false);
+  const [relatoriosOpen, setRelatoriosOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>('todos');
+  const [filterUnidade, setFilterUnidade] = useState<string>('todas');
+  const [filterArmazem, setFilterArmazem] = useState<string>('todos');
+  const [filterMaquina, setFilterMaquina] = useState<string>('todas');
+  const [filterCategoria, setFilterCategoria] = useState<string>('todas');
+  const [search, setSearch] = useState('');
+  const isMobile = useIsMobile();
 
   const [descricao, setDescricao] = useState('');
   const [maquinaId, setMaquinaId] = useState('');
@@ -149,6 +159,20 @@ export function ChamadosTab() {
       filteredChamados = filteredChamados.filter(c => c.criado_por === user.id);
     }
   }
+  filteredChamados = filteredChamados.filter(c => {
+    if (filterStatus !== 'todos' && c.status !== filterStatus) return false;
+    if (filterCategoria !== 'todas' && c.categoria !== filterCategoria) return false;
+    if (filterMaquina !== 'todas' && c.maquina_id !== filterMaquina) return false;
+    const maq = getMaquina(c.maquina_id);
+    if (filterUnidade !== 'todas' && maq?.unidade !== filterUnidade) return false;
+    if (filterArmazem !== 'todos' && maq?.armazem !== filterArmazem) return false;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const full = `${c.numero} ${c.descricao} ${maq?.tipo || ''} ${maq?.frota || ''}`.toLowerCase();
+      if (!full.includes(q)) return false;
+    }
+    return true;
+  });
 
   const handleCreate = async () => {
     if (!descricao.trim() || !maquinaId) return;
@@ -230,7 +254,9 @@ export function ChamadosTab() {
   const handleProgressoChange = async (val: number) => {
     if (!detailChamado || !isAnalista) return;
     if (!canEditChamado(detailChamado)) return;
-    const { data } = await supabase.from('chamados').update({ progresso: val }).eq('id', detailChamado.id).select().single();
+    const updates: Partial<Chamado> = { progresso: val };
+    if (val >= 100) updates.status = 'Concluído';
+    const { data } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
     fetchData();
   };
@@ -362,13 +388,58 @@ export function ChamadosTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h2 className="text-lg font-bold text-foreground">Chamados</h2>
-        <div className="flex gap-2">
+        <div className="flex gap-1 items-center">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Filtrar"><Filter className="w-4 h-4" /></Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-64 space-y-2">
+              <div><Label className="text-xs">Status</Label>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Unidade</Label>
+                <Select value={filterUnidade} onValueChange={setFilterUnidade}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todas">Todas</SelectItem>{UNIDADES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Armazém</Label>
+                <Select value={filterArmazem} onValueChange={setFilterArmazem}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{ARMAZENS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Máquina</Label>
+                <Select value={filterMaquina} onValueChange={setFilterMaquina}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todas">Todas</SelectItem>{maquinas.map(m => <SelectItem key={m.id} value={m.id}>{m.tipo} {m.frota}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Tipo de serviço</Label>
+                <Select value={filterCategoria} onValueChange={setFilterCategoria}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="todas">Todas</SelectItem>{CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select></div>
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Pesquisar"><Search className="w-4 h-4" /></Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56">
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar chamado..." className="h-8 text-xs" />
+            </PopoverContent>
+          </Popover>
+          {isAnalista && (
+            <Button variant="outline" size="sm" onClick={() => setRelatoriosOpen(true)} aria-label="Relatórios" title="Relatórios">
+              <ClipboardCheck className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Relatórios</span>
+            </Button>
+          )}
           <Button variant={meusChamados ? 'default' : 'outline'} size="sm" onClick={() => setMeusChamados(!meusChamados)}>
-            Meus Chamados
+            <span className="hidden sm:inline">Meus Chamados</span><span className="sm:hidden">Meus</span>
           </Button>
           {canCreate && (
             <Button size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="w-4 h-4 mr-1" /> Novo Chamado
+              <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Novo Chamado</span>
             </Button>
           )}
         </div>
@@ -485,7 +556,7 @@ export function ChamadosTab() {
 
       {/* Detail */}
       <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowInfo(false); setShowFornecedores(false); }}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden">
+        <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden lg:max-w-5xl">
           {detailChamado && (() => {
             const maquina = getMaquina(detailChamado.maquina_id);
             const tecnico = getProfile(detailChamado.tecnico_id);
@@ -498,10 +569,12 @@ export function ChamadosTab() {
               !detailChamado.tecnico_id ||
               (detailChamado.tecnico_id !== user.id && !detailChamado.tecnico2_id)
             );
+            const showInfoEffective = showInfo || !isMobile;
             return (
               <>
                 <DialogHeader><DialogTitle>Chamado {detailChamado.numero}</DialogTitle></DialogHeader>
-
+                <div className="lg:grid lg:grid-cols-2 lg:gap-6">
+                <div>
                 <div className="flex items-center gap-3 mb-1">
                   <span className="text-sm text-muted-foreground">Status:</span>
                   {editavel ? (
@@ -641,13 +714,14 @@ export function ChamadosTab() {
                   {isAnalista && (
                     <Button size="sm" variant="outline" className="order-1 sm:order-3 px-3 text-sm" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
                   )}
-                  <Button variant="outline" size="sm" className="order-2 sm:order-1 px-3 text-sm" onClick={() => setShowInfo(!showInfo)}>
+                  <Button variant="outline" size="sm" className="order-2 sm:order-1 px-3 text-sm lg:hidden" onClick={() => setShowInfo(!showInfo)}>
                     <User className="w-3.5 h-3.5 mr-1" /> Dados do Chamado
                     {showInfo ? <ChevronDown className="w-3.5 h-3.5 ml-1" /> : <ChevronUp className="w-3.5 h-3.5 ml-1" />}
                   </Button>
                 </div>
-
-                {showInfo && (
+                </div>
+                <div className="space-y-2 lg:border-l lg:border-border lg:pl-4 mt-4 lg:mt-0">
+                {showInfoEffective && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-2 w-full">
                     <p className="text-sm font-medium flex items-center gap-1">
                       <Hammer className="w-4 h-4 flex-shrink-0" /> Técnicos atribuídos
@@ -663,7 +737,7 @@ export function ChamadosTab() {
                   </div>
                 )}
 
-                {showInfo && (() => {
+                {showInfoEffective && (() => {
                   const ids = Array.from(new Set(acoes.map(a => a.fornecedor_id).filter(Boolean) as string[]));
                   const list = ids.map(id => getFornecedor(id)).filter(Boolean) as Fornecedor[];
                   return (
@@ -697,7 +771,7 @@ export function ChamadosTab() {
                   );
                 })()}
 
-                {showInfo && (
+                {showInfoEffective && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-2 w-full">
                     <p className="text-sm font-medium flex items-center gap-1">
                       <ClipboardList className="w-4 h-4 flex-shrink-0" /> Ações realizadas
@@ -778,7 +852,8 @@ export function ChamadosTab() {
                     )}
                   </div>
                 )}
-
+                </div>
+                </div>
               </>
             );
           })()}
@@ -886,6 +961,14 @@ export function ChamadosTab() {
             />
             <Button onClick={handleSaveEditAcao}>Salvar</Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Relatórios */}
+      <Dialog open={relatoriosOpen} onOpenChange={setRelatoriosOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Relatórios</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Em breve você poderá ver relatórios sobre chamados e máquinas aqui.</p>
         </DialogContent>
       </Dialog>
 

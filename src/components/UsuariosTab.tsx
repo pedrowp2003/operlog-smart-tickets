@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Pencil, User as UserIcon, Plus } from 'lucide-react';
+import { Trash2, Pencil, User as UserIcon, Plus, Filter, Search } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatPhone, ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, AREAS } from '@/types';
 import { toast } from 'sonner';
 
@@ -19,6 +20,8 @@ export function UsuariosTab() {
   const [editUser, setEditUser] = useState<Profile | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [filterRole, setFilterRole] = useState<UserRole | 'todos'>('todos');
+  const [filterTecArea, setFilterTecArea] = useState<string>('todas');
+  const [search, setSearch] = useState('');
 
   // Form state
   const [role, setRole] = useState<UserRole | ''>('');
@@ -138,7 +141,16 @@ export function UsuariosTab() {
 
   const roleEmoji = (r: string) => ROLE_LABELS[r as UserRole] || r;
 
-  const usuariosFiltrados = filterRole === 'todos' ? usuarios : usuarios.filter(u => u.role === filterRole);
+  const usuariosFiltrados = usuarios.filter(u => {
+    if (filterRole !== 'todos' && u.role !== filterRole) return false;
+    if (filterRole === 'tecnico' && filterTecArea !== 'todas' && u.area !== filterTecArea) return false;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const full = `${u.nome || ''} ${u.sobrenome || ''} ${u.username}`.toLowerCase();
+      if (!full.includes(q)) return false;
+    }
+    return true;
+  });
 
   const editForm = (
     <div className="flex flex-col gap-3">
@@ -239,22 +251,50 @@ export function UsuariosTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Usuários</h2>
-        <Button size="sm" onClick={() => { resetForm(); setCreateOpen(true); }}>
-          <Plus className="w-4 h-4 mr-1" /> Novo Usuário
-        </Button>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Label className="text-xs text-muted-foreground">Filtrar por tipo:</Label>
-        <Select value={filterRole} onValueChange={(v) => setFilterRole(v as UserRole | 'todos')}>
-          <SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            {(Object.keys(ROLE_LABELS) as UserRole[]).map(r => (
-              <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex gap-1 items-center">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Filtrar"><Filter className="w-4 h-4" /></Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 space-y-2">
+              <div>
+                <Label className="text-xs">Tipo de usuário</Label>
+                <Select value={filterRole} onValueChange={(v) => setFilterRole(v as UserRole | 'todos')}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {(Object.keys(ROLE_LABELS) as UserRole[]).map(r => (
+                      <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {filterRole === 'tecnico' && (
+                <div>
+                  <Label className="text-xs">Área de atuação</Label>
+                  <Select value={filterTecArea} onValueChange={setFilterTecArea}>
+                    <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todas">Todas</SelectItem>
+                      {AREAS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Pesquisar"><Search className="w-4 h-4" /></Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56">
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar usuário..." className="h-8 text-xs" />
+            </PopoverContent>
+          </Popover>
+          <Button size="sm" onClick={() => { resetForm(); setCreateOpen(true); }}>
+            <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Novo Usuário</span>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
