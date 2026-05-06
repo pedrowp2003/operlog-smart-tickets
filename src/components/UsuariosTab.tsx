@@ -283,14 +283,6 @@ export function UsuariosTab() {
               )}
             </PopoverContent>
           </Popover>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Pesquisar"><Search className="w-4 h-4" /></Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-56">
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar usuário..." className="h-8 text-xs" />
-            </PopoverContent>
-          </Popover>
           <Button size="sm" onClick={() => { resetForm(); setCreateOpen(true); }}>
             <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Novo Usuário</span>
           </Button>
