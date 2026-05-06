@@ -431,7 +431,7 @@ export function ChamadosTab() {
           </Button>
           {canCreate && (
             <Button size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Novo Chamado</span>
+              <Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Novo Chamado</span>
             </Button>
           )}
         </div>

@@ -159,7 +159,7 @@ export function FornecedoresTab() {
           </Popover>
           {canManage && (
             <Button size="sm" onClick={() => { resetForm(); setCreateOpen(true); }}>
-              <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Novo Fornecedor</span>
+              <Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Novo Fornecedor</span>
             </Button>
           )}
         </div>
