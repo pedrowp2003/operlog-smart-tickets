@@ -293,6 +293,7 @@ export function ChamadosTab() {
 
   const handleDeleteChamado = async (id: string) => {
     if (!isAnalista) return;
+    if (!window.confirm('Tem certeza que deseja excluir este chamado?')) return;
     await supabase.from('chamados').delete().eq('id', id);
     setDetailChamado(null);
     fetchData();
