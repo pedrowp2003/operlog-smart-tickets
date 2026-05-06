@@ -463,8 +463,8 @@ export function ChamadosTab() {
                   </div>
                   {maquina && (
                     <>
-                      <p className="text-sm font-medium break-words">{maquina.tipo} — {maquina.frota}</p>
-                      <p className="text-xs text-muted-foreground break-words">{maquina.marca} {maquina.modelo} — {maquina.unidade || maquina.armazem}</p>
+                      <p className="text-sm font-medium break-words">{maquina.tipo} — {maquina.unidade || maquina.armazem}</p>
+                      <p className="text-xs text-muted-foreground break-words">{maquina.marca} {maquina.modelo} — {maquina.frota}</p>
                     </>
                   )}
                   <p className="text-xs text-muted-foreground break-words">{chamado.descricao}</p>
