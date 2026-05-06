@@ -89,7 +89,7 @@ export default function Dashboard() {
               {user.role === 'analista' && (
                 <ClipboardCheck className="h-4 w-4 shrink-0 text-primary" aria-label="Analista" />
               )}
-              <span className="shrink-0 text-[11px] leading-tight text-muted-foreground sm:text-xs">
+              <span className="hidden sm:inline shrink-0 text-[11px] leading-tight text-muted-foreground sm:text-xs">
                 {user.role === 'tecnico' ? 'Técnico' : user.role === 'analista' ? 'Analista' : ROLE_LABELS[user.role as UserRole]}
               </span>
             </div>
