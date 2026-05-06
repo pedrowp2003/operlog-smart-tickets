@@ -391,7 +391,7 @@ export function ChamadosTab() {
         <div className="flex gap-1 items-center">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Filtrar"><Filter className="w-4 h-4" /></Button>
+              <Button variant="outline" size="sm" aria-label="Filtrar" className="h-9 w-9 p-0"><Filter className="w-4 h-4" /></Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-64 space-y-2">
               <div><Label className="text-xs">Status</Label>
@@ -419,14 +419,6 @@ export function ChamadosTab() {
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="todas">Todas</SelectItem>{CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                 </Select></div>
-            </PopoverContent>
-          </Popover>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Pesquisar"><Search className="w-4 h-4" /></Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-56">
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar chamado..." className="h-8 text-xs" />
             </PopoverContent>
           </Popover>
           {isAnalista && (
@@ -721,6 +713,7 @@ export function ChamadosTab() {
                 </div>
                 </div>
                 <div className="space-y-2 lg:border-l lg:border-border lg:pl-4 mt-4 lg:mt-0">
+                <p className="hidden lg:block text-sm font-semibold">Dados do chamado</p>
                 {showInfoEffective && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-2 w-full">
                     <p className="text-sm font-medium flex items-center gap-1">
