@@ -676,7 +676,7 @@ export function ChamadosTab() {
                               else if (!prevDataStr && !prevHoraStr) handleDataPrevistaChange('');
                             }}
                             placeholder="__/__/____"
-                            className="h-8 text-xs w-[110px] flex-shrink-0"
+                            className="h-8 text-xs w-[88px] flex-shrink-0 text-center px-1"
                             inputMode="numeric"
                           />
                           <Input
@@ -687,7 +687,7 @@ export function ChamadosTab() {
                               if (iso) handleDataPrevistaChange(iso);
                             }}
                             placeholder="00:00"
-                            className="h-8 text-xs w-[64px] flex-shrink-0"
+                            className="h-8 text-xs w-[52px] flex-shrink-0 text-center px-1"
                             inputMode="numeric"
                           />
                         </div>
