@@ -288,7 +288,7 @@ export function MaquinasTab() {
       {maquinasFiltradas.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhuma máquina cadastrada</p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {maquinasFiltradas.map(m => (
             <Card key={m.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailMaquina(m)}>
               {m.foto_url ? (

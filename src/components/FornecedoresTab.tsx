@@ -177,7 +177,7 @@ export function FornecedoresTab() {
       {fornecedoresFiltrados.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhum fornecedor cadastrado</p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {fornecedoresFiltrados.map(f => (
             <Card key={f.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailFornecedor(f)}>
               {f.foto_url ? (
