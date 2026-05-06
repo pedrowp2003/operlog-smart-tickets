@@ -270,7 +270,7 @@ export function MaquinasTab() {
           )}
           {canCreate && (
             <Button size="sm" onClick={openCreate}>
-              <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Nova Máquina</span>
+              <Plus className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Nova Máquina</span>
             </Button>
           )}
         </div>
