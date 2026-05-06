@@ -964,6 +964,14 @@ export function ChamadosTab() {
         </DialogContent>
       </Dialog>
 
+      {/* Relatórios */}
+      <Dialog open={relatoriosOpen} onOpenChange={setRelatoriosOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Relatórios</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Em breve você poderá ver relatórios sobre chamados e máquinas aqui.</p>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
