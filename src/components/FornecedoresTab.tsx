@@ -101,6 +101,7 @@ export function FornecedoresTab() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este fornecedor?')) return;
     await supabase.from('fornecedores').delete().eq('id', id);
     setDetailFornecedor(null);
     fetchFornecedores();
