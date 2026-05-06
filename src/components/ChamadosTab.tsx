@@ -461,7 +461,7 @@ export function ChamadosTab() {
                     </Badge>
                     <span className="hidden sm:inline text-xs font-medium text-primary ml-auto">{chamado.progresso ?? 0}%</span>
                   </div>
-                  {maquina && <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota} ({maquina.marca})</p>}
+                  {maquina && <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota} ({maquina.marca} {maquina.modelo}) — {maquina.unidade || maquina.armazem}</p>}
                   <p className="text-xs text-muted-foreground truncate">{chamado.descricao}</p>
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
