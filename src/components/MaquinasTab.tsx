@@ -263,14 +263,6 @@ export function MaquinasTab() {
                 </Select></div>
             </PopoverContent>
           </Popover>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Pesquisar"><Search className="w-4 h-4" /></Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-56">
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar máquina..." className="h-8 text-xs" />
-            </PopoverContent>
-          </Popover>
           {canManageCategorias && (
             <Button variant="outline" size="sm" onClick={() => setCategoriasOpen(true)} aria-label="Alterar categorias" title="Alterar categorias">
               <Settings className="w-4 h-4 sm:mr-1" /> <span className="hidden lg:inline">Alterar categorias</span>
