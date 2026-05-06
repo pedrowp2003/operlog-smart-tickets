@@ -13,6 +13,7 @@ import { ImageUpload } from '@/components/ImageUpload';
 import { Plus, Trash2, Pencil, Wrench, Settings, X, Filter, Search } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
+import { useConfirm } from '@/components/ConfirmDialog';
 
 type Maquina = Tables<'maquinas'>;
 type Unidade = Tables<'unidades'>;
@@ -20,6 +21,7 @@ type Armazem = Tables<'armazens'>;
 
 export function MaquinasTab() {
   const { user, uploadImage } = useAuth();
+  const confirm = useConfirm();
   const [maquinas, setMaquinas] = useState<Maquina[]>([]);
   const [unidadesList, setUnidadesList] = useState<Unidade[]>([]);
   const [armazensList, setArmazensList] = useState<Armazem[]>([]);
@@ -150,6 +152,13 @@ export function MaquinasTab() {
   };
 
   const handleDelete = async (id: string) => {
+    const ok = await confirm({
+      title: 'Excluir máquina?',
+      description: 'Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      destructive: true,
+    });
+    if (!ok) return;
     await supabase.from('maquinas').delete().eq('id', id);
     setDetailMaquina(null);
     fetchMaquinas();
