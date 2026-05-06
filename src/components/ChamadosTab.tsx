@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
+import { useConfirm } from '@/components/ConfirmDialog';
 
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
@@ -30,6 +31,7 @@ const MAX_COD_ERRO = 50;
 
 export function ChamadosTab() {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [maquinas, setMaquinas] = useState<Maquina[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -293,7 +295,13 @@ export function ChamadosTab() {
 
   const handleDeleteChamado = async (id: string) => {
     if (!isAnalista) return;
-    if (!window.confirm('Tem certeza que deseja excluir este chamado?')) return;
+    const ok = await confirm({
+      title: 'Excluir chamado?',
+      description: 'Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      destructive: true,
+    });
+    if (!ok) return;
     await supabase.from('chamados').delete().eq('id', id);
     setDetailChamado(null);
     fetchData();

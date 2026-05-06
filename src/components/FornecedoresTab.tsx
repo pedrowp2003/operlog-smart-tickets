@@ -13,11 +13,13 @@ import { Plus, Trash2, Pencil, Package, Filter, Search } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatPhone, NATUREZAS, NaturezaFornecedor } from '@/types';
 import { toast } from 'sonner';
+import { useConfirm } from '@/components/ConfirmDialog';
 
 type Fornecedor = Tables<'fornecedores'>;
 
 export function FornecedoresTab() {
   const { user, uploadImage } = useAuth();
+  const confirm = useConfirm();
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [editFornecedor, setEditFornecedor] = useState<Fornecedor | null>(null);
@@ -101,7 +103,13 @@ export function FornecedoresTab() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este fornecedor?')) return;
+    const ok = await confirm({
+      title: 'Excluir fornecedor?',
+      description: 'Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      destructive: true,
+    });
+    if (!ok) return;
     await supabase.from('fornecedores').delete().eq('id', id);
     setDetailFornecedor(null);
     fetchFornecedores();

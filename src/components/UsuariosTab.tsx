@@ -12,9 +12,11 @@ import { Trash2, Pencil, User as UserIcon, Plus, Filter, Search } from 'lucide-r
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatPhone, ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, AREAS } from '@/types';
 import { toast } from 'sonner';
+import { useConfirm } from '@/components/ConfirmDialog';
 
 export function UsuariosTab() {
   const { user, register, uploadImage } = useAuth();
+  const confirm = useConfirm();
   const [usuarios, setUsuarios] = useState<Profile[]>([]);
   const [detail, setDetail] = useState<Profile | null>(null);
   const [editUser, setEditUser] = useState<Profile | null>(null);
@@ -78,7 +80,13 @@ export function UsuariosTab() {
       toast.error('Analistas não podem excluir outras contas de analista');
       return;
     }
-    if (!window.confirm('Tem certeza que deseja excluir este usuário?')) return;
+    const ok = await confirm({
+      title: 'Excluir usuário?',
+      description: 'Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      destructive: true,
+    });
+    if (!ok) return;
     await supabase.from('profiles').delete().eq('id', id);
     setDetail(null);
     fetch();
