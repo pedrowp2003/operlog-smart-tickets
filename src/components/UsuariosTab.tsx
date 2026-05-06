@@ -78,6 +78,7 @@ export function UsuariosTab() {
       toast.error('Analistas não podem excluir outras contas de analista');
       return;
     }
+    if (!window.confirm('Tem certeza que deseja excluir este usuário?')) return;
     await supabase.from('profiles').delete().eq('id', id);
     setDetail(null);
     fetch();
