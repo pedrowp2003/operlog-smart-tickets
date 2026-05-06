@@ -157,14 +157,6 @@ export function FornecedoresTab() {
               </Select>
             </PopoverContent>
           </Popover>
-          <Popover open={searchOpen} onOpenChange={setSearchOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Pesquisar"><Search className="w-4 h-4" /></Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-56">
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar fornecedor..." className="h-8 text-xs" />
-            </PopoverContent>
-          </Popover>
           {canManage && (
             <Button size="sm" onClick={() => { resetForm(); setCreateOpen(true); }}>
               <Plus className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Novo Fornecedor</span>
