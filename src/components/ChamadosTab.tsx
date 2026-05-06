@@ -473,7 +473,11 @@ export function ChamadosTab() {
                   {maquina && (
                     <>
                       <p className="text-sm font-medium break-words">{maquina.tipo}</p>
-                      <p className="text-xs text-muted-foreground break-words">{maquina.marca} {maquina.modelo} {maquina.frota} - {maquina.unidade || maquina.armazem}</p>
+                      <p className="text-xs text-muted-foreground break-words">
+                        <span>{maquina.marca} {maquina.modelo} {maquina.frota}</span>
+                        <span className="hidden sm:inline"> - {maquina.unidade || maquina.armazem}</span>
+                        <span className="sm:hidden block">{maquina.unidade || maquina.armazem}</span>
+                      </p>
                     </>
                   )}
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
