@@ -31,6 +31,7 @@ const MAX_COD_ERRO = 50;
 
 export function ChamadosTab() {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [maquinas, setMaquinas] = useState<Maquina[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
