@@ -4,13 +4,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Trash2, User as UserIcon } from 'lucide-react';
-import { formatPhone } from '@/types';
+import { Trash2, User as UserIcon, Filter, Search } from 'lucide-react';
+import { formatPhone, AREAS } from '@/types';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function TecnicosTab() {
   const { user } = useAuth();
   const [tecnicos, setTecnicos] = useState<Profile[]>([]);
   const [detailTecnico, setDetailTecnico] = useState<Profile | null>(null);
+  const [filterArea, setFilterArea] = useState<string>('todas');
+  const [search, setSearch] = useState('');
 
   const fetchTecnicos = async () => {
     const { data } = await supabase.from('profiles').select('*').eq('role', 'tecnico');
@@ -23,6 +29,16 @@ export function TecnicosTab() {
 
   const canDelete = false;
 
+  const tecnicosFiltrados = tecnicos.filter(t => {
+    if (filterArea !== 'todas' && t.area !== filterArea) return false;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const full = `${t.nome || ''} ${t.sobrenome || ''} ${t.username}`.toLowerCase();
+      if (!full.includes(q)) return false;
+    }
+    return true;
+  });
+
   const handleDelete = async (id: string) => {
     await supabase.from('profiles').delete().eq('id', id);
     setDetailTecnico(null);
@@ -31,13 +47,40 @@ export function TecnicosTab() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold text-foreground">Técnicos de Manutenção</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-lg font-bold text-foreground">Técnicos de Manutenção</h2>
+        <div className="flex gap-1">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Filtrar"><Filter className="w-4 h-4" /></Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56">
+              <Label className="text-xs">Área de atuação</Label>
+              <Select value={filterArea} onValueChange={setFilterArea}>
+                <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas</SelectItem>
+                  {AREAS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Pesquisar"><Search className="w-4 h-4" /></Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56">
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar técnico..." className="h-8 text-xs" />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
 
-      {tecnicos.length === 0 ? (
+      {tecnicosFiltrados.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhum técnico cadastrado</p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {tecnicos.map(t => (
+          {tecnicosFiltrados.map(t => (
             <Card key={t.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-center" onClick={() => setDetailTecnico(t)}>
               {t.foto_url ? (
                 <img src={t.foto_url} alt="" width={56} height={56} loading="lazy" decoding="async" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
