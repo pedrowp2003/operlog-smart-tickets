@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
+import { useConfirm } from '@/components/ConfirmDialog';
 
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
