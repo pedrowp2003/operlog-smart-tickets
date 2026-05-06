@@ -463,20 +463,20 @@ export function ChamadosTab() {
                   </div>
                   {maquina && (
                     <>
-                      <p className="text-sm font-medium truncate">{maquina.tipo} — {maquina.frota}</p>
-                      <p className="text-xs text-muted-foreground truncate">{maquina.marca} {maquina.modelo} — {maquina.unidade || maquina.armazem}</p>
+                      <p className="text-sm font-medium break-words">{maquina.tipo} — {maquina.frota}</p>
+                      <p className="text-xs text-muted-foreground break-words">{maquina.marca} {maquina.modelo} — {maquina.unidade || maquina.armazem}</p>
                     </>
                   )}
-                  <p className="text-xs text-muted-foreground truncate">{chamado.descricao}</p>
+                  <p className="text-xs text-muted-foreground break-words">{chamado.descricao}</p>
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
-                <div className="flex flex-col items-center gap-1 flex-shrink-0 w-6 sm:w-auto -mr-2 sm:mr-0">
+                <div className="flex flex-col items-center gap-1 flex-shrink-0 w-10 sm:w-auto">
                   {canDelete && (
                     <Button variant="ghost" size="sm" className="text-destructive h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   )}
-                  <span className="sm:hidden text-xs font-medium text-primary">{chamado.progresso ?? 0}%</span>
+                  <span className="sm:hidden text-[11px] font-medium text-primary">{chamado.progresso ?? 0}%</span>
                 </div>
               </Card>
             );
