@@ -556,7 +556,7 @@ export function ChamadosTab() {
 
       {/* Detail */}
       <Dialog open={!!detailChamado} onOpenChange={() => { setDetailChamado(null); setShowInfo(false); setShowFornecedores(false); }}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden">
+        <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden lg:max-w-5xl">
           {detailChamado && (() => {
             const maquina = getMaquina(detailChamado.maquina_id);
             const tecnico = getProfile(detailChamado.tecnico_id);
@@ -569,10 +569,12 @@ export function ChamadosTab() {
               !detailChamado.tecnico_id ||
               (detailChamado.tecnico_id !== user.id && !detailChamado.tecnico2_id)
             );
+            const showInfoEffective = showInfo || !isMobile;
             return (
               <>
                 <DialogHeader><DialogTitle>Chamado {detailChamado.numero}</DialogTitle></DialogHeader>
-
+                <div className="lg:grid lg:grid-cols-2 lg:gap-6">
+                <div>
                 <div className="flex items-center gap-3 mb-1">
                   <span className="text-sm text-muted-foreground">Status:</span>
                   {editavel ? (
@@ -712,13 +714,14 @@ export function ChamadosTab() {
                   {isAnalista && (
                     <Button size="sm" variant="outline" className="order-1 sm:order-3 px-3 text-sm" onClick={() => setAssignOpen(true)}>Gerenciar técnicos</Button>
                   )}
-                  <Button variant="outline" size="sm" className="order-2 sm:order-1 px-3 text-sm" onClick={() => setShowInfo(!showInfo)}>
+                  <Button variant="outline" size="sm" className="order-2 sm:order-1 px-3 text-sm lg:hidden" onClick={() => setShowInfo(!showInfo)}>
                     <User className="w-3.5 h-3.5 mr-1" /> Dados do Chamado
                     {showInfo ? <ChevronDown className="w-3.5 h-3.5 ml-1" /> : <ChevronUp className="w-3.5 h-3.5 ml-1" />}
                   </Button>
                 </div>
-
-                {showInfo && (
+                </div>
+                <div className="space-y-2 lg:border-l lg:border-border lg:pl-4 mt-4 lg:mt-0">
+                {showInfoEffective && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-2 w-full">
                     <p className="text-sm font-medium flex items-center gap-1">
                       <Hammer className="w-4 h-4 flex-shrink-0" /> Técnicos atribuídos
@@ -734,7 +737,7 @@ export function ChamadosTab() {
                   </div>
                 )}
 
-                {showInfo && (() => {
+                {showInfoEffective && (() => {
                   const ids = Array.from(new Set(acoes.map(a => a.fornecedor_id).filter(Boolean) as string[]));
                   const list = ids.map(id => getFornecedor(id)).filter(Boolean) as Fornecedor[];
                   return (
@@ -768,7 +771,7 @@ export function ChamadosTab() {
                   );
                 })()}
 
-                {showInfo && (
+                {showInfoEffective && (
                   <div className="border border-border rounded-lg p-3 mt-2 space-y-2 w-full">
                     <p className="text-sm font-medium flex items-center gap-1">
                       <ClipboardList className="w-4 h-4 flex-shrink-0" /> Ações realizadas
@@ -849,7 +852,8 @@ export function ChamadosTab() {
                     )}
                   </div>
                 )}
-
+                </div>
+                </div>
               </>
             );
           })()}
