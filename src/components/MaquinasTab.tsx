@@ -229,7 +229,7 @@ export function MaquinasTab() {
         <div className="flex gap-1 items-center">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Filtrar"><Filter className="w-4 h-4" /></Button>
+              <Button variant="outline" size="sm" aria-label="Filtrar" className="h-9 w-9 p-0"><Filter className="w-4 h-4" /></Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-64 space-y-2">
               <div><Label className="text-xs">Tipo</Label>
