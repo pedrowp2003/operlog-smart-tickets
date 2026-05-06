@@ -71,7 +71,7 @@ export function TecnicosTab() {
       {tecnicosFiltrados.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhum técnico cadastrado</p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {tecnicosFiltrados.map(t => (
             <Card key={t.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-center" onClick={() => setDetailTecnico(t)}>
               {t.foto_url ? (
