@@ -476,7 +476,6 @@ export function ChamadosTab() {
                       <p className="text-xs text-muted-foreground break-words">{maquina.marca} {maquina.modelo} {maquina.frota} - {maquina.unidade || maquina.armazem}</p>
                     </>
                   )}
-                  <p className="text-xs text-muted-foreground break-words">{chamado.descricao}</p>
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
                 <div className="flex flex-col items-center gap-1 flex-shrink-0 w-10 sm:w-auto">
