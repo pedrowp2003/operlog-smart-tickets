@@ -590,7 +590,7 @@ export function ChamadosTab() {
 
                 {maquina?.foto_url && <img src={maquina.foto_url} alt="" className="w-full rounded-lg object-contain max-h-64" />}
 
-                <div className="space-y-1">
+                <div className="space-y-1 pb-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">Andamento</span>
                     <span className="text-xs font-medium">{progressoLocal ?? progresso}%</span>
