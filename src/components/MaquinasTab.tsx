@@ -290,8 +290,8 @@ export function MaquinasTab() {
                 </div>
               )}
               <div className="flex-1 min-w-0 text-sm">
-                <p className="font-medium">{m.tipo} — {m.frota}</p>
-                <p className="text-muted-foreground">{m.marca} {m.modelo}</p>
+                <p className="font-medium">{m.tipo}</p>
+                <p className="text-muted-foreground">{m.marca} {m.modelo} — {m.frota}</p>
                 <p className="text-xs text-muted-foreground">{m.unidade || m.armazem}</p>
               </div>
               <div className="flex gap-1 flex-shrink-0">
