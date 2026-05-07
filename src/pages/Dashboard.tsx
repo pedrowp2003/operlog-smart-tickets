@@ -44,6 +44,15 @@ export default function Dashboard() {
   useEffect(() => { localStorage.setItem('panel-left-width', String(leftWidth)); }, [leftWidth]);
   useEffect(() => { localStorage.setItem('panel-right-width', String(rightWidth)); }, [rightWidth]);
 
+  const [isLg, setIsLg] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsLg(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
   const startResize = (side: 'left' | 'right') => (e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
@@ -154,8 +163,8 @@ export default function Dashboard() {
       </aside>
 
       <main
-        style={{ marginLeft: `calc(${leftWidth}px + 2rem)`, marginRight: `calc(${rightWidth}px + 2rem)` }}
-        className="max-w-4xl mx-auto px-4 py-4 lg:px-8 lg:max-w-none lg:mx-0"
+        style={isLg ? { marginLeft: `calc(${leftWidth}px + 2rem)`, marginRight: `calc(${rightWidth}px + 2rem)` } : undefined}
+        className="max-w-4xl mx-auto px-4 py-4 lg:px-8 lg:max-w-none"
       >
         <Tabs defaultValue="chamados" className="w-full">
           <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 h-auto mb-4">
