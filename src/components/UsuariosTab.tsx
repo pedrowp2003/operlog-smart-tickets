@@ -298,7 +298,7 @@ export function UsuariosTab() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
         {usuariosFiltrados.map(u => (
           <Card key={u.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-center" onClick={() => setDetail(u)}>
             {u.foto_url ? (
