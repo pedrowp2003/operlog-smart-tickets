@@ -22,16 +22,6 @@ export default function Dashboard() {
     if (!loading && !user) navigate('/');
   }, [user, loading, navigate]);
 
-  if (loading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">Carregando...</p>
-    </div>
-  );
-
-  if (!user) return null;
-
-  const isAnalista = user.role === 'analista';
-
   const [leftWidth, setLeftWidth] = useState<number>(() => {
     const v = Number(localStorage.getItem('panel-left-width'));
     return v >= 240 && v <= 600 ? v : 360;
@@ -52,6 +42,16 @@ export default function Dashboard() {
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
   }, []);
+
+  if (loading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="text-muted-foreground">Carregando...</p>
+    </div>
+  );
+
+  if (!user) return null;
+
+  const isAnalista = user.role === 'analista';
 
   const startResize = (side: 'left' | 'right') => (e: React.MouseEvent) => {
     e.preventDefault();
