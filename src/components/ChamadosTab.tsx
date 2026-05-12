@@ -843,7 +843,7 @@ export function ChamadosTab() {
                               )}
                               <div className="flex items-center justify-between gap-2 flex-wrap">
                                 <p className="text-[10px] text-muted-foreground break-all">{dataFormatada}</p>
-                                {isAnalista && acao.fornecedor_id && (
+                                {isAnalista && (
                                   <div className="flex gap-1 ml-auto">
                                     <Button variant="ghost" size="sm" className="h-6 px-1" onClick={() => openEditAcao(acao)}>
                                       <Pencil className="w-3 h-3" />
