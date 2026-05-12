@@ -27,6 +27,7 @@ export function FornecedoresTab() {
   const [filterNatureza, setFilterNatureza] = useState<'todas' | NaturezaFornecedor>('todas');
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<string>('nome_asc');
 
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -49,6 +50,14 @@ export function FornecedoresTab() {
     if (filterNatureza !== 'todas' && (f as any).natureza !== filterNatureza) return false;
     if (search.trim() && !f.nome.toLowerCase().includes(search.trim().toLowerCase())) return false;
     return true;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'recent': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'oldest': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case 'nome_desc': return b.nome.localeCompare(a.nome);
+      case 'nome_asc':
+      default: return a.nome.localeCompare(b.nome);
+    }
   });
 
   const resetForm = () => { setNome(''); setTelefone(''); setNatureza('Tornearia'); setFotoPreview(undefined); setFotoFile(null); };
@@ -162,6 +171,16 @@ export function FornecedoresTab() {
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
                   {NATUREZAS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Label className="text-xs mt-2 block">Ordenar por</Label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="nome_asc">Nome (A→Z)</SelectItem>
+                  <SelectItem value="nome_desc">Nome (Z→A)</SelectItem>
+                  <SelectItem value="recent">Mais recente</SelectItem>
+                  <SelectItem value="oldest">Menos recente</SelectItem>
                 </SelectContent>
               </Select>
             </PopoverContent>
