@@ -34,6 +34,25 @@ export default function Dashboard() {
   useEffect(() => { localStorage.setItem('panel-left-width', String(leftWidth)); }, [leftWidth]);
   useEffect(() => { localStorage.setItem('panel-right-width', String(rightWidth)); }, [rightWidth]);
 
+  // Mobile back button: close any open dialog/popover/sheet instead of navigating away.
+  useEffect(() => {
+    const sentinel = { __overlayGuard: true };
+    if (!(window.history.state && (window.history.state as any).__overlayGuard)) {
+      window.history.pushState(sentinel, '');
+    }
+    const onPop = () => {
+      const overlay = document.querySelector(
+        '[data-state="open"][role="dialog"], [data-state="open"][role="alertdialog"], [data-radix-popper-content-wrapper]'
+      );
+      if (overlay) {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        window.history.pushState(sentinel, '');
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   const [isLg, setIsLg] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
