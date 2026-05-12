@@ -48,6 +48,7 @@ export function ChamadosTab() {
   const [filterMaquina, setFilterMaquina] = useState<string>('todas');
   const [filterCategoria, setFilterCategoria] = useState<string>('todas');
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<string>('recent');
   const isMobile = useIsMobile();
 
   const [descricao, setDescricao] = useState('');
@@ -174,6 +175,18 @@ export function ChamadosTab() {
       if (!full.includes(q)) return false;
     }
     return true;
+  });
+
+  filteredChamados = [...filteredChamados].sort((a, b) => {
+    switch (sortBy) {
+      case 'oldest': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case 'numero_asc': return a.numero.localeCompare(b.numero);
+      case 'numero_desc': return b.numero.localeCompare(a.numero);
+      case 'progress_desc': return (b.progresso ?? 0) - (a.progresso ?? 0);
+      case 'progress_asc': return (a.progresso ?? 0) - (b.progresso ?? 0);
+      case 'recent':
+      default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
   });
 
   const handleCreate = async () => {
@@ -427,6 +440,18 @@ export function ChamadosTab() {
                 <Select value={filterCategoria} onValueChange={setFilterCategoria}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="todas">Todas</SelectItem>{CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Ordenar por</Label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recent">Mais recente</SelectItem>
+                    <SelectItem value="oldest">Menos recente</SelectItem>
+                    <SelectItem value="numero_asc">Número (A→Z)</SelectItem>
+                    <SelectItem value="numero_desc">Número (Z→A)</SelectItem>
+                    <SelectItem value="progress_desc">Progresso (maior→menor)</SelectItem>
+                    <SelectItem value="progress_asc">Progresso (menor→maior)</SelectItem>
+                  </SelectContent>
                 </Select></div>
             </PopoverContent>
           </Popover>
