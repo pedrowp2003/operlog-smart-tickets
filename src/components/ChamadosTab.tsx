@@ -43,8 +43,7 @@ export function ChamadosTab() {
   const [meusChamados, setMeusChamados] = useState(false);
   const [relatoriosOpen, setRelatoriosOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('todos');
-  const [filterUnidade, setFilterUnidade] = useState<string>('todas');
-  const [filterArmazem, setFilterArmazem] = useState<string>('todos');
+  const [filterLocal, setFilterLocal] = useState<string>('todos');
   const [filterMaquina, setFilterMaquina] = useState<string>('todas');
   const [filterCategoria, setFilterCategoria] = useState<string>('todas');
   const [search, setSearch] = useState('');
@@ -167,8 +166,13 @@ export function ChamadosTab() {
     if (filterCategoria !== 'todas' && c.categoria !== filterCategoria) return false;
     if (filterMaquina !== 'todas' && c.maquina_id !== filterMaquina) return false;
     const maq = getMaquina(c.maquina_id);
-    if (filterUnidade !== 'todas' && maq?.unidade !== filterUnidade) return false;
-    if (filterArmazem !== 'todos' && maq?.armazem !== filterArmazem) return false;
+    if (filterLocal !== 'todos') {
+      if (filterLocal.startsWith('u:')) {
+        if (maq?.unidade !== filterLocal.slice(2)) return false;
+      } else if (filterLocal.startsWith('a:')) {
+        if (maq?.armazem !== filterLocal.slice(2)) return false;
+      }
+    }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       const full = `${c.numero} ${c.descricao} ${maq?.tipo || ''} ${maq?.frota || ''}`.toLowerCase();
@@ -421,15 +425,14 @@ export function ChamadosTab() {
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="todos">Todos</SelectItem>{STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select></div>
-              <div><Label className="text-xs">Unidade</Label>
-                <Select value={filterUnidade} onValueChange={setFilterUnidade}>
+              <div><Label className="text-xs">Unidade/Armazém</Label>
+                <Select value={filterLocal} onValueChange={setFilterLocal}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todas">Todas</SelectItem>{UNIDADES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-                </Select></div>
-              <div><Label className="text-xs">Armazém</Label>
-                <Select value={filterArmazem} onValueChange={setFilterArmazem}>
-                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{ARMAZENS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {UNIDADES.map(u => <SelectItem key={`u:${u}`} value={`u:${u}`}>{u}</SelectItem>)}
+                    {ARMAZENS.map(a => <SelectItem key={`a:${a}`} value={`a:${a}`}>{a}</SelectItem>)}
+                  </SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Máquina</Label>
                 <Select value={filterMaquina} onValueChange={setFilterMaquina}>
