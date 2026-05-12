@@ -24,6 +24,7 @@ export function UsuariosTab() {
   const [filterRole, setFilterRole] = useState<UserRole | 'todos'>('todos');
   const [filterTecArea, setFilterTecArea] = useState<string>('todas');
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<string>('nome_asc');
 
   // Form state
   const [role, setRole] = useState<UserRole | ''>('');
@@ -159,6 +160,16 @@ export function UsuariosTab() {
       if (!full.includes(q)) return false;
     }
     return true;
+  }).sort((a, b) => {
+    const na = (a.nome || a.username).toLowerCase();
+    const nb = (b.nome || b.username).toLowerCase();
+    switch (sortBy) {
+      case 'recent': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'oldest': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case 'nome_desc': return nb.localeCompare(na);
+      case 'nome_asc':
+      default: return na.localeCompare(nb);
+    }
   });
 
   const editForm = (
@@ -290,6 +301,18 @@ export function UsuariosTab() {
                   </Select>
                 </div>
               )}
+              <div>
+                <Label className="text-xs">Ordenar por</Label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nome_asc">Nome (A→Z)</SelectItem>
+                    <SelectItem value="nome_desc">Nome (Z→A)</SelectItem>
+                    <SelectItem value="recent">Mais recente</SelectItem>
+                    <SelectItem value="oldest">Menos recente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </PopoverContent>
           </Popover>
           <Button size="sm" onClick={() => { resetForm(); setCreateOpen(true); }}>
