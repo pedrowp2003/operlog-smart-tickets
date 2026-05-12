@@ -37,6 +37,7 @@ export function MaquinasTab() {
   const [filterModelo, setFilterModelo] = useState('todos');
   const [filterLocal, setFilterLocal] = useState('todos');
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<string>('recent');
 
   const [tipo, setTipo] = useState('');
   const [frota, setFrota] = useState('');
@@ -96,6 +97,14 @@ export function MaquinasTab() {
       if (!full.includes(q)) return false;
     }
     return true;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'oldest': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case 'nome_asc': return `${a.tipo} ${a.frota}`.localeCompare(`${b.tipo} ${b.frota}`);
+      case 'nome_desc': return `${b.tipo} ${b.frota}`.localeCompare(`${a.tipo} ${a.frota}`);
+      case 'recent':
+      default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
   });
 
   const resetForm = () => { setTipo(''); setFrota(''); setMarca(''); setModelo(''); setUnidade(''); setArmazem(''); setFotoPreview(undefined); setFotoFile(null); };
@@ -268,6 +277,16 @@ export function MaquinasTab() {
                     <SelectItem value="todos">Todos</SelectItem>
                     {UNIDADES_NAMES.map(u => <SelectItem key={`u-${u}`} value={`u:${u}`}>{u}</SelectItem>)}
                     {ARMAZENS_NAMES.map(a => <SelectItem key={`a-${a}`} value={`a:${a}`}>{a}</SelectItem>)}
+                  </SelectContent>
+                </Select></div>
+              <div><Label className="text-xs">Ordenar por</Label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recent">Mais recente</SelectItem>
+                    <SelectItem value="oldest">Menos recente</SelectItem>
+                    <SelectItem value="nome_asc">Nome (A→Z)</SelectItem>
+                    <SelectItem value="nome_desc">Nome (Z→A)</SelectItem>
                   </SelectContent>
                 </Select></div>
             </PopoverContent>
