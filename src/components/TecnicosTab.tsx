@@ -17,6 +17,7 @@ export function TecnicosTab() {
   const [detailTecnico, setDetailTecnico] = useState<Profile | null>(null);
   const [filterArea, setFilterArea] = useState<string>('todas');
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<string>('nome_asc');
 
   const fetchTecnicos = async () => {
     const { data } = await supabase.from('profiles').select('*').eq('role', 'tecnico');
@@ -37,6 +38,16 @@ export function TecnicosTab() {
       if (!full.includes(q)) return false;
     }
     return true;
+  }).sort((a, b) => {
+    const na = (a.nome || a.username).toLowerCase();
+    const nb = (b.nome || b.username).toLowerCase();
+    switch (sortBy) {
+      case 'recent': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'oldest': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case 'nome_desc': return nb.localeCompare(na);
+      case 'nome_asc':
+      default: return na.localeCompare(nb);
+    }
   });
 
   const handleDelete = async (id: string) => {
@@ -61,6 +72,16 @@ export function TecnicosTab() {
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
                   {AREAS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Label className="text-xs mt-2 block">Ordenar por</Label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="nome_asc">Nome (A→Z)</SelectItem>
+                  <SelectItem value="nome_desc">Nome (Z→A)</SelectItem>
+                  <SelectItem value="recent">Mais recente</SelectItem>
+                  <SelectItem value="oldest">Menos recente</SelectItem>
                 </SelectContent>
               </Select>
             </PopoverContent>
