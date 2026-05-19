@@ -180,6 +180,7 @@ export type Database = {
           id: string
           marca: string
           modelo: string
+          prioridade: boolean
           tipo: string
           unidade: string
           updated_at: string
@@ -192,6 +193,7 @@ export type Database = {
           id?: string
           marca: string
           modelo: string
+          prioridade?: boolean
           tipo: string
           unidade: string
           updated_at?: string
@@ -204,6 +206,7 @@ export type Database = {
           id?: string
           marca?: string
           modelo?: string
+          prioridade?: boolean
           tipo?: string
           unidade?: string
           updated_at?: string

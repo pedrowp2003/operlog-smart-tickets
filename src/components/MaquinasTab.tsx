@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
-import { Plus, Trash2, Pencil, Wrench, Settings, X, Filter, Search } from 'lucide-react';
+import { Plus, Trash2, Pencil, Wrench, Settings, X, Filter, Search, AlertTriangle } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
@@ -45,6 +46,7 @@ export function MaquinasTab() {
   const [modelo, setModelo] = useState('');
   const [unidade, setUnidade] = useState('');
   const [armazem, setArmazem] = useState('');
+  const [prioridade, setPrioridade] = useState(false);
   const [fotoPreview, setFotoPreview] = useState<string | undefined>();
   const [fotoFile, setFotoFile] = useState<File | null>(null);
 
@@ -107,7 +109,7 @@ export function MaquinasTab() {
     }
   });
 
-  const resetForm = () => { setTipo(''); setFrota(''); setMarca(''); setModelo(''); setUnidade(''); setArmazem(''); setFotoPreview(undefined); setFotoFile(null); };
+  const resetForm = () => { setTipo(''); setFrota(''); setMarca(''); setModelo(''); setUnidade(''); setArmazem(''); setPrioridade(false); setFotoPreview(undefined); setFotoFile(null); };
 
   const openCreate = () => {
     resetForm();
@@ -116,7 +118,7 @@ export function MaquinasTab() {
 
   const openEdit = (m: Maquina) => {
     setTipo(m.tipo); setFrota(m.frota); setMarca(m.marca); setModelo(m.modelo);
-    setUnidade(m.unidade); setArmazem(m.armazem); setFotoPreview(m.foto_url || undefined); setFotoFile(null);
+    setUnidade(m.unidade); setArmazem(m.armazem); setPrioridade((m as any).prioridade ?? false); setFotoPreview(m.foto_url || undefined); setFotoFile(null);
     setEditMaquina(m);
   };
 
@@ -150,10 +152,10 @@ export function MaquinasTab() {
     }
 
     if (editMaquina) {
-      await supabase.from('maquinas').update({ tipo, frota, marca, modelo, unidade, armazem, foto_url }).eq('id', editMaquina.id);
+      await supabase.from('maquinas').update({ tipo, frota, marca, modelo, unidade, armazem, foto_url, prioridade } as any).eq('id', editMaquina.id);
       setEditMaquina(null);
     } else {
-      await supabase.from('maquinas').insert({ tipo, frota, marca, modelo, unidade, armazem, foto_url });
+      await supabase.from('maquinas').insert({ tipo, frota, marca, modelo, unidade, armazem, foto_url, prioridade } as any);
       setCreateOpen(false);
     }
     resetForm();
@@ -236,6 +238,10 @@ export function MaquinasTab() {
         <Label>Foto</Label>
         <ImageUpload value={fotoPreview} onChange={handleFotoChange} label="Foto da máquina" />
       </div>
+      <label className="flex items-center gap-2 text-sm">
+        <Checkbox checked={prioridade} onCheckedChange={(v) => setPrioridade(v === true)} />
+        <span className="flex items-center gap-1"><AlertTriangle className="w-4 h-4 text-destructive" /> Máquina prioritária</span>
+      </label>
       <Button onClick={handleSave} disabled={!tipo || !frota || !marca || !modelo || (!unidade && !armazem)}>Salvar</Button>
     </div>
   );
@@ -318,7 +324,10 @@ export function MaquinasTab() {
                 </div>
               )}
               <div className="flex-1 min-w-0 text-sm">
-                <p className="font-medium">{m.tipo}</p>
+                <p className="font-medium flex items-center gap-1">
+                  {(m as any).prioridade && <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />}
+                  <span>{m.tipo}</span>
+                </p>
                 <p className="text-muted-foreground">{m.marca} {m.modelo} {m.frota}</p>
                 <p className="text-xs text-muted-foreground">{m.unidade || m.armazem}</p>
               </div>
