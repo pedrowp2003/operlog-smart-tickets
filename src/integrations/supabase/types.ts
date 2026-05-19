@@ -210,6 +210,36 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           area: string | null
@@ -218,6 +248,7 @@ export type Database = {
           email: string
           foto_url: string | null
           id: string
+          must_change_password: boolean
           nome: string | null
           role: Database["public"]["Enums"]["app_role"]
           sobrenome: string | null
@@ -233,6 +264,7 @@ export type Database = {
           email: string
           foto_url?: string | null
           id: string
+          must_change_password?: boolean
           nome?: string | null
           role: Database["public"]["Enums"]["app_role"]
           sobrenome?: string | null
@@ -248,6 +280,7 @@ export type Database = {
           email?: string
           foto_url?: string | null
           id?: string
+          must_change_password?: boolean
           nome?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           sobrenome?: string | null
@@ -299,6 +332,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_analista_ids: { Args: never; Returns: string[] }
       get_email_by_username: { Args: { _username: string }; Returns: string }
       has_role: {
         Args: {
