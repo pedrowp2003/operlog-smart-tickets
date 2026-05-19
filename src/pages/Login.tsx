@@ -63,10 +63,6 @@ export default function Login() {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
-          <p className="text-sm text-center text-muted-foreground mt-4">
-            Não tem conta?{' '}
-            <Link to="/register" className="text-primary font-medium hover:underline">Cadastrar-se</Link>
-          </p>
         </CardContent>
       </Card>
     </div>
