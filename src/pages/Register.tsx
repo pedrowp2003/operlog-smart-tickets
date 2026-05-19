@@ -239,10 +239,7 @@ export default function Register() {
               {loading ? 'Cadastrando...' : 'Cadastrar-se'}
             </Button>
           </form>
-          <p className="text-sm text-center text-muted-foreground mt-4">
-            Já tem conta?{' '}
-            <Link to="/login" className="text-primary font-medium hover:underline">Entrar</Link>
-          </p>
+          )}
         </CardContent>
       </Card>
     </div>
