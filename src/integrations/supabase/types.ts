@@ -218,6 +218,7 @@ export type Database = {
           email: string
           foto_url: string | null
           id: string
+          must_change_password: boolean
           nome: string | null
           role: Database["public"]["Enums"]["app_role"]
           sobrenome: string | null
@@ -233,6 +234,7 @@ export type Database = {
           email: string
           foto_url?: string | null
           id: string
+          must_change_password?: boolean
           nome?: string | null
           role: Database["public"]["Enums"]["app_role"]
           sobrenome?: string | null
@@ -248,6 +250,7 @@ export type Database = {
           email?: string
           foto_url?: string | null
           id?: string
+          must_change_password?: boolean
           nome?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           sobrenome?: string | null
