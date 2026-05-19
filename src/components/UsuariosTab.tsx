@@ -27,7 +27,7 @@ function generateTempPassword(): string {
 }
 
 export function UsuariosTab() {
-  const { user, register, uploadImage } = useAuth();
+  const { user, uploadImage } = useAuth();
   const confirm = useConfirm();
   const [usuarios, setUsuarios] = useState<Profile[]>([]);
   const [detail, setDetail] = useState<Profile | null>(null);
@@ -154,19 +154,28 @@ export function UsuariosTab() {
       const url = await uploadImage(fotoFile, 'profiles');
       if (url) foto_url = url;
     }
-    const err = await register(email.trim(), tempPassword, {
-      username: username.trim(),
-      role,
-      nome: nome.trim() || undefined,
-      sobrenome: sobrenome.trim() || undefined,
-      telefone: telefone.replace(/\D/g, '').slice(0, 11),
-      foto_url,
-      unidade: unidade || undefined,
-      armazem: armazem || undefined,
-      area: area || undefined,
-      must_change_password: 'true',
+    const { data: result, error: fnErr } = await supabase.functions.invoke('admin-create-user', {
+      body: {
+        email: email.trim(),
+        password: tempPassword,
+        metadata: {
+          username: username.trim(),
+          role,
+          nome: nome.trim() || undefined,
+          sobrenome: sobrenome.trim() || undefined,
+          telefone: telefone.replace(/\D/g, '').slice(0, 11),
+          foto_url,
+          unidade: unidade || undefined,
+          armazem: armazem || undefined,
+          area: area || undefined,
+          must_change_password: 'true',
+        },
+      },
     });
-    if (err) { toast.error(err); return; }
+    if (fnErr || (result as any)?.error) {
+      toast.error((result as any)?.error || fnErr?.message || 'Erro ao cadastrar usuário');
+      return;
+    }
     toast.success('Usuário cadastrado');
     setCreatedInfo({ username: username.trim(), password: tempPassword });
     setCreateOpen(false);
