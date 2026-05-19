@@ -9,12 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
-import { User, LogOut, Settings, Eye, EyeOff } from 'lucide-react';
+import { User, LogOut, Settings, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { validatePassword, PASSWORD_RULES_TEXT } from '@/lib/password';
+import { useConfirm } from '@/components/ConfirmDialog';
 
 export function UserMenu() {
-  const { user, logout, updateProfile, updateEmail, updatePassword, uploadImage } = useAuth();
+  const { user, logout, updateProfile, updateEmail, updatePassword, uploadImage, deleteAccount } = useAuth();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [editOpen, setEditOpen] = useState(false);
 
   // Edit fields
@@ -37,6 +39,7 @@ export function UserMenu() {
   const isTecnico = user.role === 'tecnico';
   const isCoordenador = user.role === 'coordenador';
   const isSupervisor = user.role === 'supervisor';
+  const isAnalista = user.role === 'analista';
 
   const openEdit = () => {
     setUsername(user.username);
@@ -142,6 +145,24 @@ export function UserMenu() {
           <DropdownMenuItem onClick={openEdit}>
             <Settings className="w-4 h-4 mr-2" /> Editar informações
           </DropdownMenuItem>
+          {isAnalista && (
+            <DropdownMenuItem
+              onClick={async () => {
+                const ok = await confirm({
+                  title: 'Excluir sua conta?',
+                  description: 'Esta ação é permanente e não pode ser desfeita.',
+                  confirmText: 'Excluir',
+                  destructive: true,
+                });
+                if (!ok) return;
+                await deleteAccount();
+                navigate('/');
+              }}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="w-4 h-4 mr-2" /> Excluir minha conta
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-2" /> Sair
           </DropdownMenuItem>
