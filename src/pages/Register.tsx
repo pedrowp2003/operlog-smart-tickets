@@ -20,6 +20,7 @@ export default function Register() {
   const [masterOk, setMasterOk] = useState(false);
   const [masterInput, setMasterInput] = useState('');
   const [masterError, setMasterError] = useState('');
+  const [showMasterPassword, setShowMasterPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -108,16 +109,22 @@ export default function Register() {
               }}
             >
               <p className="text-sm text-muted-foreground">
-                Apenas analistas podem cadastrar usuários. Informe a senha de administrador para continuar.
+                Informe a senha de administrador para continuar.
               </p>
               <div>
                 <Label>Senha de administrador</Label>
-                <Input
-                  type="password"
-                  value={masterInput}
-                  onChange={(e) => setMasterInput(e.target.value)}
-                  placeholder="Senha mestre"
-                />
+                <div className="relative">
+                  <Input
+                    type={showMasterPassword ? 'text' : 'password'}
+                    value={masterInput}
+                    onChange={(e) => setMasterInput(e.target.value)}
+                    placeholder="Senha mestre"
+                    className="pr-10"
+                  />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowMasterPassword(!showMasterPassword)}>
+                    {showMasterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
               {masterError && <p className="text-sm text-destructive">{masterError}</p>}
               <Button type="submit" className="w-full">Continuar</Button>
