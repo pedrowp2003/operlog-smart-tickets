@@ -208,28 +208,28 @@ export function MaquinasTab() {
         <Label>Tipo *</Label>
         <Select value={tipo} onValueChange={setTipo}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-          <SelectContent>{TIPOS_MAQUINA.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+          <SelectContent>{TIPOS_NAMES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
         <Label>Frota *</Label>
         <Select value={frota} onValueChange={setFrota}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-          <SelectContent>{FROTAS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
+          <SelectContent>{FROTAS_NAMES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
         <Label>Marca *</Label>
         <Select value={marca} onValueChange={setMarca}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-          <SelectContent>{MARCAS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+          <SelectContent>{MARCAS_NAMES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
         <Label>Modelo *</Label>
         <Select value={modelo} onValueChange={setModelo}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-          <SelectContent>{MODELOS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+          <SelectContent>{MODELOS_NAMES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
@@ -279,22 +279,22 @@ export function MaquinasTab() {
               <div><Label className="text-xs">Tipo</Label>
                 <Select value={filterTipo} onValueChange={setFilterTipo}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{TIPOS_MAQUINA.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{TIPOS_NAMES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Frota</Label>
                 <Select value={filterFrota} onValueChange={setFilterFrota}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{FROTAS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{FROTAS_NAMES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Marca</Label>
                 <Select value={filterMarca} onValueChange={setFilterMarca}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{MARCAS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{MARCAS_NAMES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Modelo</Label>
                 <Select value={filterModelo} onValueChange={setFilterModelo}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{MODELOS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{MODELOS_NAMES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Unidade / Armazém</Label>
                 <Select value={filterLocal} onValueChange={setFilterLocal}>
