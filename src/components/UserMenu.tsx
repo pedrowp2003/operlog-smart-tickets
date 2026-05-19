@@ -65,9 +65,10 @@ export function UserMenu() {
 
   const handleSave = async () => {
     setPasswordError('');
-    if (newPassword && newPassword.length < 8) {
-      setPasswordError('A senha deve ter no mínimo 8 dígitos');
-      return;
+    if (newPassword) {
+      const { validatePassword } = await import('@/lib/password');
+      const v = validatePassword(newPassword);
+      if (v) { setPasswordError(v); return; }
     }
 
     setSaving(true);

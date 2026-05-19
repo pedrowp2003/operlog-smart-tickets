@@ -9,10 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUpload } from '@/components/ImageUpload';
 import { UserRole, UNIDADES, ARMAZENS, AREAS, ROLE_LABELS, formatPhone } from '@/types';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { validatePassword, PASSWORD_RULE_MSG } from '@/lib/password';
 import logo from '@/assets/operlog-logo.png';
+
+const ADMIN_MASTER_PASSWORD = 'admin123@';
+
 export default function Register() {
   const navigate = useNavigate();
   const { register, uploadImage } = useAuth();
+  const [masterOk, setMasterOk] = useState(false);
+  const [masterInput, setMasterInput] = useState('');
+  const [masterError, setMasterError] = useState('');
   const [role, setRole] = useState<UserRole | ''>('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -47,10 +54,8 @@ export default function Register() {
       setError('Preencha todos os campos obrigatórios');
       return;
     }
-    if (password.length < 8) {
-      setError('A senha deve ter no mínimo 8 dígitos');
-      return;
-    }
+    const pwErr = validatePassword(password);
+    if (pwErr) { setError(pwErr); return; }
     if (!nome.trim() || !sobrenome.trim()) {
       setError('Preencha nome e sobrenome');
       return;
@@ -108,6 +113,35 @@ export default function Register() {
           <img src={logo} alt="OperLog" width={280} height={280} className="mx-auto mb-2" />
         </CardHeader>
         <CardContent>
+          {!masterOk ? (
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (masterInput === ADMIN_MASTER_PASSWORD) {
+                  setMasterOk(true);
+                  setMasterError('');
+                } else {
+                  setMasterError('Senha de administrador incorreta');
+                }
+              }}
+            >
+              <p className="text-sm text-muted-foreground">
+                Apenas analistas podem cadastrar usuários. Informe a senha de administrador para continuar.
+              </p>
+              <div>
+                <Label>Senha de administrador</Label>
+                <Input
+                  type="password"
+                  value={masterInput}
+                  onChange={(e) => setMasterInput(e.target.value)}
+                  placeholder="Senha mestre"
+                />
+              </div>
+              {masterError && <p className="text-sm text-destructive">{masterError}</p>}
+              <Button type="submit" className="w-full">Continuar</Button>
+            </form>
+          ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <Label>Tipo de Usuário *</Label>
@@ -205,10 +239,7 @@ export default function Register() {
               {loading ? 'Cadastrando...' : 'Cadastrar-se'}
             </Button>
           </form>
-          <p className="text-sm text-center text-muted-foreground mt-4">
-            Já tem conta?{' '}
-            <Link to="/login" className="text-primary font-medium hover:underline">Entrar</Link>
-          </p>
+          )}
         </CardContent>
       </Card>
     </div>

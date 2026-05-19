@@ -12,6 +12,7 @@ import { Trash2, Pencil, User as UserIcon, Plus, Filter, Search } from 'lucide-r
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatPhone, ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, AREAS } from '@/types';
 import { toast } from 'sonner';
+import { validatePassword } from '@/lib/password';
 import { useConfirm } from '@/components/ConfirmDialog';
 
 export function UsuariosTab() {
@@ -125,7 +126,8 @@ export function UsuariosTab() {
       toast.error('Analistas não podem cadastrar outras contas de analista');
       return;
     }
-    if (password.length < 8) { toast.error('Senha mínima de 8 dígitos'); return; }
+    const pwErr = validatePassword(password);
+    if (pwErr) { toast.error(pwErr); return; }
     let foto_url: string | undefined;
     if (fotoFile) {
       const url = await uploadImage(fotoFile, 'profiles');

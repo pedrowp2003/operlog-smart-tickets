@@ -21,9 +21,6 @@ export default function Landing() {
             <Button size="lg" className="w-full text-xl font-semibold h-14" onClick={() => navigate('/login')}>
               Entrar
             </Button>
-            <Button size="lg" variant="outline" className="w-full text-xl font-semibold h-14" onClick={() => navigate('/register')}>
-              Cadastrar-se
-            </Button>
           </div>
         </div>
       </div>

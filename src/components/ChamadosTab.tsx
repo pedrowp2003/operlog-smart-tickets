@@ -134,6 +134,9 @@ export function ChamadosTab() {
   const getFornecedor = (id: string | null) => id ? fornecedores.find(f => f.id === id) : null;
 
   const tecnicos = profiles.filter(p => p.role === 'tecnico');
+  const countOpenChamadosByTecnico = (tecnicoId: string) => chamados.filter(c =>
+    c.status !== 'Concluído' && (c.tecnico_id === tecnicoId || c.tecnico2_id === tecnicoId)
+  ).length;
 
   const availableMaquinas = maquinas.filter((m) => {
     if (user.role === 'gerente' || isAnalista) return true;
@@ -944,7 +947,14 @@ export function ChamadosTab() {
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhum</SelectItem>
-                    {tecnicosLivres(1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                    {tecnicosLivres(1).map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        <span className="flex items-center gap-2">
+                          <span>{t.nome} {t.sobrenome}</span>
+                          <span className="text-primary font-semibold text-xs">({countOpenChamadosByTecnico(t.id)})</span>
+                        </span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -954,7 +964,14 @@ export function ChamadosTab() {
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhum</SelectItem>
-                    {tecnicosLivres(2).filter(t => t.id !== assignTec1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                    {tecnicosLivres(2).filter(t => t.id !== assignTec1).map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        <span className="flex items-center gap-2">
+                          <span>{t.nome} {t.sobrenome}</span>
+                          <span className="text-primary font-semibold text-xs">({countOpenChamadosByTecnico(t.id)})</span>
+                        </span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

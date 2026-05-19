@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { translateAuthError } from '@/lib/auth-errors';
+import { validatePassword } from '@/lib/password';
 
 export type Profile = Tables<'profiles'>;
 
@@ -103,7 +104,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updatePassword = async (newPassword: string): Promise<string | null> => {
-    if (newPassword.length < 8) return 'A senha deve ter no mínimo 8 dígitos';
+    const v = validatePassword(newPassword);
+    if (v) return v;
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) return translateAuthError(error.message);
     return null;
