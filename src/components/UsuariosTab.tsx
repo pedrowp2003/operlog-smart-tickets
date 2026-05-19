@@ -14,16 +14,10 @@ import { formatPhone, ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, AREAS } from '@
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
 
-function generateTempPassword(): string {
-  const lower = 'abcdefghijkmnpqrstuvwxyz';
-  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const digits = '23456789';
-  const symbols = '!@#$%&*?';
-  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
-  const all = lower + upper + digits + symbols;
-  let out = pick(upper) + pick(lower) + pick(digits) + pick(symbols);
-  for (let i = 0; i < 6; i++) out += pick(all);
-  return out.split('').sort(() => Math.random() - 0.5).join('');
+function generateTempPassword(username: string, telefone: string): string {
+  const digits = telefone.replace(/\D/g, '');
+  const last4 = digits.slice(-4).padStart(4, '0');
+  return `${username.trim().toLowerCase()}${last4}`;
 }
 
 export function UsuariosTab() {
@@ -148,7 +142,7 @@ export function UsuariosTab() {
       toast.error('Analistas não podem cadastrar outras contas de analista');
       return;
     }
-    const tempPassword = generateTempPassword();
+    const tempPassword = generateTempPassword(username, telefone);
     let foto_url: string | undefined;
     if (fotoFile) {
       const url = await uploadImage(fotoFile, 'profiles');
@@ -176,11 +170,11 @@ export function UsuariosTab() {
       toast.error((result as any)?.error || fnErr?.message || 'Erro ao cadastrar usuário');
       return;
     }
-    toast.success('Usuário cadastrado');
     setCreatedInfo({ username: username.trim(), password: tempPassword });
     setCreateOpen(false);
+    toast.success('Usuário cadastrado');
     resetForm();
-    fetch();
+    void fetch();
   };
 
   const roleEmoji = (r: string) => ROLE_LABELS[r as UserRole] || r;
