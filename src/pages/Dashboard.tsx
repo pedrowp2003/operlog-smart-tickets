@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from '@/components/UserMenu';
+import { ForcePasswordChange } from '@/components/ForcePasswordChange';
 import { ChamadosTab } from '@/components/ChamadosTab';
 import { MaquinasTab } from '@/components/MaquinasTab';
 import { TecnicosTab } from '@/components/TecnicosTab';
@@ -93,6 +94,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <ForcePasswordChange />
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
