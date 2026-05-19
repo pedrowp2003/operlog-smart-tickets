@@ -9,10 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUpload } from '@/components/ImageUpload';
 import { UserRole, UNIDADES, ARMAZENS, AREAS, ROLE_LABELS, formatPhone } from '@/types';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { validatePassword, PASSWORD_RULE_MSG } from '@/lib/password';
 import logo from '@/assets/operlog-logo.png';
+
+const ADMIN_MASTER_PASSWORD = 'admin123@';
+
 export default function Register() {
   const navigate = useNavigate();
   const { register, uploadImage } = useAuth();
+  const [masterOk, setMasterOk] = useState(false);
+  const [masterInput, setMasterInput] = useState('');
+  const [masterError, setMasterError] = useState('');
   const [role, setRole] = useState<UserRole | ''>('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -47,10 +54,8 @@ export default function Register() {
       setError('Preencha todos os campos obrigatórios');
       return;
     }
-    if (password.length < 8) {
-      setError('A senha deve ter no mínimo 8 dígitos');
-      return;
-    }
+    const pwErr = validatePassword(password);
+    if (pwErr) { setError(pwErr); return; }
     if (!nome.trim() || !sobrenome.trim()) {
       setError('Preencha nome e sobrenome');
       return;
