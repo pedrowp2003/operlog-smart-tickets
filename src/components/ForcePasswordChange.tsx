@@ -31,6 +31,10 @@ export function ForcePasswordChange() {
     if (upErr) {
       setSaving(false);
       const lower = upErr.toLowerCase();
+      if (lower.includes('same_password') || lower.includes('different from the old') || lower.includes('diferente da atual')) {
+        setErr('A nova senha deve ser diferente da senha temporária (Pipoca123#). Escolha uma senha pessoal.');
+        return;
+      }
       if (lower.includes('session') || lower.includes('sessão') || lower.includes('jwt') || lower.includes('missing')) {
         toast.error('Sua sessão expirou. Entre novamente com a senha Pipoca123# para definir a nova senha.');
         await logout();
