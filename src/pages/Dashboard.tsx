@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { UserMenu } from '@/components/UserMenu';
-import { ForcePasswordChange } from '@/components/ForcePasswordChange';
 import { ChamadosTab } from '@/components/ChamadosTab';
 import { MaquinasTab } from '@/components/MaquinasTab';
 import { TecnicosTab } from '@/components/TecnicosTab';
@@ -15,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import logo from '@/assets/operlog-logo.png';
-import { NotificationsPanel, NotificationsBadge } from '@/components/NotificationsPanel';
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -24,19 +21,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (!loading && !user) navigate('/');
   }, [user, loading, navigate]);
-
-  // If the server-side session was invalidated (e.g. admin reset the password),
-  // the JWT in localStorage is stale. Detect it and force a clean re-login.
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error || !data.session) {
-        await supabase.auth.signOut();
-        navigate('/login');
-      }
-    })();
-  }, [user, navigate]);
 
   const [leftWidth, setLeftWidth] = useState<number>(() => {
     const v = Number(localStorage.getItem('panel-left-width'));
@@ -109,7 +93,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <ForcePasswordChange />
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
@@ -142,12 +125,11 @@ export default function Dashboard() {
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative lg:hidden">
                   <Bell className="w-4 h-4" />
-                  <NotificationsBadge />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-80">
-                <p className="text-sm font-medium mb-2">Notificações</p>
-                <NotificationsPanel compact />
+              <PopoverContent align="end" className="w-64">
+                <p className="text-sm font-medium mb-1">Notificações</p>
+                <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
               </PopoverContent>
             </Popover>
             <div className="mr-1 flex shrink-0 items-center gap-1 whitespace-nowrap">
@@ -193,11 +175,10 @@ export default function Dashboard() {
           className="hidden lg:block absolute top-0 left-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 rounded-l-lg"
           aria-label="Redimensionar painel"
         />
-        <div className="flex items-center gap-2 text-sm font-semibold relative">
-          <span className="relative inline-flex"><Bell className="w-4 h-4" /><NotificationsBadge /></span>
-          Notificações
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Bell className="w-4 h-4" /> Notificações
         </div>
-        <NotificationsPanel />
+        <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
       </aside>
 
       <main

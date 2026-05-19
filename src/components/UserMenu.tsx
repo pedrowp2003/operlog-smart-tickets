@@ -9,15 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
-import { User, LogOut, Settings, Eye, EyeOff, Trash2 } from 'lucide-react';
-import { validatePassword, PASSWORD_RULES_TEXT } from '@/lib/password';
-import { useConfirm } from '@/components/ConfirmDialog';
+import { User, LogOut, Trash2, Settings, Eye, EyeOff } from 'lucide-react';
 
 export function UserMenu() {
-  const { user, logout, updateProfile, updateEmail, updatePassword, uploadImage, deleteAccount } = useAuth();
+  const { user, logout, updateProfile, updateEmail, updatePassword, deleteAccount, uploadImage } = useAuth();
   const navigate = useNavigate();
-  const confirm = useConfirm();
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Edit fields
   const [username, setUsername] = useState('');
@@ -39,7 +37,6 @@ export function UserMenu() {
   const isTecnico = user.role === 'tecnico';
   const isCoordenador = user.role === 'coordenador';
   const isSupervisor = user.role === 'supervisor';
-  const isAnalista = user.role === 'analista';
 
   const openEdit = () => {
     setUsername(user.username);
@@ -68,9 +65,9 @@ export function UserMenu() {
 
   const handleSave = async () => {
     setPasswordError('');
-    if (newPassword) {
-      const err = validatePassword(newPassword);
-      if (err) { setPasswordError(err); return; }
+    if (newPassword && newPassword.length < 8) {
+      setPasswordError('A senha deve ter no mínimo 8 dígitos');
+      return;
     }
 
     setSaving(true);
@@ -118,6 +115,11 @@ export function UserMenu() {
     setEditOpen(false);
   };
 
+  const handleDelete = async () => {
+    await deleteAccount();
+    navigate('/');
+  };
+
   const handleLogout = async () => {
     await logout();
     navigate('/');
@@ -145,26 +147,12 @@ export function UserMenu() {
           <DropdownMenuItem onClick={openEdit}>
             <Settings className="w-4 h-4 mr-2" /> Editar informações
           </DropdownMenuItem>
-          {isAnalista && (
-            <DropdownMenuItem
-              onClick={async () => {
-                const ok = await confirm({
-                  title: 'Excluir sua conta?',
-                  description: 'Esta ação é permanente e não pode ser desfeita.',
-                  confirmText: 'Excluir',
-                  destructive: true,
-                });
-                if (!ok) return;
-                await deleteAccount();
-                navigate('/');
-              }}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="w-4 h-4 mr-2" /> Excluir minha conta
-            </DropdownMenuItem>
-          )}
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-2" /> Sair
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-destructive" onClick={() => setDeleteOpen(true)}>
+            <Trash2 className="w-4 h-4 mr-2" /> Excluir conta
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -237,20 +225,30 @@ export function UserMenu() {
                   type={showPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Nova senha"
+                  placeholder="Mínimo 8 dígitos"
                   className="pr-10"
                 />
                 <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">{PASSWORD_RULES_TEXT}</p>
               {passwordError && <p className="text-sm text-destructive mt-1">{passwordError}</p>}
             </div>
 
             <Button onClick={handleSave} disabled={saving}>
               {saving ? 'Salvando...' : 'Salvar'}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Excluir Conta</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.</p>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleDelete}>Excluir</Button>
           </div>
         </DialogContent>
       </Dialog>
