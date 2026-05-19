@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { UserMenu } from '@/components/UserMenu';
 import { ForcePasswordChange } from '@/components/ForcePasswordChange';
 import { ChamadosTab } from '@/components/ChamadosTab';
@@ -22,6 +23,19 @@ export default function Dashboard() {
   useEffect(() => {
     if (!loading && !user) navigate('/');
   }, [user, loading, navigate]);
+
+  // If the server-side session was invalidated (e.g. admin reset the password),
+  // the JWT in localStorage is stale. Detect it and force a clean re-login.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data.session) {
+        await supabase.auth.signOut();
+        navigate('/login');
+      }
+    })();
+  }, [user, navigate]);
 
   const [leftWidth, setLeftWidth] = useState<number>(() => {
     const v = Number(localStorage.getItem('panel-left-width'));
