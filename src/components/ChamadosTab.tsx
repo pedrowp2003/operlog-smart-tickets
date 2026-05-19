@@ -509,7 +509,7 @@ export function ChamadosTab() {
           {filteredChamados.map((chamado) => {
             const maquina = getMaquina(chamado.maquina_id);
             let abertoBorder = '';
-            if (chamado.status === 'Aberto') {
+            if (isAnalista && chamado.status === 'Aberto') {
               const mins = (Date.now() - new Date(chamado.created_at).getTime()) / 60000;
               if (mins >= 180) abertoBorder = 'border-2 border-destructive';
               else if (mins >= 120) abertoBorder = 'border-2 border-orange-500';
