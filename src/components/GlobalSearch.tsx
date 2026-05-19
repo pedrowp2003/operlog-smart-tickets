@@ -23,7 +23,8 @@ export function GlobalSearch() {
   const [tecnicos, setTecnicos] = useState<TecnicoChamado[]>([]);
 
   const isAnalista = user?.role === 'analista';
-  const isTecnico = user?.role === 'tecnico';
+  const isCoordenador = user?.role === 'coordenador';
+  const isSupervisor = user?.role === 'supervisor';
 
   useEffect(() => {
     if (!open) { setQ(''); setChamados([]); setMaquinas([]); setFornecedores([]); setTecnicos([]); }
@@ -38,20 +39,44 @@ export function GlobalSearch() {
       setLoading(true);
       const like = `%${term}%`;
       try {
+        // Máquinas com filtro de unidade/armazém para coord/supervisor
+        let mqQuery = supabase.from('maquinas')
+          .select('id,tipo,marca,modelo,frota,unidade,armazem')
+          .or(`tipo.ilike.${like},marca.ilike.${like},modelo.ilike.${like},frota.ilike.${like}`)
+          .limit(15);
+        if (isCoordenador && user?.unidade) mqQuery = mqQuery.eq('unidade', user.unidade);
+        if (isSupervisor && user?.armazem) mqQuery = mqQuery.eq('armazem', user.armazem);
+
+        // IDs de máquinas visíveis (para restringir chamados de coord/supervisor)
+        let allowedMaquinaIds: string[] | null = null;
+        if (isCoordenador || isSupervisor) {
+          let scopeQ = supabase.from('maquinas').select('id');
+          if (isCoordenador && user?.unidade) scopeQ = scopeQ.eq('unidade', user.unidade);
+          if (isSupervisor && user?.armazem) scopeQ = scopeQ.eq('armazem', user.armazem);
+          const { data: scopeData } = await scopeQ;
+          allowedMaquinaIds = (scopeData || []).map((m: any) => m.id);
+        }
+
+        let chQuery = supabase.from('chamados')
+          .select('id,numero,descricao,status,categoria,codigo_erro,maquina_id')
+          .or(`numero.ilike.${like},descricao.ilike.${like},categoria.ilike.${like},codigo_erro.ilike.${like}`)
+          .limit(15);
+        if (allowedMaquinaIds !== null) {
+          if (allowedMaquinaIds.length === 0) {
+            chQuery = chQuery.eq('maquina_id', '00000000-0000-0000-0000-000000000000');
+          } else {
+            chQuery = chQuery.in('maquina_id', allowedMaquinaIds);
+          }
+        }
+
         const [ch, mq, fo, pf] = await Promise.all([
-          supabase.from('chamados')
-            .select('id,numero,descricao,status,categoria,codigo_erro')
-            .or(`numero.ilike.${like},descricao.ilike.${like},categoria.ilike.${like},codigo_erro.ilike.${like}`)
-            .limit(15),
-          supabase.from('maquinas')
-            .select('id,tipo,marca,modelo,frota')
-            .or(`tipo.ilike.${like},marca.ilike.${like},modelo.ilike.${like},frota.ilike.${like}`)
-            .limit(15),
+          chQuery,
+          mqQuery,
           supabase.from('fornecedores')
             .select('id,nome,natureza')
             .or(`nome.ilike.${like},natureza.ilike.${like}`)
             .limit(15),
-          // técnicos (filtrados conforme acesso)
+          // perfis: analistas veem todos; demais cargos veem apenas técnicos
           (async () => {
             let query = supabase.from('profiles')
               .select('id,nome,sobrenome,username,role')
@@ -71,11 +96,19 @@ export function GlobalSearch() {
         const tecProfiles = profiles.filter(p => p.role === 'tecnico');
         const tecResults: TecnicoChamado[] = [];
         for (const p of tecProfiles) {
-          const { data: chs } = await supabase
+          let tq = supabase
             .from('chamados')
             .select('id,numero,descricao')
             .or(`tecnico_id.eq.${p.id},tecnico2_id.eq.${p.id}`)
             .limit(5);
+          if (allowedMaquinaIds !== null) {
+            if (allowedMaquinaIds.length === 0) {
+              tq = tq.eq('maquina_id', '00000000-0000-0000-0000-000000000000');
+            } else {
+              tq = tq.in('maquina_id', allowedMaquinaIds);
+            }
+          }
+          const { data: chs } = await tq;
           tecResults.push({ profile: p, chamados: (chs as any) || [] });
         }
         setTecnicos(tecResults);
