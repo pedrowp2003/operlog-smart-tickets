@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck, AlertTriangle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
@@ -49,6 +49,11 @@ export function ChamadosTab() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<string>('recent');
   const isMobile = useIsMobile();
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const [descricao, setDescricao] = useState('');
   const [maquinaId, setMaquinaId] = useState('');
@@ -483,8 +488,16 @@ export function ChamadosTab() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
           {filteredChamados.map((chamado) => {
             const maquina = getMaquina(chamado.maquina_id);
+            let abertoBorder = '';
+            if (chamado.status === 'Aberto') {
+              const mins = (Date.now() - new Date(chamado.created_at).getTime()) / 60000;
+              if (mins >= 180) abertoBorder = 'border-2 border-destructive';
+              else if (mins >= 120) abertoBorder = 'border-2 border-yellow-500';
+              else if (mins >= 60) abertoBorder = 'border-2 border-green-600';
+              void tick;
+            }
             return (
-              <Card key={chamado.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailChamado(chamado)}>
+              <Card key={chamado.id} className={`p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start ${abertoBorder}`} onClick={() => setDetailChamado(chamado)}>
                 {maquina?.foto_url ? (
                   <img src={maquina.foto_url} alt="" width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover flex-shrink-0" />
                 ) : (
@@ -502,7 +515,10 @@ export function ChamadosTab() {
                   </div>
                   {maquina && (
                     <>
-                      <p className="text-sm font-medium break-words">{maquina.tipo}</p>
+                      <p className="text-sm font-medium break-words flex items-center gap-1">
+                        {(maquina as any).prioridade && <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />}
+                        <span>{maquina.tipo}</span>
+                      </p>
                       <p className="text-xs text-muted-foreground break-words">
                         <span>{maquina.marca} {maquina.modelo} {maquina.frota}</span>
                         <span className="hidden sm:inline"> - {maquina.unidade || maquina.armazem}</span>
