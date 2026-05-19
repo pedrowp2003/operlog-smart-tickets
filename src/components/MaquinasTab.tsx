@@ -345,7 +345,9 @@ export function MaquinasTab() {
               )}
               <div className="flex-1 min-w-0 text-sm">
                 <p className="font-medium flex items-center gap-1">
-                  {(m as any).prioridade && <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />}
+                  {(((m as any).prioridade) || tiposList.find(t => t.nome === m.tipo)?.prioridade) && (
+                    <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
+                  )}
                   <span>{m.tipo}</span>
                 </p>
                 <p className="text-muted-foreground">{m.marca} {m.modelo} {m.frota}</p>
