@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import logo from '@/assets/operlog-logo.png';
+import { NotificationsPanel, NotificationsBadge } from '@/components/NotificationsPanel';
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -141,11 +142,12 @@ export default function Dashboard() {
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative lg:hidden">
                   <Bell className="w-4 h-4" />
+                  <NotificationsBadge />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-64">
-                <p className="text-sm font-medium mb-1">Notificações</p>
-                <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
+              <PopoverContent align="end" className="w-80">
+                <p className="text-sm font-medium mb-2">Notificações</p>
+                <NotificationsPanel compact />
               </PopoverContent>
             </Popover>
             <div className="mr-1 flex shrink-0 items-center gap-1 whitespace-nowrap">
@@ -191,10 +193,11 @@ export default function Dashboard() {
           className="hidden lg:block absolute top-0 left-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 rounded-l-lg"
           aria-label="Redimensionar painel"
         />
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <Bell className="w-4 h-4" /> Notificações
+        <div className="flex items-center gap-2 text-sm font-semibold relative">
+          <span className="relative inline-flex"><Bell className="w-4 h-4" /><NotificationsBadge /></span>
+          Notificações
         </div>
-        <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
+        <NotificationsPanel />
       </aside>
 
       <main
