@@ -37,6 +37,7 @@ export function UserMenu() {
   const isTecnico = user.role === 'tecnico';
   const isCoordenador = user.role === 'coordenador';
   const isSupervisor = user.role === 'supervisor';
+  const isAnalista = user.role === 'analista';
 
   const openEdit = () => {
     setUsername(user.username);
@@ -151,10 +152,14 @@ export function UserMenu() {
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-2" /> Sair
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="w-4 h-4 mr-2" /> Excluir conta
-          </DropdownMenuItem>
+          {isAnalista && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive" onClick={() => setDeleteOpen(true)}>
+                <Trash2 className="w-4 h-4 mr-2" /> Excluir conta
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

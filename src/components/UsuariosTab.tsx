@@ -12,8 +12,19 @@ import { Trash2, Pencil, User as UserIcon, Plus, Filter, Search } from 'lucide-r
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatPhone, ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, AREAS } from '@/types';
 import { toast } from 'sonner';
-import { validatePassword } from '@/lib/password';
 import { useConfirm } from '@/components/ConfirmDialog';
+
+function generateTempPassword(): string {
+  const lower = 'abcdefghijkmnpqrstuvwxyz';
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const symbols = '!@#$%&*?';
+  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
+  const all = lower + upper + digits + symbols;
+  let out = pick(upper) + pick(lower) + pick(digits) + pick(symbols);
+  for (let i = 0; i < 6; i++) out += pick(all);
+  return out.split('').sort(() => Math.random() - 0.5).join('');
+}
 
 export function UsuariosTab() {
   const { user, register, uploadImage } = useAuth();
@@ -31,7 +42,6 @@ export function UsuariosTab() {
   const [role, setRole] = useState<UserRole | ''>('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
   const [sobrenome, setSobrenome] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -40,6 +50,7 @@ export function UsuariosTab() {
   const [area, setArea] = useState('');
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | undefined>();
+  const [createdInfo, setCreatedInfo] = useState<{ username: string; password: string } | null>(null);
 
   const fetch = async () => {
     const { data } = await supabase.from('profiles').select('*').order('nome');
@@ -50,7 +61,7 @@ export function UsuariosTab() {
   if (!user) return null;
 
   const resetForm = () => {
-    setRole(''); setUsername(''); setEmail(''); setPassword('');
+    setRole(''); setUsername(''); setEmail('');
     setNome(''); setSobrenome(''); setTelefone('');
     setUnidade(''); setArmazem(''); setArea('');
     setFotoFile(null); setFotoPreview(undefined);
@@ -119,21 +130,20 @@ export function UsuariosTab() {
   };
 
   const handleCreate = async () => {
-    if (!role || !username.trim() || !email.trim() || !password.trim() || !telefone.trim()) {
+    if (!role || !username.trim() || !email.trim() || !telefone.trim()) {
       toast.error('Preencha todos os campos obrigatórios'); return;
     }
     if (user.role === 'analista' && role === 'analista') {
       toast.error('Analistas não podem cadastrar outras contas de analista');
       return;
     }
-    const pwErr = validatePassword(password);
-    if (pwErr) { toast.error(pwErr); return; }
+    const tempPassword = generateTempPassword();
     let foto_url: string | undefined;
     if (fotoFile) {
       const url = await uploadImage(fotoFile, 'profiles');
       if (url) foto_url = url;
     }
-    const err = await register(email.trim(), password, {
+    const err = await register(email.trim(), tempPassword, {
       username: username.trim(),
       role,
       nome: nome.trim() || undefined,
@@ -143,9 +153,11 @@ export function UsuariosTab() {
       unidade: unidade || undefined,
       armazem: armazem || undefined,
       area: area || undefined,
+      must_change_password: 'true',
     });
     if (err) { toast.error(err); return; }
     toast.success('Usuário cadastrado');
+    setCreatedInfo({ username: username.trim(), password: tempPassword });
     setCreateOpen(false);
     resetForm();
     fetch();
@@ -229,7 +241,9 @@ export function UsuariosTab() {
       </div>
       <div><Label>Usuário *</Label><Input value={username} onChange={e => setUsername(e.target.value)} /></div>
       <div><Label>Email *</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
-      <div><Label>Senha *</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 8 dígitos" /></div>
+      <p className="text-xs text-muted-foreground">
+        Uma senha temporária será gerada. O próprio usuário definirá a senha no primeiro acesso.
+      </p>
       {(role === 'gerente' || role === 'coordenador' || role === 'supervisor' || role === 'tecnico') && (
         <div className="grid grid-cols-2 gap-2">
           <div><Label>Nome</Label><Input value={nome} onChange={e => setNome(e.target.value)} /></div>
@@ -393,6 +407,31 @@ export function UsuariosTab() {
                 </div>
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!createdInfo} onOpenChange={() => setCreatedInfo(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Senha temporária gerada</DialogTitle></DialogHeader>
+          {createdInfo && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Repasse estas credenciais para <b>@{createdInfo.username}</b>. No primeiro acesso o usuário definirá a própria senha.
+              </p>
+              <div className="rounded-md border border-border bg-muted p-3 text-sm font-mono break-all select-all">
+                {createdInfo.password}
+              </div>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  navigator.clipboard?.writeText(createdInfo.password);
+                  toast.success('Senha copiada');
+                }}
+              >
+                Copiar senha
+              </Button>
+            </div>
           )}
         </DialogContent>
       </Dialog>
