@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck, AlertTriangle, AlertCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
@@ -480,15 +480,34 @@ export function ChamadosTab() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
           {filteredChamados.map((chamado) => {
             const maquina = getMaquina(chamado.maquina_id);
+            const isAberto = chamado.status === 'Aberto';
+            const isParada = chamado.situacao_maquina === 'Parada';
+            const isRestrito = chamado.situacao_maquina === 'Operando com restrições';
             return (
-              <Card key={chamado.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start" onClick={() => setDetailChamado(chamado)}>
-                {maquina?.foto_url ? (
-                  <img src={maquina.foto_url} alt="" width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover flex-shrink-0" />
-                ) : (
-                  <div className="w-16 h-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                    <Wrench className="w-6 h-6 text-muted-foreground" />
-                  </div>
-                )}
+              <Card
+                key={chamado.id}
+                className={`p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start ${isAberto ? 'border-2 border-status-open' : ''}`}
+                onClick={() => setDetailChamado(chamado)}
+              >
+                <div className="relative flex-shrink-0">
+                  {maquina?.foto_url ? (
+                    <img src={maquina.foto_url} alt="" width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover" />
+                  ) : (
+                    <div className="w-16 h-16 rounded bg-muted flex items-center justify-center">
+                      <Wrench className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  {isParada && (
+                    <span title="Máquina parada" className="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow">
+                      <AlertTriangle className="w-4 h-4 text-destructive fill-destructive/20" />
+                    </span>
+                  )}
+                  {isRestrito && (
+                    <span title="Operando com restrições" className="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow">
+                      <AlertCircle className="w-4 h-4 text-status-scheduled" />
+                    </span>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-muted-foreground">{chamado.numero}</span>
@@ -944,7 +963,17 @@ export function ChamadosTab() {
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhum</SelectItem>
-                    {tecnicosLivres(1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                    {tecnicosLivres(1).map(t => {
+                      const count = chamados.filter(c => c.tecnico_id === t.id || c.tecnico2_id === t.id).length;
+                      return (
+                        <SelectItem key={t.id} value={t.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <span>{t.nome} {t.sobrenome}</span>
+                            <span className="text-primary font-semibold text-xs">({count})</span>
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -954,7 +983,17 @@ export function ChamadosTab() {
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhum</SelectItem>
-                    {tecnicosLivres(2).filter(t => t.id !== assignTec1).map(t => <SelectItem key={t.id} value={t.id}>{t.nome} {t.sobrenome}</SelectItem>)}
+                    {tecnicosLivres(2).filter(t => t.id !== assignTec1).map(t => {
+                      const count = chamados.filter(c => c.tecnico_id === t.id || c.tecnico2_id === t.id).length;
+                      return (
+                        <SelectItem key={t.id} value={t.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <span>{t.nome} {t.sobrenome}</span>
+                            <span className="text-primary font-semibold text-xs">({count})</span>
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
