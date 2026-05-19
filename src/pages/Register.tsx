@@ -113,6 +113,35 @@ export default function Register() {
           <img src={logo} alt="OperLog" width={280} height={280} className="mx-auto mb-2" />
         </CardHeader>
         <CardContent>
+          {!masterOk ? (
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (masterInput === ADMIN_MASTER_PASSWORD) {
+                  setMasterOk(true);
+                  setMasterError('');
+                } else {
+                  setMasterError('Senha de administrador incorreta');
+                }
+              }}
+            >
+              <p className="text-sm text-muted-foreground">
+                Apenas analistas podem cadastrar usuários. Informe a senha de administrador para continuar.
+              </p>
+              <div>
+                <Label>Senha de administrador</Label>
+                <Input
+                  type="password"
+                  value={masterInput}
+                  onChange={(e) => setMasterInput(e.target.value)}
+                  placeholder="Senha mestre"
+                />
+              </div>
+              {masterError && <p className="text-sm text-destructive">{masterError}</p>}
+              <Button type="submit" className="w-full">Continuar</Button>
+            </form>
+          ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <Label>Tipo de Usuário *</Label>
