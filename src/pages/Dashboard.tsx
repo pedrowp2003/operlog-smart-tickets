@@ -9,7 +9,8 @@ import { TecnicosTab } from '@/components/TecnicosTab';
 import { UsuariosTab } from '@/components/UsuariosTab';
 import { FornecedoresTab } from '@/components/FornecedoresTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipboardList, Wrench, Users, Package, Bell, Medal, Hammer, ClipboardCheck, MessageSquare, Search } from 'lucide-react';
+import { ClipboardList, Wrench, Users, Package, Bell, Medal, Hammer, ClipboardCheck, MessageSquare } from 'lucide-react';
+import { GlobalSearch } from '@/components/GlobalSearch';
 import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -100,16 +101,7 @@ export default function Dashboard() {
           <div className="flex min-w-0 items-center gap-2">
             <img src={logo} alt="OperLog" width={28} height={28} />
             <span className="font-bold text-primary text-base sm:text-lg truncate">OperLog</span>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Pesquisar" className="h-8 w-8">
-                <Search className="w-4 h-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-64">
-              <p className="text-xs text-muted-foreground">Em breve será possível pesquisar chamados, máquinas, etc.</p>
-            </PopoverContent>
-          </Popover>
+          <GlobalSearch />
           </div>
           <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
             <Popover>
