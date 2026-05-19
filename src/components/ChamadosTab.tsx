@@ -34,6 +34,7 @@ export function ChamadosTab() {
   const confirm = useConfirm();
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [maquinas, setMaquinas] = useState<Maquina[]>([]);
+  const [tiposPrioritarios, setTiposPrioritarios] = useState<Set<string>>(new Set());
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
@@ -85,16 +86,22 @@ export function ChamadosTab() {
   const [prevHoraStr, setPrevHoraStr] = useState('');
 
   const fetchData = async () => {
-    const [cRes, mRes, pRes, fRes] = await Promise.all([
+    const [cRes, mRes, pRes, fRes, tRes] = await Promise.all([
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
       supabase.from('maquinas').select('*'),
       supabase.from('profiles').select('*'),
       supabase.from('fornecedores').select('*'),
+      supabase.from('maquina_tipos').select('nome,prioridade'),
     ]);
     if (cRes.data) setChamados(cRes.data);
     if (mRes.data) setMaquinas(mRes.data);
     if (pRes.data) setProfiles(pRes.data);
     if (fRes.data) setFornecedores(fRes.data);
+    if (tRes.data) {
+      setTiposPrioritarios(new Set(
+        (tRes.data as any[]).filter(t => t.prioridade).map(t => t.nome)
+      ));
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -135,6 +142,8 @@ export function ChamadosTab() {
   const canDelete = isAnalista;
 
   const getMaquina = (id: string) => maquinas.find(m => m.id === id);
+  const isMaquinaPrioritaria = (m: Maquina | undefined) =>
+    !!m && (((m as any).prioridade === true) || tiposPrioritarios.has(m.tipo));
   const getProfile = (id: string | null) => id ? profiles.find(p => p.id === id) : null;
   const getFornecedor = (id: string | null) => id ? fornecedores.find(f => f.id === id) : null;
 
@@ -516,7 +525,7 @@ export function ChamadosTab() {
                   {maquina && (
                     <>
                       <p className="text-sm font-medium break-words flex items-center gap-1">
-                        {(maquina as any).prioridade && <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />}
+                        {isMaquinaPrioritaria(maquina) && <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />}
                         <span>{maquina.tipo}</span>
                       </p>
                       <p className="text-xs text-muted-foreground break-words">
