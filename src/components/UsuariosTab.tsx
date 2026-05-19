@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
 
 export function UsuariosTab() {
-  const { user, register, uploadImage } = useAuth();
+  const { user, uploadImage } = useAuth();
   const confirm = useConfirm();
   const [usuarios, setUsuarios] = useState<Profile[]>([]);
   const [detail, setDetail] = useState<Profile | null>(null);
@@ -30,7 +30,6 @@ export function UsuariosTab() {
   const [role, setRole] = useState<UserRole | ''>('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
   const [sobrenome, setSobrenome] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -49,7 +48,7 @@ export function UsuariosTab() {
   if (!user) return null;
 
   const resetForm = () => {
-    setRole(''); setUsername(''); setEmail(''); setPassword('');
+    setRole(''); setUsername(''); setEmail('');
     setNome(''); setSobrenome(''); setTelefone('');
     setUnidade(''); setArmazem(''); setArea('');
     setFotoFile(null); setFotoPreview(undefined);
@@ -118,32 +117,37 @@ export function UsuariosTab() {
   };
 
   const handleCreate = async () => {
-    if (!role || !username.trim() || !email.trim() || !password.trim() || !telefone.trim()) {
+    if (!role || !username.trim() || !email.trim() || !telefone.trim()) {
       toast.error('Preencha todos os campos obrigatórios'); return;
     }
     if (user.role === 'analista' && role === 'analista') {
       toast.error('Analistas não podem cadastrar outras contas de analista');
       return;
     }
-    if (password.length < 8) { toast.error('Senha mínima de 8 dígitos'); return; }
     let foto_url: string | undefined;
     if (fotoFile) {
       const url = await uploadImage(fotoFile, 'profiles');
       if (url) foto_url = url;
     }
-    const err = await register(email.trim(), password, {
-      username: username.trim(),
-      role,
-      nome: nome.trim() || undefined,
-      sobrenome: sobrenome.trim() || undefined,
-      telefone: telefone.replace(/\D/g, '').slice(0, 11),
-      foto_url,
-      unidade: unidade || undefined,
-      armazem: armazem || undefined,
-      area: area || undefined,
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: {
+        email: email.trim(),
+        username: username.trim(),
+        role,
+        nome: nome.trim() || undefined,
+        sobrenome: sobrenome.trim() || undefined,
+        telefone: telefone.replace(/\D/g, '').slice(0, 11),
+        foto_url,
+        unidade: unidade || undefined,
+        armazem: armazem || undefined,
+        area: area || undefined,
+      },
     });
-    if (err) { toast.error(err); return; }
-    toast.success('Usuário cadastrado');
+    if (error || (data && data.error)) {
+      toast.error((data && data.error) || error?.message || 'Erro ao cadastrar');
+      return;
+    }
+    toast.success('Usuário cadastrado. Ele definirá a própria senha no primeiro acesso.');
     setCreateOpen(false);
     resetForm();
     fetch();
@@ -227,7 +231,7 @@ export function UsuariosTab() {
       </div>
       <div><Label>Usuário *</Label><Input value={username} onChange={e => setUsername(e.target.value)} /></div>
       <div><Label>Email *</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
-      <div><Label>Senha *</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 8 dígitos" /></div>
+      <p className="text-[11px] text-muted-foreground">O usuário definirá a própria senha no primeiro acesso.</p>
       {(role === 'gerente' || role === 'coordenador' || role === 'supervisor' || role === 'tecnico') && (
         <div className="grid grid-cols-2 gap-2">
           <div><Label>Nome</Label><Input value={nome} onChange={e => setNome(e.target.value)} /></div>
