@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +11,8 @@ import { validatePassword, PASSWORD_RULES_TEXT } from '@/lib/password';
 import { toast } from 'sonner';
 
 export function ForcePasswordChange() {
-  const { user, updatePassword, updateProfile } = useAuth();
+  const { user, updatePassword, updateProfile, logout } = useAuth();
+  const navigate = useNavigate();
   const [pwd, setPwd] = useState('');
   const [pwd2, setPwd2] = useState('');
   const [show, setShow] = useState(false);
@@ -26,7 +28,18 @@ export function ForcePasswordChange() {
     if (pwd !== pwd2) { setErr('As senhas não coincidem'); return; }
     setSaving(true);
     const upErr = await updatePassword(pwd);
-    if (upErr) { setErr(upErr); setSaving(false); return; }
+    if (upErr) {
+      setSaving(false);
+      const lower = upErr.toLowerCase();
+      if (lower.includes('session') || lower.includes('sessão') || lower.includes('jwt') || lower.includes('missing')) {
+        toast.error('Sua sessão expirou. Entre novamente com a senha Pipoca123# para definir a nova senha.');
+        await logout();
+        navigate('/login');
+        return;
+      }
+      setErr(upErr);
+      return;
+    }
     await updateProfile({ must_change_password: false });
     await supabase.from('profiles').update({ must_change_password: false }).eq('id', user.id);
     setSaving(false);
