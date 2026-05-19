@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { TIPOS_MAQUINA, FROTAS, MARCAS, MODELOS } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -19,6 +18,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 type Maquina = Tables<'maquinas'>;
 type Unidade = Tables<'unidades'>;
 type Armazem = Tables<'armazens'>;
+type Cat = { id: string; nome: string };
 
 export function MaquinasTab() {
   const { user, uploadImage } = useAuth();
@@ -26,6 +26,14 @@ export function MaquinasTab() {
   const [maquinas, setMaquinas] = useState<Maquina[]>([]);
   const [unidadesList, setUnidadesList] = useState<Unidade[]>([]);
   const [armazensList, setArmazensList] = useState<Armazem[]>([]);
+  const [tiposList, setTiposList] = useState<Cat[]>([]);
+  const [frotasList, setFrotasList] = useState<Cat[]>([]);
+  const [marcasList, setMarcasList] = useState<Cat[]>([]);
+  const [modelosList, setModelosList] = useState<Cat[]>([]);
+  const [novoTipo, setNovoTipo] = useState('');
+  const [novaFrota, setNovaFrota] = useState('');
+  const [novaMarca, setNovaMarca] = useState('');
+  const [novoModelo, setNovoModelo] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [editMaquina, setEditMaquina] = useState<Maquina | null>(null);
   const [detailMaquina, setDetailMaquina] = useState<Maquina | null>(null);
@@ -56,12 +64,20 @@ export function MaquinasTab() {
   };
 
   const fetchCategorias = async () => {
-    const [u, a] = await Promise.all([
+    const [u, a, t, f, mk, md] = await Promise.all([
       supabase.from('unidades').select('*').order('nome'),
       supabase.from('armazens').select('*').order('nome'),
+      supabase.from('maquina_tipos').select('*').order('nome'),
+      supabase.from('maquina_frotas').select('*').order('nome'),
+      supabase.from('maquina_marcas').select('*').order('nome'),
+      supabase.from('maquina_modelos').select('*').order('nome'),
     ]);
     if (u.data) setUnidadesList(u.data);
     if (a.data) setArmazensList(a.data);
+    if (t.data) setTiposList(t.data);
+    if (f.data) setFrotasList(f.data);
+    if (mk.data) setMarcasList(mk.data);
+    if (md.data) setModelosList(md.data);
   };
 
   useEffect(() => { fetchMaquinas(); fetchCategorias(); }, []);
@@ -75,6 +91,10 @@ export function MaquinasTab() {
 
   const UNIDADES_NAMES = unidadesList.map(u => u.nome);
   const ARMAZENS_NAMES = armazensList.map(a => a.nome);
+  const TIPOS_NAMES = tiposList.map(x => x.nome);
+  const FROTAS_NAMES = frotasList.map(x => x.nome);
+  const MARCAS_NAMES = marcasList.map(x => x.nome);
+  const MODELOS_NAMES = modelosList.map(x => x.nome);
 
   // Filter machines by role
   const visibleMaquinas = maquinas.filter(m => {
@@ -188,28 +208,28 @@ export function MaquinasTab() {
         <Label>Tipo *</Label>
         <Select value={tipo} onValueChange={setTipo}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-          <SelectContent>{TIPOS_MAQUINA.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+          <SelectContent>{TIPOS_NAMES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
         <Label>Frota *</Label>
         <Select value={frota} onValueChange={setFrota}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-          <SelectContent>{FROTAS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
+          <SelectContent>{FROTAS_NAMES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
         <Label>Marca *</Label>
         <Select value={marca} onValueChange={setMarca}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-          <SelectContent>{MARCAS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+          <SelectContent>{MARCAS_NAMES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
         <Label>Modelo *</Label>
         <Select value={modelo} onValueChange={setModelo}>
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-          <SelectContent>{MODELOS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+          <SelectContent>{MODELOS_NAMES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
@@ -259,22 +279,22 @@ export function MaquinasTab() {
               <div><Label className="text-xs">Tipo</Label>
                 <Select value={filterTipo} onValueChange={setFilterTipo}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{TIPOS_MAQUINA.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{TIPOS_NAMES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Frota</Label>
                 <Select value={filterFrota} onValueChange={setFilterFrota}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{FROTAS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{FROTAS_NAMES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Marca</Label>
                 <Select value={filterMarca} onValueChange={setFilterMarca}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{MARCAS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todas</SelectItem>{MARCAS_NAMES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Modelo</Label>
                 <Select value={filterModelo} onValueChange={setFilterModelo}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{MODELOS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{MODELOS_NAMES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Unidade / Armazém</Label>
                 <Select value={filterLocal} onValueChange={setFilterLocal}>
@@ -429,7 +449,33 @@ export function MaquinasTab() {
                 ))}
               </div>
             </section>
-            <p className="text-xs text-muted-foreground">Tipos, frotas e modelos serão editáveis em breve.</p>
+            {[
+              { title: 'Tipos', table: 'maquina_tipos' as const, list: tiposList, novo: novoTipo, setNovo: setNovoTipo },
+              { title: 'Frotas', table: 'maquina_frotas' as const, list: frotasList, novo: novaFrota, setNovo: setNovaFrota },
+              { title: 'Marcas', table: 'maquina_marcas' as const, list: marcasList, novo: novaMarca, setNovo: setNovaMarca },
+              { title: 'Modelos', table: 'maquina_modelos' as const, list: modelosList, novo: novoModelo, setNovo: setNovoModelo },
+            ].map(sec => (
+              <section key={sec.table}>
+                <h3 className="font-semibold mb-2">{sec.title}</h3>
+                <div className="flex gap-2 mb-2">
+                  <Input value={sec.novo} onChange={e => sec.setNovo(e.target.value)} placeholder={`Novo ${sec.title.slice(0, -1).toLowerCase()}`} />
+                  <Button size="sm" onClick={async () => {
+                    const val = sec.novo.trim();
+                    if (!val) return;
+                    const { error } = await supabase.from(sec.table).insert({ nome: val });
+                    if (error) toast.error(error.message); else { sec.setNovo(''); fetchCategorias(); }
+                  }}><Plus className="w-4 h-4" /></Button>
+                </div>
+                <div className="space-y-1">
+                  {sec.list.map(item => (
+                    <CategoriaItem key={item.id} initial={item.nome}
+                      onRename={async (nome) => { await supabase.from(sec.table).update({ nome }).eq('id', item.id); fetchCategorias(); }}
+                      onDelete={async () => { await supabase.from(sec.table).delete().eq('id', item.id); fetchCategorias(); }}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
