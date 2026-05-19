@@ -79,6 +79,13 @@ export function ChamadosTab() {
   const [prevDataStr, setPrevDataStr] = useState('');
   const [prevHoraStr, setPrevHoraStr] = useState('');
 
+  // Re-render every minute so time-based border colors update.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const fetchData = async () => {
     const [cRes, mRes, pRes, fRes] = await Promise.all([
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
@@ -483,10 +490,19 @@ export function ChamadosTab() {
             const isAberto = chamado.status === 'Aberto';
             const isParada = chamado.situacao_maquina === 'Parada';
             const isRestrito = chamado.situacao_maquina === 'Operando com restrições';
+            const isStacker = maquina?.tipo === 'Stacker';
+            // Border by elapsed time while ticket is Aberto (analista vê todos; demais também veem)
+            let borderCls = '';
+            if (isAberto) {
+              const hours = (Date.now() - new Date(chamado.created_at).getTime()) / 3_600_000;
+              if (hours >= 3) borderCls = 'border-2 border-destructive';
+              else if (hours >= 2) borderCls = 'border-2 border-[hsl(25_95%_55%)]';
+              else if (hours >= 1) borderCls = 'border-2 border-[hsl(45_95%_55%)]';
+            }
             return (
               <Card
                 key={chamado.id}
-                className={`p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start ${isAberto ? 'border-2 border-status-open' : ''}`}
+                className={`p-3 cursor-pointer hover:shadow-md transition-shadow flex gap-3 items-start ${borderCls}`}
                 onClick={() => setDetailChamado(chamado)}
               >
                 <div className="relative flex-shrink-0">
@@ -497,12 +513,12 @@ export function ChamadosTab() {
                       <Wrench className="w-6 h-6 text-muted-foreground" />
                     </div>
                   )}
-                  {isParada && (
-                    <span title="Máquina parada" className="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow">
+                  {(isParada || isStacker) && (
+                    <span title={isStacker ? 'Stacker — prioridade' : 'Máquina parada'} className="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow">
                       <AlertTriangle className="w-4 h-4 text-destructive fill-destructive/20" />
                     </span>
                   )}
-                  {isRestrito && (
+                  {isRestrito && !isStacker && !isParada && (
                     <span title="Operando com restrições" className="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow">
                       <AlertCircle className="w-4 h-4 text-status-scheduled" />
                     </span>
