@@ -14,6 +14,18 @@ import { formatPhone, ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, AREAS } from '@
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
 
+function generateTempPassword(): string {
+  const lower = 'abcdefghijkmnpqrstuvwxyz';
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const symbols = '!@#$%&*?';
+  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
+  const all = lower + upper + digits + symbols;
+  let out = pick(upper) + pick(lower) + pick(digits) + pick(symbols);
+  for (let i = 0; i < 6; i++) out += pick(all);
+  return out.split('').sort(() => Math.random() - 0.5).join('');
+}
+
 export function UsuariosTab() {
   const { user, register, uploadImage } = useAuth();
   const confirm = useConfirm();
@@ -395,6 +407,31 @@ export function UsuariosTab() {
                 </div>
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!createdInfo} onOpenChange={() => setCreatedInfo(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Senha temporária gerada</DialogTitle></DialogHeader>
+          {createdInfo && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Repasse estas credenciais para <b>@{createdInfo.username}</b>. No primeiro acesso o usuário definirá a própria senha.
+              </p>
+              <div className="rounded-md border border-border bg-muted p-3 text-sm font-mono break-all select-all">
+                {createdInfo.password}
+              </div>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  navigator.clipboard?.writeText(createdInfo.password);
+                  toast.success('Senha copiada');
+                }}
+              >
+                Copiar senha
+              </Button>
+            </div>
           )}
         </DialogContent>
       </Dialog>
