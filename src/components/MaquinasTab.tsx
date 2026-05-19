@@ -18,7 +18,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 type Maquina = Tables<'maquinas'>;
 type Unidade = Tables<'unidades'>;
 type Armazem = Tables<'armazens'>;
-type Cat = { id: string; nome: string };
+type Cat = { id: string; nome: string; prioridade?: boolean };
 
 export function MaquinasTab() {
   const { user, uploadImage } = useAuth();
@@ -450,13 +450,18 @@ export function MaquinasTab() {
               </div>
             </section>
             {[
-              { title: 'Tipos', table: 'maquina_tipos' as const, list: tiposList, novo: novoTipo, setNovo: setNovoTipo },
+              { title: 'Tipos', table: 'maquina_tipos' as const, list: tiposList, novo: novoTipo, setNovo: setNovoTipo, withPrioridade: true },
               { title: 'Frotas', table: 'maquina_frotas' as const, list: frotasList, novo: novaFrota, setNovo: setNovaFrota },
               { title: 'Marcas', table: 'maquina_marcas' as const, list: marcasList, novo: novaMarca, setNovo: setNovaMarca },
               { title: 'Modelos', table: 'maquina_modelos' as const, list: modelosList, novo: novoModelo, setNovo: setNovoModelo },
             ].map(sec => (
               <section key={sec.table}>
                 <h3 className="font-semibold mb-2">{sec.title}</h3>
+                {sec.withPrioridade && (
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Marque a estrela para tornar um tipo prioritário — chamados com máquinas desse tipo serão destacados.
+                  </p>
+                )}
                 <div className="flex gap-2 mb-2">
                   <Input value={sec.novo} onChange={e => sec.setNovo(e.target.value)} placeholder={`Novo ${sec.title.slice(0, -1).toLowerCase()}`} />
                   <Button size="sm" onClick={async () => {
@@ -469,6 +474,8 @@ export function MaquinasTab() {
                 <div className="space-y-1">
                   {sec.list.map(item => (
                     <CategoriaItem key={item.id} initial={item.nome}
+                      prioridade={sec.withPrioridade ? !!item.prioridade : undefined}
+                      onTogglePrioridade={sec.withPrioridade ? async (v) => { await supabase.from('maquina_tipos').update({ prioridade: v } as any).eq('id', item.id); fetchCategorias(); } : undefined}
                       onRename={async (nome) => { await supabase.from(sec.table).update({ nome }).eq('id', item.id); fetchCategorias(); }}
                       onDelete={async () => { await supabase.from(sec.table).delete().eq('id', item.id); fetchCategorias(); }}
                     />
@@ -483,10 +490,28 @@ export function MaquinasTab() {
   );
 }
 
-function CategoriaItem({ initial, onRename, onDelete }: { initial: string; onRename: (nome: string) => Promise<void>; onDelete: () => Promise<void> }) {
+function CategoriaItem({ initial, onRename, onDelete, prioridade, onTogglePrioridade }: {
+  initial: string;
+  onRename: (nome: string) => Promise<void>;
+  onDelete: () => Promise<void>;
+  prioridade?: boolean;
+  onTogglePrioridade?: (v: boolean) => Promise<void>;
+}) {
   const [val, setVal] = useState(initial);
   return (
     <div className="flex gap-2 items-center">
+      {onTogglePrioridade && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className={prioridade ? 'text-destructive' : 'text-muted-foreground'}
+          onClick={() => onTogglePrioridade(!prioridade)}
+          aria-label={prioridade ? 'Remover prioridade' : 'Marcar como prioritário'}
+          title={prioridade ? 'Tipo prioritário (clique para remover)' : 'Marcar como prioritário'}
+        >
+          <AlertTriangle className="w-4 h-4" />
+        </Button>
+      )}
       <Input value={val} onChange={e => setVal(e.target.value)} className="h-8" />
       <Button size="sm" variant="outline" disabled={val === initial || !val.trim()} onClick={() => onRename(val.trim())}>
         <Pencil className="w-3 h-3" />
