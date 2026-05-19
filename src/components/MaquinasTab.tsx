@@ -82,6 +82,17 @@ export function MaquinasTab() {
 
   useEffect(() => { fetchMaquinas(); fetchCategorias(); }, []);
 
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const d = (e as CustomEvent).detail as { kind: string; id: string };
+      if (!d || d.kind !== 'maquina') return;
+      const { data } = await supabase.from('maquinas').select('*').eq('id', d.id).maybeSingle();
+      if (data) setDetailMaquina(data as Maquina);
+    };
+    window.addEventListener('app:focus', handler as EventListener);
+    return () => window.removeEventListener('app:focus', handler as EventListener);
+  }, []);
+
   if (!user) return null;
 
   const canCreate = user.role === 'analista';
