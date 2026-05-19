@@ -26,6 +26,17 @@ export function TecnicosTab() {
 
   useEffect(() => { fetchTecnicos(); }, []);
 
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const d = (e as CustomEvent).detail as { kind: string; id: string };
+      if (!d || (d.kind !== 'tecnico' && d.kind !== 'usuario')) return;
+      const { data } = await supabase.from('profiles').select('*').eq('id', d.id).maybeSingle();
+      if (data && data.role === 'tecnico') setDetailTecnico(data as Profile);
+    };
+    window.addEventListener('app:focus', handler as EventListener);
+    return () => window.removeEventListener('app:focus', handler as EventListener);
+  }, []);
+
   if (!user) return null;
 
   const canDelete = false;
