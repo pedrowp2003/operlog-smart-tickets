@@ -58,6 +58,17 @@ export function UsuariosTab() {
   };
   useEffect(() => { fetch(); }, []);
 
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const d = (e as CustomEvent).detail as { kind: string; id: string };
+      if (!d || (d.kind !== 'usuario' && d.kind !== 'tecnico')) return;
+      const { data } = await supabase.from('profiles').select('*').eq('id', d.id).maybeSingle();
+      if (data) setDetail(data as Profile);
+    };
+    window.addEventListener('app:focus', handler as EventListener);
+    return () => window.removeEventListener('app:focus', handler as EventListener);
+  }, []);
+
   if (!user) return null;
 
   const resetForm = () => {

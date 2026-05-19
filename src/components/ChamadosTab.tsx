@@ -56,6 +56,17 @@ export function ChamadosTab() {
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const d = (e as CustomEvent).detail as { kind: string; id: string };
+      if (!d || d.kind !== 'chamado') return;
+      const { data } = await supabase.from('chamados').select('*').eq('id', d.id).maybeSingle();
+      if (data) setDetailChamado(data as Chamado);
+    };
+    window.addEventListener('app:focus', handler as EventListener);
+    return () => window.removeEventListener('app:focus', handler as EventListener);
+  }, []);
+
   const [descricao, setDescricao] = useState('');
   const [maquinaId, setMaquinaId] = useState('');
   const [situacao, setSituacao] = useState<'Parada' | 'Operando com restrições'>('Parada');

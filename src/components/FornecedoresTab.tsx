@@ -42,6 +42,17 @@ export function FornecedoresTab() {
 
   useEffect(() => { fetchFornecedores(); }, []);
 
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const d = (e as CustomEvent).detail as { kind: string; id: string };
+      if (!d || d.kind !== 'fornecedor') return;
+      const { data } = await supabase.from('fornecedores').select('*').eq('id', d.id).maybeSingle();
+      if (data) setDetailFornecedor(data as Fornecedor);
+    };
+    window.addEventListener('app:focus', handler as EventListener);
+    return () => window.removeEventListener('app:focus', handler as EventListener);
+  }, []);
+
   if (!user) return null;
 
   const canManage = user.role === 'analista';

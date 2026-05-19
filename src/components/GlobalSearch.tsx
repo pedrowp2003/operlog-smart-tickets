@@ -95,6 +95,13 @@ export function GlobalSearch() {
   const empty = !loading && q.trim().length >= 2 &&
     chamados.length === 0 && maquinas.length === 0 && fornecedores.length === 0 && tecnicos.length === 0;
 
+  const focus = (kind: 'chamado' | 'maquina' | 'fornecedor' | 'tecnico' | 'usuario', id: string) => {
+    setOpen(false);
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('app:focus', { detail: { kind, id } }));
+    }, 50);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -128,7 +135,7 @@ export function GlobalSearch() {
               </h3>
               <ul className="space-y-1">
                 {chamados.map(c => (
-                  <li key={c.id} className="rounded border border-border p-2 text-sm break-words">
+                  <li key={c.id} onClick={() => focus('chamado', c.id)} className="rounded border border-border p-2 text-sm break-words cursor-pointer hover:bg-accent">
                     <div className="font-medium">{c.numero} · {c.status}</div>
                     <div className="text-xs text-muted-foreground line-clamp-2">{c.descricao}</div>
                     {(c.categoria || c.codigo_erro) && (
@@ -149,7 +156,7 @@ export function GlobalSearch() {
               </h3>
               <ul className="space-y-1">
                 {maquinas.map(m => (
-                  <li key={m.id} className="rounded border border-border p-2 text-sm break-words">
+                  <li key={m.id} onClick={() => focus('maquina', m.id)} className="rounded border border-border p-2 text-sm break-words cursor-pointer hover:bg-accent">
                     <div className="font-medium">{m.tipo} · {m.frota}</div>
                     <div className="text-xs text-muted-foreground">{m.marca} {m.modelo}</div>
                   </li>
@@ -165,7 +172,7 @@ export function GlobalSearch() {
               </h3>
               <ul className="space-y-1">
                 {fornecedores.map(f => (
-                  <li key={f.id} className="rounded border border-border p-2 text-sm break-words">
+                  <li key={f.id} onClick={() => focus('fornecedor', f.id)} className="rounded border border-border p-2 text-sm break-words cursor-pointer hover:bg-accent">
                     <div className="font-medium">{f.nome}</div>
                     <div className="text-xs text-muted-foreground">{f.natureza}</div>
                   </li>
@@ -182,14 +189,17 @@ export function GlobalSearch() {
               <ul className="space-y-1">
                 {tecnicos.map(({ profile: p, chamados: chs }) => (
                   <li key={p.id} className="rounded border border-border p-2 text-sm break-words">
-                    <div className="font-medium flex items-center gap-1.5">
+                    <div
+                      onClick={() => focus(p.role === 'tecnico' && !isAnalista ? 'tecnico' : 'usuario', p.id)}
+                      className="font-medium flex items-center gap-1.5 cursor-pointer hover:underline"
+                    >
                       {p.role === 'tecnico' && <Hammer className="w-3.5 h-3.5 text-primary" />}
                       {(p.nome || '') + ' ' + (p.sobrenome || '')} <span className="text-xs text-muted-foreground">@{p.username}</span>
                     </div>
                     {chs.length > 0 && (
                       <ul className="mt-1 space-y-0.5">
                         {chs.map(c => (
-                          <li key={c.id} className="text-[11px] text-muted-foreground">
+                          <li key={c.id} onClick={() => focus('chamado', c.id)} className="text-[11px] text-muted-foreground cursor-pointer hover:underline">
                             <span className="font-medium">{c.numero}</span> — {c.descricao}
                           </li>
                         ))}
