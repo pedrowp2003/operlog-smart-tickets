@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { TIPOS_MAQUINA, FROTAS, MARCAS, MODELOS } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -19,6 +18,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 type Maquina = Tables<'maquinas'>;
 type Unidade = Tables<'unidades'>;
 type Armazem = Tables<'armazens'>;
+type Cat = { id: string; nome: string };
 
 export function MaquinasTab() {
   const { user, uploadImage } = useAuth();
@@ -26,6 +26,14 @@ export function MaquinasTab() {
   const [maquinas, setMaquinas] = useState<Maquina[]>([]);
   const [unidadesList, setUnidadesList] = useState<Unidade[]>([]);
   const [armazensList, setArmazensList] = useState<Armazem[]>([]);
+  const [tiposList, setTiposList] = useState<Cat[]>([]);
+  const [frotasList, setFrotasList] = useState<Cat[]>([]);
+  const [marcasList, setMarcasList] = useState<Cat[]>([]);
+  const [modelosList, setModelosList] = useState<Cat[]>([]);
+  const [novoTipo, setNovoTipo] = useState('');
+  const [novaFrota, setNovaFrota] = useState('');
+  const [novaMarca, setNovaMarca] = useState('');
+  const [novoModelo, setNovoModelo] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [editMaquina, setEditMaquina] = useState<Maquina | null>(null);
   const [detailMaquina, setDetailMaquina] = useState<Maquina | null>(null);
@@ -56,12 +64,20 @@ export function MaquinasTab() {
   };
 
   const fetchCategorias = async () => {
-    const [u, a] = await Promise.all([
+    const [u, a, t, f, mk, md] = await Promise.all([
       supabase.from('unidades').select('*').order('nome'),
       supabase.from('armazens').select('*').order('nome'),
+      supabase.from('maquina_tipos').select('*').order('nome'),
+      supabase.from('maquina_frotas').select('*').order('nome'),
+      supabase.from('maquina_marcas').select('*').order('nome'),
+      supabase.from('maquina_modelos').select('*').order('nome'),
     ]);
     if (u.data) setUnidadesList(u.data);
     if (a.data) setArmazensList(a.data);
+    if (t.data) setTiposList(t.data);
+    if (f.data) setFrotasList(f.data);
+    if (mk.data) setMarcasList(mk.data);
+    if (md.data) setModelosList(md.data);
   };
 
   useEffect(() => { fetchMaquinas(); fetchCategorias(); }, []);
@@ -75,6 +91,10 @@ export function MaquinasTab() {
 
   const UNIDADES_NAMES = unidadesList.map(u => u.nome);
   const ARMAZENS_NAMES = armazensList.map(a => a.nome);
+  const TIPOS_NAMES = tiposList.map(x => x.nome);
+  const FROTAS_NAMES = frotasList.map(x => x.nome);
+  const MARCAS_NAMES = marcasList.map(x => x.nome);
+  const MODELOS_NAMES = modelosList.map(x => x.nome);
 
   // Filter machines by role
   const visibleMaquinas = maquinas.filter(m => {
