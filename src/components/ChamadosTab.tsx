@@ -492,8 +492,8 @@ export function ChamadosTab() {
             if (chamado.status === 'Aberto') {
               const mins = (Date.now() - new Date(chamado.created_at).getTime()) / 60000;
               if (mins >= 180) abertoBorder = 'border-2 border-destructive';
-              else if (mins >= 120) abertoBorder = 'border-2 border-yellow-500';
-              else if (mins >= 60) abertoBorder = 'border-2 border-green-600';
+              else if (mins >= 120) abertoBorder = 'border-2 border-orange-500';
+              else if (mins >= 60) abertoBorder = 'border-2 border-yellow-500';
               void tick;
             }
             return (
