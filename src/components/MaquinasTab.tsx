@@ -449,7 +449,33 @@ export function MaquinasTab() {
                 ))}
               </div>
             </section>
-            <p className="text-xs text-muted-foreground">Tipos, frotas e modelos serão editáveis em breve.</p>
+            {[
+              { title: 'Tipos', table: 'maquina_tipos' as const, list: tiposList, novo: novoTipo, setNovo: setNovoTipo },
+              { title: 'Frotas', table: 'maquina_frotas' as const, list: frotasList, novo: novaFrota, setNovo: setNovaFrota },
+              { title: 'Marcas', table: 'maquina_marcas' as const, list: marcasList, novo: novaMarca, setNovo: setNovaMarca },
+              { title: 'Modelos', table: 'maquina_modelos' as const, list: modelosList, novo: novoModelo, setNovo: setNovoModelo },
+            ].map(sec => (
+              <section key={sec.table}>
+                <h3 className="font-semibold mb-2">{sec.title}</h3>
+                <div className="flex gap-2 mb-2">
+                  <Input value={sec.novo} onChange={e => sec.setNovo(e.target.value)} placeholder={`Novo ${sec.title.slice(0, -1).toLowerCase()}`} />
+                  <Button size="sm" onClick={async () => {
+                    const val = sec.novo.trim();
+                    if (!val) return;
+                    const { error } = await supabase.from(sec.table).insert({ nome: val });
+                    if (error) toast.error(error.message); else { sec.setNovo(''); fetchCategorias(); }
+                  }}><Plus className="w-4 h-4" /></Button>
+                </div>
+                <div className="space-y-1">
+                  {sec.list.map(item => (
+                    <CategoriaItem key={item.id} initial={item.nome}
+                      onRename={async (nome) => { await supabase.from(sec.table).update({ nome }).eq('id', item.id); fetchCategorias(); }}
+                      onDelete={async () => { await supabase.from(sec.table).delete().eq('id', item.id); fetchCategorias(); }}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
