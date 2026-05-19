@@ -198,7 +198,7 @@ export function GlobalSearch() {
             </section>
           )}
 
-          {!isTecnico && fornecedores.length > 0 && (
+          {fornecedores.length > 0 && (
             <section>
               <h3 className="text-xs font-semibold mb-2 flex items-center gap-1.5 text-muted-foreground">
                 <Package className="w-3.5 h-3.5" /> Fornecedores ({fornecedores.length})
