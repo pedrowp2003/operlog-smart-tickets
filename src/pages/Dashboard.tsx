@@ -14,6 +14,7 @@ import { GlobalSearch } from '@/components/GlobalSearch';
 import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { NotificationsList, useUnreadCount } from '@/components/NotificationsList';
 import logo from '@/assets/operlog-logo.png';
 
@@ -131,9 +132,9 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Em breve você poderá conversar com sua equipe aqui.</p>
               </PopoverContent>
             </Popover>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative lg:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative lg:hidden" aria-label="Notificações">
                   <Bell className="w-4 h-4" />
                   {unread > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
@@ -141,11 +142,11 @@ export default function Dashboard() {
                     </span>
                   )}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" sideOffset={8} className="w-[calc(100vw-1rem)] max-w-sm p-3">
-                <NotificationsList compact />
-              </PopoverContent>
-            </Popover>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[88vw] max-w-sm p-4 flex flex-col gap-2">
+                <NotificationsList />
+              </SheetContent>
+            </Sheet>
             <div className="mr-1 flex shrink-0 items-center gap-1 whitespace-nowrap">
               {user.role === 'gerente' && (
                 <Medal className="h-4 w-4 shrink-0" style={{ color: '#D4AF37' }} aria-label="Gerente" />
