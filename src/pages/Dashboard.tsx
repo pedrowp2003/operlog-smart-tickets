@@ -143,7 +143,7 @@ export default function Dashboard() {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[88vw] max-w-sm p-4 flex flex-col gap-2 h-full">
+              <SheetContent side="right" className="w-[92vw] max-w-sm p-4 flex flex-col gap-2 h-dvh max-h-dvh overflow-hidden">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold">Notificações</span>
                   <SheetClose asChild>
