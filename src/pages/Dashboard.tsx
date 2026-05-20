@@ -14,7 +14,7 @@ import { GlobalSearch } from '@/components/GlobalSearch';
 import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { NotificationsList, useUnreadCount } from '@/components/NotificationsList';
 import logo from '@/assets/operlog-logo.png';
 
