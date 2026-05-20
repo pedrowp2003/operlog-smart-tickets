@@ -14,12 +14,14 @@ import { GlobalSearch } from '@/components/GlobalSearch';
 import { Button } from '@/components/ui/button';
 import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { NotificationsList, useUnreadCount } from '@/components/NotificationsList';
 import logo from '@/assets/operlog-logo.png';
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('chamados');
+  const unread = useUnreadCount();
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -133,11 +135,15 @@ export default function Dashboard() {
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative lg:hidden">
                   <Bell className="w-4 h-4" />
+                  {unread > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                      {unread > 9 ? '9+' : unread}
+                    </span>
+                  )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-64">
-                <p className="text-sm font-medium mb-1">Notificações</p>
-                <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
+              <PopoverContent align="end" className="w-80">
+                <NotificationsList compact />
               </PopoverContent>
             </Popover>
             <div className="mr-1 flex shrink-0 items-center gap-1 whitespace-nowrap">
@@ -183,10 +189,7 @@ export default function Dashboard() {
           className="hidden lg:block absolute top-0 left-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 rounded-l-lg"
           aria-label="Redimensionar painel"
         />
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <Bell className="w-4 h-4" /> Notificações
-        </div>
-        <p className="text-xs text-muted-foreground">Em breve você receberá notificações aqui.</p>
+        <NotificationsList />
       </aside>
 
       <main
