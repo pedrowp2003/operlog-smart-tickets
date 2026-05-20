@@ -82,7 +82,7 @@ export function NotificationsList({ compact = false }: { compact?: boolean }) {
           </Button>
         )}
       </div>
-      <div className={`flex flex-col gap-1 overflow-y-auto ${compact ? 'max-h-[60vh] min-h-[3rem]' : 'flex-1 min-h-0'}`}>
+      <div className="flex flex-col gap-1 overflow-y-auto flex-1 min-h-0">
         {items.length === 0 && (
           <p className="text-xs text-muted-foreground">Você não tem notificações.</p>
         )}
