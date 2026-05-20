@@ -41,7 +41,7 @@ export function NotificationsList({ compact = false }: { compact?: boolean }) {
     if (!user) return;
     load();
     const channel = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(`notifications:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -127,7 +127,7 @@ export function useUnreadCount() {
     };
     load();
     const channel = supabase
-      .channel(`notif-count:${user.id}`)
+      .channel(`notif-count:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
