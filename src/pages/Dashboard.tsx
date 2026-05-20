@@ -142,7 +142,7 @@ export default function Dashboard() {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-80">
+              <PopoverContent align="end" sideOffset={8} className="w-[calc(100vw-1rem)] max-w-sm p-3">
                 <NotificationsList compact />
               </PopoverContent>
             </Popover>
