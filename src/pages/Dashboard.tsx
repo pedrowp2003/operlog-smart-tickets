@@ -143,8 +143,8 @@ export default function Dashboard() {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[88vw] max-w-sm p-4 flex flex-col gap-2">
-                <NotificationsList />
+              <SheetContent side="right" className="w-[88vw] max-w-sm p-4 flex flex-col gap-2 h-full">
+                <NotificationsList compact />
               </SheetContent>
             </Sheet>
             <div className="mr-1 flex shrink-0 items-center gap-1 whitespace-nowrap">
