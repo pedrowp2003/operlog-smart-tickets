@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Check, Trash2 } from 'lucide-react';
+import { Bell, Check, Trash2 } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -24,6 +24,7 @@ function timeAgo(iso: string) {
 export function NotificationsList({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
   const [items, setItems] = useState<Notification[]>([]);
+  const unread = items.filter(i => !i.read).length;
 
   const load = async () => {
     if (!user) return;
@@ -66,7 +67,15 @@ export function NotificationsList({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex flex-col gap-2 min-w-0">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">Notificações</p>
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Bell className="w-4 h-4" />
+          <span>Notificações</span>
+          {!compact && unread > 0 && (
+            <span className="min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+        </div>
         {items.some(i => !i.read) && (
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={markAllRead}>
             <Check className="w-3 h-3 mr-1" /> Marcar todas
