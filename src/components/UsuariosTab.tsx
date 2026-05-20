@@ -14,10 +14,10 @@ import { formatPhone, ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, AREAS } from '@
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
 
-function generateTempPassword(username: string, telefone: string): string {
+function generateTempPassword(nome: string, telefone: string): string {
   const digits = telefone.replace(/\D/g, '');
   const last4 = digits.slice(-4).padStart(4, '0');
-  return `${username.trim().toLowerCase()}${last4}`;
+  return `${nome.trim().toLowerCase()}${last4}`;
 }
 
 export function UsuariosTab() {
@@ -142,7 +142,7 @@ export function UsuariosTab() {
       toast.error('Analistas não podem cadastrar outras contas de analista');
       return;
     }
-    const tempPassword = generateTempPassword(username, telefone);
+    const tempPassword = generateTempPassword(nome || username, telefone);
     let foto_url: string | undefined;
     if (fotoFile) {
       const url = await uploadImage(fotoFile, 'profiles');
