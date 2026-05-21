@@ -66,7 +66,7 @@ export function NotificationsList({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className="flex flex-col gap-2 min-w-0">
-      <div className="flex items-center justify-between">
+      <div className={`flex items-center justify-between ${compact ? 'pr-8' : ''}`}>
         <div className="flex items-center gap-2 text-sm font-semibold">
           <Bell className="w-4 h-4" />
           <span>Notificações</span>
