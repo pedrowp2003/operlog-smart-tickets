@@ -1,14 +1,11 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ShieldCheck } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
 
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [analistaOpen, setAnalistaOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -29,30 +26,13 @@ export default function Landing() {
               size="lg"
               variant="outline"
               className="w-full text-base font-semibold h-12 gap-2"
-              onClick={() => setAnalistaOpen(true)}
+              onClick={() => navigate('/register')}
             >
-              <ShieldCheck className="w-5 h-5" /> Área do Analista
+              <ShieldCheck className="w-5 h-5" /> Cadastrar-se como Analista
             </Button>
           </div>
         </div>
       </div>
-
-      <Dialog open={analistaOpen} onOpenChange={setAnalistaOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Área do Analista</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Entre na sua conta ou crie uma nova conta de analista (requer senha de administrador).
-          </p>
-          <div className="flex flex-col gap-3 mt-2">
-            <Button onClick={() => { setAnalistaOpen(false); navigate('/login'); }}>Entrar</Button>
-            <Button variant="outline" onClick={() => { setAnalistaOpen(false); navigate('/register'); }}>
-              Cadastrar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <footer className="text-center text-xs text-muted-foreground py-4">
         © {new Date().getFullYear()} OperLog

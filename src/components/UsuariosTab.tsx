@@ -138,10 +138,6 @@ export function UsuariosTab() {
     if (!role || !username.trim() || !email.trim() || !telefone.trim()) {
       toast.error('Preencha todos os campos obrigatórios'); return;
     }
-    if (user.role === 'analista' && role === 'analista') {
-      toast.error('Analistas não podem cadastrar outras contas de analista');
-      return;
-    }
     const tempPassword = generateTempPassword(nome || username, telefone);
     let foto_url: string | undefined;
     if (fotoFile) {
@@ -248,7 +244,6 @@ export function UsuariosTab() {
           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
           <SelectContent>
             {(Object.keys(ROLE_LABELS) as UserRole[])
-              .filter(r => !(user?.role === 'analista' && r === 'analista'))
               .map(r => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}
           </SelectContent>
         </Select>
