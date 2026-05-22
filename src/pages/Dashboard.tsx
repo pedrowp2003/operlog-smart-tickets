@@ -213,10 +213,10 @@ export default function Dashboard() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="chamados"><ChamadosTab /></TabsContent>
-          <TabsContent value="maquinas"><MaquinasTab /></TabsContent>
-          <TabsContent value="tecnicos">{isAnalista ? <UsuariosTab /> : <TecnicosTab />}</TabsContent>
-          <TabsContent value="fornecedores"><FornecedoresTab /></TabsContent>
+          <TabsContent value="chamados" forceMount className="data-[state=inactive]:hidden"><ChamadosTab /></TabsContent>
+          <TabsContent value="maquinas" forceMount className="data-[state=inactive]:hidden"><MaquinasTab /></TabsContent>
+          <TabsContent value="tecnicos" forceMount className="data-[state=inactive]:hidden">{isAnalista ? <UsuariosTab /> : <TecnicosTab />}</TabsContent>
+          <TabsContent value="fornecedores" forceMount className="data-[state=inactive]:hidden"><FornecedoresTab /></TabsContent>
         </Tabs>
       </main>
     </div>
