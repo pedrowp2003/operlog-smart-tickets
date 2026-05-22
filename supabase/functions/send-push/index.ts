@@ -4,8 +4,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const APP_ID = Deno.env.get('ONESIGNAL_APP_ID');
-    const REST_KEY = Deno.env.get('ONESIGNAL_REST_API_KEY');
+    const APP_ID = Deno.env.get('ONESIGNAL_APP_ID')?.trim();
+    const REST_KEY = Deno.env.get('ONESIGNAL_REST_API_KEY')?.trim();
     if (!APP_ID || !REST_KEY) throw new Error('OneSignal env vars missing');
 
     const { user_id, title, message, url } = await req.json();
