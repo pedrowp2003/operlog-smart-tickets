@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck, AlertTriangle, Archive, EyeOff, Eye, Truck } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
@@ -150,7 +150,7 @@ export function ChamadosTab() {
   const isAnalista = user.role === 'analista';
   const isTecnico = user.role === 'tecnico';
   const canCreate = !isTecnico;
-  const canDelete = isAnalista;
+  const canArchive = isAnalista;
 
   const getMaquina = (id: string) => maquinas.find(m => m.id === id);
   const isMaquinaPrioritaria = (m: Maquina | undefined) =>
@@ -190,7 +190,14 @@ export function ChamadosTab() {
     }
   }
   filteredChamados = filteredChamados.filter(c => {
-    if (filterStatus !== 'todos' && c.status !== filterStatus) return false;
+    // Arquivados: somente analista; só aparecem quando filtro = 'arquivados'
+    const isArquivado = c.status === 'Encerrado';
+    if (filterStatus === 'arquivados') {
+      if (!isAnalista || !isArquivado) return false;
+    } else {
+      if (isArquivado) return false;
+      if (filterStatus !== 'todos' && c.status !== filterStatus) return false;
+    }
     if (filterCategoria !== 'todas' && c.categoria !== filterCategoria) return false;
     if (filterMaquina !== 'todas' && c.maquina_id !== filterMaquina) return false;
     const maq = getMaquina(c.maquina_id);
