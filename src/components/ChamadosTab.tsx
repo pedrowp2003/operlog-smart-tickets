@@ -953,8 +953,14 @@ export function ChamadosTab() {
                                     <Button variant="ghost" size="sm" className="h-6 px-1" onClick={() => openEditAcao(acao)}>
                                       <Pencil className="w-3 h-3" />
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="h-6 px-1 text-destructive" onClick={() => handleDeleteAcao(acao.id)}>
-                                      <Trash2 className="w-3 h-3" />
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-1 text-muted-foreground"
+                                      title={(acao as any).desconsiderada ? 'Reconsiderar ação' : 'Desconsiderar ação'}
+                                      onClick={() => handleToggleDesconsiderada(acao)}
+                                    >
+                                      {(acao as any).desconsiderada ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
                                     </Button>
                                   </div>
                                 )}
