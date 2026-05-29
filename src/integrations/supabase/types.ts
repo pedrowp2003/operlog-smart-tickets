@@ -36,6 +36,7 @@ export type Database = {
         Row: {
           chamado_id: string
           created_at: string
+          desconsiderada: boolean
           descricao: string
           fornecedor_id: string | null
           id: string
@@ -45,6 +46,7 @@ export type Database = {
         Insert: {
           chamado_id: string
           created_at?: string
+          desconsiderada?: boolean
           descricao: string
           fornecedor_id?: string | null
           id?: string
@@ -54,6 +56,7 @@ export type Database = {
         Update: {
           chamado_id?: string
           created_at?: string
+          desconsiderada?: boolean
           descricao?: string
           fornecedor_id?: string | null
           id?: string
@@ -84,6 +87,7 @@ export type Database = {
           maquina_id: string
           numero: string
           progresso: number
+          servico_descricao: string | null
           situacao_maquina: string
           status: string
           tecnico_id: string | null
@@ -103,6 +107,7 @@ export type Database = {
           maquina_id: string
           numero: string
           progresso?: number
+          servico_descricao?: string | null
           situacao_maquina: string
           status?: string
           tecnico_id?: string | null
@@ -122,6 +127,7 @@ export type Database = {
           maquina_id?: string
           numero?: string
           progresso?: number
+          servico_descricao?: string | null
           situacao_maquina?: string
           status?: string
           tecnico_id?: string | null
@@ -326,6 +332,7 @@ export type Database = {
           email: string
           foto_url: string | null
           id: string
+          is_master_analista: boolean
           must_change_password: boolean
           nome: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -342,6 +349,7 @@ export type Database = {
           email: string
           foto_url?: string | null
           id: string
+          is_master_analista?: boolean
           must_change_password?: boolean
           nome?: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -358,6 +366,7 @@ export type Database = {
           email?: string
           foto_url?: string | null
           id?: string
+          is_master_analista?: boolean
           must_change_password?: boolean
           nome?: string | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -419,6 +428,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_master_analista: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
