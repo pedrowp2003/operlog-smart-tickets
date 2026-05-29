@@ -1075,6 +1075,32 @@ export function ChamadosTab() {
         </DialogContent>
       </Dialog>
 
+      {/* Despachar máquina ao concluir */}
+      <Dialog open={despachoOpen} onOpenChange={setDespachoOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Despachar máquina</DialogTitle></DialogHeader>
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              Descreva o serviço realizado. O usuário que abriu o chamado será notificado para buscar a máquina.
+            </p>
+            <div>
+              <Label>Descrição do serviço * ({despachoDesc.length}/{MAX_DESC})</Label>
+              <Textarea
+                value={despachoDesc}
+                onChange={(e) => setDespachoDesc(e.target.value.toUpperCase().slice(0, MAX_DESC))}
+                rows={4}
+                maxLength={MAX_DESC}
+                placeholder="DESCREVA O SERVIÇO REALIZADO..."
+                style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+            <Button onClick={handleDespachar} disabled={!despachoDesc.trim()}>
+              <Truck className="w-4 h-4 mr-2" /> Despachar Máquina
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Editar ação */}
       <Dialog open={!!editAcao} onOpenChange={() => setEditAcao(null)}>
         <DialogContent>
