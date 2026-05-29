@@ -761,6 +761,12 @@ export function ChamadosTab() {
                     {detailChamado.codigo_erro && (
                       <p className="mt-2"><span className="text-muted-foreground">Código de erro: </span><span className="font-semibold">{detailChamado.codigo_erro}</span></p>
                     )}
+                    {(detailChamado as any).servico_descricao && (
+                      <div className="mt-2">
+                        <p className="text-muted-foreground">Serviço realizado:</p>
+                        <p className="break-words whitespace-pre-wrap">{(detailChamado as any).servico_descricao}</p>
+                      </div>
+                    )}
                     {detailChamado.foto_defeito_url && (
                       <div className="mt-2">
                         <p className="text-muted-foreground mb-1">Foto do defeito:</p>
