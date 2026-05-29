@@ -96,6 +96,10 @@ export function ChamadosTab() {
   const [prevDataStr, setPrevDataStr] = useState('');
   const [prevHoraStr, setPrevHoraStr] = useState('');
 
+  // Despacho ao concluir
+  const [despachoOpen, setDespachoOpen] = useState(false);
+  const [despachoDesc, setDespachoDesc] = useState('');
+
   const fetchData = async () => {
     const [cRes, mRes, pRes, fRes, tRes] = await Promise.all([
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
@@ -290,11 +294,38 @@ export function ChamadosTab() {
 
   const handleStatusChange = async (newStatus: StatusChamado) => {
     if (!detailChamado || !canEditChamado(detailChamado)) return;
+    if (newStatus === 'Encerrado' && !isAnalista) {
+      toast.error('Apenas analistas podem encerrar chamados');
+      return;
+    }
+    if (newStatus === 'Concluído') {
+      // Abre fluxo de despacho
+      setDespachoDesc(detailChamado.servico_descricao || '');
+      setDespachoOpen(true);
+      return;
+    }
     const updates: Partial<Chamado> = { status: newStatus };
     if (newStatus === 'Aberto') updates.progresso = 0;
-    if (newStatus === 'Concluído') updates.progresso = 100;
     const { data } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
+    fetchData();
+  };
+
+  const handleDespachar = async () => {
+    if (!detailChamado) return;
+    if (!despachoDesc.trim()) {
+      toast.error('Descreva o serviço realizado antes de despachar');
+      return;
+    }
+    const { data } = await supabase
+      .from('chamados')
+      .update({ status: 'Concluído', progresso: 100, servico_descricao: despachoDesc.trim().toUpperCase() })
+      .eq('id', detailChamado.id)
+      .select()
+      .single();
+    if (data) setDetailChamado(data as Chamado);
+    setDespachoOpen(false);
+    setDespachoDesc('');
     fetchData();
   };
 
@@ -345,16 +376,15 @@ export function ChamadosTab() {
     fetchAcoes(detailChamado.id);
   };
 
-  const handleDeleteChamado = async (id: string) => {
+  const handleArchiveChamado = async (id: string) => {
     if (!isAnalista) return;
     const ok = await confirm({
-      title: 'Excluir chamado?',
-      description: 'Esta ação não pode ser desfeita.',
-      confirmText: 'Excluir',
-      destructive: true,
+      title: 'Arquivar chamado?',
+      description: 'O chamado terá status "Encerrado" e ficará disponível apenas no filtro de arquivados.',
+      confirmText: 'Arquivar',
     });
     if (!ok) return;
-    await supabase.from('chamados').delete().eq('id', id);
+    await supabase.from('chamados').update({ status: 'Encerrado' }).eq('id', id);
     setDetailChamado(null);
     fetchData();
   };
@@ -396,8 +426,9 @@ export function ChamadosTab() {
     setEditAcao(null);
     if (detailChamado) fetchAcoes(detailChamado.id);
   };
-  const handleDeleteAcao = async (id: string) => {
-    await supabase.from('chamado_acoes').delete().eq('id', id);
+  const handleToggleDesconsiderada = async (a: Acao) => {
+    if (!isAnalista) return;
+    await supabase.from('chamado_acoes').update({ desconsiderada: !((a as any).desconsiderada) } as any).eq('id', a.id);
     if (detailChamado) fetchAcoes(detailChamado.id);
   };
   const maskDate = (v: string) => {
