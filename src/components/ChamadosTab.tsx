@@ -556,9 +556,9 @@ export function ChamadosTab() {
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
                 <div className="flex flex-col items-center gap-1 flex-shrink-0 w-10 sm:w-auto">
-                  {canDelete && (
-                    <Button variant="ghost" size="sm" className="text-destructive h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
-                      <Trash2 className="w-4 h-4" />
+                  {canArchive && chamado.status !== 'Encerrado' && (
+                    <Button variant="ghost" size="sm" className="text-muted-foreground h-6 w-6 p-0" title="Arquivar (encerrar) chamado" onClick={(e) => { e.stopPropagation(); handleArchiveChamado(chamado.id); }}>
+                      <Archive className="w-4 h-4" />
                     </Button>
                   )}
                   <span className="sm:hidden text-[11px] font-medium text-primary">{chamado.progresso ?? 0}%</span>
