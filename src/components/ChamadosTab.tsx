@@ -698,7 +698,7 @@ export function ChamadosTab() {
                     <Select value={detailChamado.status} onValueChange={(v) => handleStatusChange(v as StatusChamado)}>
                       <SelectTrigger className="w-auto h-8 text-sm font-semibold"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        {STATUS_LIST.filter(s => s !== 'Encerrado' || isAnalista).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   ) : (
