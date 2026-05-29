@@ -167,15 +167,15 @@ export function UserMenu() {
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Editar Informações</DialogTitle></DialogHeader>
           <div className="flex flex-col gap-4">
-            <div>
+            {isAnalista && <div>
               <Label>Nome de Usuário</Label>
               <Input value={username} onChange={(e) => setUsername(e.target.value)} />
-            </div>
-            <div>
+            </div>}
+            {isAnalista && <div>
               <Label>Email</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div>
+            </div>}
+            {isAnalista && <div>
               <Label>Telefone</Label>
               <Input
                 value={formatPhone(telefone)}
@@ -183,9 +183,9 @@ export function UserMenu() {
                 placeholder="(XX) XXXXX-XXXX"
                 inputMode="numeric"
               />
-            </div>
+            </div>}
 
-            <div className="grid grid-cols-2 gap-3">
+            {isAnalista && <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -194,13 +194,13 @@ export function UserMenu() {
                 <Label>Sobrenome</Label>
                 <Input value={sobrenome} onChange={(e) => setSobrenome(e.target.value)} />
               </div>
-            </div>
-            <div>
+            </div>}
+            {isAnalista && <div>
               <Label>Foto (opcional)</Label>
               <ImageUpload value={fotoPreview} onChange={handleFotoChange} label="Sua foto" />
-            </div>
+            </div>}
 
-            {(isCoordenador || isSupervisor) && (
+            {isAnalista && (isCoordenador || isSupervisor) && (
               <div>
                 <Label>Unidade</Label>
                 <Select value={unidade} onValueChange={setUnidade}>
@@ -212,7 +212,7 @@ export function UserMenu() {
               </div>
             )}
 
-            {isSupervisor && (
+            {isAnalista && isSupervisor && (
               <div>
                 <Label>Armazém</Label>
                 <Select value={armazem} onValueChange={setArmazem}>

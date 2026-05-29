@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck, AlertTriangle, Archive, EyeOff, Eye, Truck } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
@@ -96,6 +96,10 @@ export function ChamadosTab() {
   const [prevDataStr, setPrevDataStr] = useState('');
   const [prevHoraStr, setPrevHoraStr] = useState('');
 
+  // Despacho ao concluir
+  const [despachoOpen, setDespachoOpen] = useState(false);
+  const [despachoDesc, setDespachoDesc] = useState('');
+
   const fetchData = async () => {
     const [cRes, mRes, pRes, fRes, tRes] = await Promise.all([
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
@@ -150,7 +154,7 @@ export function ChamadosTab() {
   const isAnalista = user.role === 'analista';
   const isTecnico = user.role === 'tecnico';
   const canCreate = !isTecnico;
-  const canDelete = isAnalista;
+  const canArchive = isAnalista;
 
   const getMaquina = (id: string) => maquinas.find(m => m.id === id);
   const isMaquinaPrioritaria = (m: Maquina | undefined) =>
@@ -190,7 +194,14 @@ export function ChamadosTab() {
     }
   }
   filteredChamados = filteredChamados.filter(c => {
-    if (filterStatus !== 'todos' && c.status !== filterStatus) return false;
+    // Arquivados: somente analista; só aparecem quando filtro = 'arquivados'
+    const isArquivado = c.status === 'Encerrado';
+    if (filterStatus === 'arquivados') {
+      if (!isAnalista || !isArquivado) return false;
+    } else {
+      if (isArquivado) return false;
+      if (filterStatus !== 'todos' && c.status !== filterStatus) return false;
+    }
     if (filterCategoria !== 'todas' && c.categoria !== filterCategoria) return false;
     if (filterMaquina !== 'todas' && c.maquina_id !== filterMaquina) return false;
     const maq = getMaquina(c.maquina_id);
@@ -283,11 +294,38 @@ export function ChamadosTab() {
 
   const handleStatusChange = async (newStatus: StatusChamado) => {
     if (!detailChamado || !canEditChamado(detailChamado)) return;
+    if (newStatus === 'Encerrado' && !isAnalista) {
+      toast.error('Apenas analistas podem encerrar chamados');
+      return;
+    }
+    if (newStatus === 'Concluído') {
+      // Abre fluxo de despacho
+      setDespachoDesc(detailChamado.servico_descricao || '');
+      setDespachoOpen(true);
+      return;
+    }
     const updates: Partial<Chamado> = { status: newStatus };
     if (newStatus === 'Aberto') updates.progresso = 0;
-    if (newStatus === 'Concluído') updates.progresso = 100;
     const { data } = await supabase.from('chamados').update(updates).eq('id', detailChamado.id).select().single();
     if (data) setDetailChamado(data);
+    fetchData();
+  };
+
+  const handleDespachar = async () => {
+    if (!detailChamado) return;
+    if (!despachoDesc.trim()) {
+      toast.error('Descreva o serviço realizado antes de despachar');
+      return;
+    }
+    const { data } = await supabase
+      .from('chamados')
+      .update({ status: 'Concluído', progresso: 100, servico_descricao: despachoDesc.trim().toUpperCase() })
+      .eq('id', detailChamado.id)
+      .select()
+      .single();
+    if (data) setDetailChamado(data as Chamado);
+    setDespachoOpen(false);
+    setDespachoDesc('');
     fetchData();
   };
 
@@ -338,16 +376,15 @@ export function ChamadosTab() {
     fetchAcoes(detailChamado.id);
   };
 
-  const handleDeleteChamado = async (id: string) => {
+  const handleArchiveChamado = async (id: string) => {
     if (!isAnalista) return;
     const ok = await confirm({
-      title: 'Excluir chamado?',
-      description: 'Esta ação não pode ser desfeita.',
-      confirmText: 'Excluir',
-      destructive: true,
+      title: 'Arquivar chamado?',
+      description: 'O chamado terá status "Encerrado" e ficará disponível apenas no filtro de arquivados.',
+      confirmText: 'Arquivar',
     });
     if (!ok) return;
-    await supabase.from('chamados').delete().eq('id', id);
+    await supabase.from('chamados').update({ status: 'Encerrado' }).eq('id', id);
     setDetailChamado(null);
     fetchData();
   };
@@ -389,8 +426,9 @@ export function ChamadosTab() {
     setEditAcao(null);
     if (detailChamado) fetchAcoes(detailChamado.id);
   };
-  const handleDeleteAcao = async (id: string) => {
-    await supabase.from('chamado_acoes').delete().eq('id', id);
+  const handleToggleDesconsiderada = async (a: Acao) => {
+    if (!isAnalista) return;
+    await supabase.from('chamado_acoes').update({ desconsiderada: !((a as any).desconsiderada) } as any).eq('id', a.id);
     if (detailChamado) fetchAcoes(detailChamado.id);
   };
   const maskDate = (v: string) => {
@@ -451,7 +489,11 @@ export function ChamadosTab() {
               <div><Label className="text-xs">Status</Label>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {STATUS_LIST.filter(s => s !== 'Encerrado').map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    {isAnalista && <SelectItem value="arquivados">Arquivados</SelectItem>}
+                  </SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Unidade/Armazém</Label>
                 <Select value={filterLocal} onValueChange={setFilterLocal}>
@@ -549,9 +591,9 @@ export function ChamadosTab() {
                   {chamado.categoria && <span className="text-xs text-muted-foreground">{chamado.categoria}</span>}
                 </div>
                 <div className="flex flex-col items-center gap-1 flex-shrink-0 w-10 sm:w-auto">
-                  {canDelete && (
-                    <Button variant="ghost" size="sm" className="text-destructive h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); handleDeleteChamado(chamado.id); }}>
-                      <Trash2 className="w-4 h-4" />
+                  {canArchive && chamado.status !== 'Encerrado' && (
+                    <Button variant="ghost" size="sm" className="text-muted-foreground h-6 w-6 p-0" title="Arquivar (encerrar) chamado" onClick={(e) => { e.stopPropagation(); handleArchiveChamado(chamado.id); }}>
+                      <Archive className="w-4 h-4" />
                     </Button>
                   )}
                   <span className="sm:hidden text-[11px] font-medium text-primary">{chamado.progresso ?? 0}%</span>
@@ -656,7 +698,7 @@ export function ChamadosTab() {
                     <Select value={detailChamado.status} onValueChange={(v) => handleStatusChange(v as StatusChamado)}>
                       <SelectTrigger className="w-auto h-8 text-sm font-semibold"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        {STATUS_LIST.filter(s => s !== 'Encerrado' || isAnalista).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   ) : (
@@ -718,6 +760,12 @@ export function ChamadosTab() {
                     )}
                     {detailChamado.codigo_erro && (
                       <p className="mt-2"><span className="text-muted-foreground">Código de erro: </span><span className="font-semibold">{detailChamado.codigo_erro}</span></p>
+                    )}
+                    {(detailChamado as any).servico_descricao && (
+                      <div className="mt-2">
+                        <p className="text-muted-foreground">Serviço realizado:</p>
+                        <p className="break-words whitespace-pre-wrap">{(detailChamado as any).servico_descricao}</p>
+                      </div>
                     )}
                     {detailChamado.foto_defeito_url && (
                       <div className="mt-2">
@@ -894,8 +942,11 @@ export function ChamadosTab() {
                           const dataFormatada = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                           const fornecedor = getFornecedor(acao.fornecedor_id);
                           return (
-                            <div key={acao.id} className="bg-muted rounded p-2 space-y-1">
-                              <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
+                            <div key={acao.id} className={`bg-muted rounded p-2 space-y-1 ${(acao as any).desconsiderada ? 'opacity-60' : ''}`}>
+                              {(acao as any).desconsiderada && (
+                                <Badge variant="outline" className="text-[10px] h-4">Desconsiderada</Badge>
+                              )}
+                              <p className={`text-xs break-words whitespace-pre-wrap ${(acao as any).desconsiderada ? 'line-through' : ''}`}>{acao.descricao}</p>
                               {fornecedor && (
                                 <div className="text-xs pt-1 border-t border-border/40 flex items-center gap-2 flex-wrap">
                                   <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
@@ -915,8 +966,14 @@ export function ChamadosTab() {
                                     <Button variant="ghost" size="sm" className="h-6 px-1" onClick={() => openEditAcao(acao)}>
                                       <Pencil className="w-3 h-3" />
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="h-6 px-1 text-destructive" onClick={() => handleDeleteAcao(acao.id)}>
-                                      <Trash2 className="w-3 h-3" />
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-1 text-muted-foreground"
+                                      title={(acao as any).desconsiderada ? 'Reconsiderar ação' : 'Desconsiderar ação'}
+                                      onClick={() => handleToggleDesconsiderada(acao)}
+                                    >
+                                      {(acao as any).desconsiderada ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
                                     </Button>
                                   </div>
                                 )}
@@ -1021,6 +1078,32 @@ export function ChamadosTab() {
       <Dialog open={!!zoomImg} onOpenChange={() => setZoomImg(null)}>
         <DialogContent className="max-w-4xl p-2">
           {zoomImg && <img src={zoomImg} alt="" className="w-full h-auto object-contain max-h-[85vh]" />}
+        </DialogContent>
+      </Dialog>
+
+      {/* Despachar máquina ao concluir */}
+      <Dialog open={despachoOpen} onOpenChange={setDespachoOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Despachar máquina</DialogTitle></DialogHeader>
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              Descreva o serviço realizado. O usuário que abriu o chamado será notificado para buscar a máquina.
+            </p>
+            <div>
+              <Label>Descrição do serviço * ({despachoDesc.length}/{MAX_DESC})</Label>
+              <Textarea
+                value={despachoDesc}
+                onChange={(e) => setDespachoDesc(e.target.value.toUpperCase().slice(0, MAX_DESC))}
+                rows={4}
+                maxLength={MAX_DESC}
+                placeholder="DESCREVA O SERVIÇO REALIZADO..."
+                style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+            <Button onClick={handleDespachar} disabled={!despachoDesc.trim()}>
+              <Truck className="w-4 h-4 mr-2" /> Despachar Máquina
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
