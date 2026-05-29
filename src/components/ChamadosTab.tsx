@@ -936,8 +936,11 @@ export function ChamadosTab() {
                           const dataFormatada = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                           const fornecedor = getFornecedor(acao.fornecedor_id);
                           return (
-                            <div key={acao.id} className="bg-muted rounded p-2 space-y-1">
-                              <p className="text-xs break-words whitespace-pre-wrap">{acao.descricao}</p>
+                            <div key={acao.id} className={`bg-muted rounded p-2 space-y-1 ${(acao as any).desconsiderada ? 'opacity-60' : ''}`}>
+                              {(acao as any).desconsiderada && (
+                                <Badge variant="outline" className="text-[10px] h-4">Desconsiderada</Badge>
+                              )}
+                              <p className={`text-xs break-words whitespace-pre-wrap ${(acao as any).desconsiderada ? 'line-through' : ''}`}>{acao.descricao}</p>
                               {fornecedor && (
                                 <div className="text-xs pt-1 border-t border-border/40 flex items-center gap-2 flex-wrap">
                                   <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
