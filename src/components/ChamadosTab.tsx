@@ -489,7 +489,11 @@ export function ChamadosTab() {
               <div><Label className="text-xs">Status</Label>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{STATUS_LIST.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {STATUS_LIST.filter(s => s !== 'Encerrado').map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    {isAnalista && <SelectItem value="arquivados">Arquivados</SelectItem>}
+                  </SelectContent>
                 </Select></div>
               <div><Label className="text-xs">Unidade/Armazém</Label>
                 <Select value={filterLocal} onValueChange={setFilterLocal}>
