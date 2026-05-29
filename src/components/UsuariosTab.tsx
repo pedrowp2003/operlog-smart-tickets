@@ -72,9 +72,19 @@ export function UsuariosTab() {
     setFotoFile(null); setFotoPreview(undefined);
   };
 
+  // Hierarquia analistas: master pode editar/excluir analistas comuns;
+  // analistas comuns não podem editar/excluir nenhum analista.
+  const isMaster = (user as any).is_master_analista === true;
+  const canManageTarget = (target: Profile) => {
+    if (target.id === user.id) return false;
+    if (target.role !== 'analista') return true;
+    if (!isMaster) return false;
+    return !(target as any).is_master_analista;
+  };
+
   const openEdit = (u: Profile) => {
-    if (user?.role === 'analista' && u.role === 'analista' && u.id !== user.id) {
-      toast.error('Analistas não podem editar outras contas de analista');
+    if (u.id !== user.id && !canManageTarget(u)) {
+      toast.error('Você não tem permissão para editar este usuário');
       return;
     }
     setRole(u.role as UserRole);
@@ -94,8 +104,8 @@ export function UsuariosTab() {
   const handleDelete = async (id: string) => {
     if (id === user.id) { toast.error('Você não pode excluir seu próprio usuário'); return; }
     const target = usuarios.find(u => u.id === id);
-    if (user.role === 'analista' && target?.role === 'analista') {
-      toast.error('Analistas não podem excluir outras contas de analista');
+    if (!target || !canManageTarget(target)) {
+      toast.error('Você não tem permissão para excluir este usuário');
       return;
     }
     const ok = await confirm({
@@ -362,12 +372,12 @@ export function UsuariosTab() {
               <p className="text-xs text-primary">{roleEmoji(u.role)}</p>
             </div>
             <div className="flex gap-1 flex-shrink-0">
-              {!(user.role === 'analista' && u.role === 'analista' && u.id !== user.id) && (
+              {canManageTarget(u) && (
                 <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEdit(u); }}>
                   <Pencil className="w-4 h-4" />
                 </Button>
               )}
-              {u.id !== user.id && !(user.role === 'analista' && u.role === 'analista') && (
+              {canManageTarget(u) && (
                 <Button variant="ghost" size="sm" className="text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(u.id); }}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
