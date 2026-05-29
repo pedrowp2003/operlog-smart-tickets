@@ -73,6 +73,7 @@ export default function Register() {
       sobrenome: sobrenome.trim() || undefined,
       telefone: telefone.trim(),
       foto_url,
+      is_master_analista: 'true',
     };
 
     const err = await register(email.trim(), password, metadata);
