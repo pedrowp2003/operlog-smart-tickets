@@ -16,11 +16,13 @@ import { ROLE_LABELS, UserRole } from '@/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { NotificationsList, useUnreadCount } from '@/components/NotificationsList';
+import { useConfirm } from '@/components/ConfirmDialog';
 import logo from '@/assets/operlog-logo.png';
 
 export default function Dashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState<string>('chamados');
   const unread = useUnreadCount();
 
@@ -59,18 +61,30 @@ export default function Dashboard() {
     if (!(window.history.state && (window.history.state as any).__overlayGuard)) {
       window.history.pushState(sentinel, '');
     }
-    const onPop = () => {
+    const onPop = async () => {
       const overlay = document.querySelector(
         '[data-state="open"][role="dialog"], [data-state="open"][role="alertdialog"], [data-radix-popper-content-wrapper]'
       );
       if (overlay) {
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         window.history.pushState(sentinel, '');
+        return;
+      }
+      // No overlay open: ask before leaving the app
+      window.history.pushState(sentinel, '');
+      const ok = await confirm({
+        title: 'Tem certeza que deseja sair?',
+        confirmText: 'Sair',
+        cancelText: 'Cancelar',
+      });
+      if (ok) {
+        await logout();
+        navigate('/');
       }
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, []);
+  }, [confirm, logout, navigate]);
 
   const [isLg, setIsLg] = useState(false);
   useEffect(() => {

@@ -10,10 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
 import { User, LogOut, Trash2, Settings, Eye, EyeOff } from 'lucide-react';
+import { useConfirm } from '@/components/ConfirmDialog';
 
 export function UserMenu() {
   const { user, logout, updateProfile, updateEmail, updatePassword, deleteAccount, uploadImage } = useAuth();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -123,6 +125,12 @@ export function UserMenu() {
   };
 
   const handleLogout = async () => {
+    const ok = await confirm({
+      title: 'Tem certeza que deseja sair?',
+      confirmText: 'Sair',
+      cancelText: 'Cancelar',
+    });
+    if (!ok) return;
     await logout();
     navigate('/');
   };
