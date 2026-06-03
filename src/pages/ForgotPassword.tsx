@@ -9,7 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import logo from '@/assets/operlog-logo.png';
 
 export default function ForgotPassword() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
@@ -17,15 +17,12 @@ export default function ForgotPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setMsg('');
-    if (!username.trim()) { setError('Informe o nome de usuário'); return; }
+    const trimmed = email.trim();
+    if (!trimmed) { setError('Informe o e-mail'); return; }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) { setError('E-mail inválido'); return; }
     setLoading(true);
-    const { data: email, error: lookupError } = await supabase.rpc('get_email_by_username', { _username: username.trim() });
-    if (lookupError || !email) {
-      setLoading(false);
-      setError('Usuário não encontrado');
-      return;
-    }
-    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
@@ -45,11 +42,11 @@ export default function ForgotPassword() {
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <p className="text-sm text-muted-foreground">
-              Informe seu nome de usuário. Enviaremos um link para o e-mail cadastrado.
+              Informe seu e-mail. Enviaremos um link de recuperação de senha para ele.
             </p>
             <div>
-              <Label>Nome de Usuário</Label>
-              <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Seu nome de usuário" />
+              <Label>E-mail</Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             {msg && <p className="text-sm text-primary">{msg}</p>}
