@@ -12,7 +12,7 @@ import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { validatePassword, PASSWORD_RULE_MSG } from '@/lib/password';
 import logo from '@/assets/operlog-logo.png';
 
-const ADMIN_MASTER_PASSWORD = 'admin123@';
+const ADMIN_MASTER_PASSWORD = 'Admin123#';
 
 export default function Register() {
   const navigate = useNavigate();
