@@ -1,9 +1,20 @@
+/**
+ * NotificationsList
+ * -----------------
+ * Lista de notificações in-app do usuário logado.
+ * - Faz fetch das últimas 50 notificações.
+ * - Escuta mudanças em tempo real via Realtime do Supabase.
+ * - Permite marcar todas como lidas ou apagar uma a uma.
+ * Também exporta `useUnreadCount` para o badge no cabeçalho do Dashboard.
+ */
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Bell, Check, Trash2 } from 'lucide-react';
 
+// Formato local das notificações (subset das colunas da tabela).
 interface Notification {
   id: string;
   title: string;
@@ -13,6 +24,7 @@ interface Notification {
   created_at: string;
 }
 
+// Converte uma data ISO em string relativa curta ("agora", "5min", "2h", "3d").
 function timeAgo(iso: string) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
   if (diff < 60) return 'agora';
@@ -21,11 +33,14 @@ function timeAgo(iso: string) {
   return `${Math.floor(diff / 86400)}d`;
 }
 
+// `compact` reduz tamanhos/espaçamentos quando a lista vive dentro de um Sheet mobile.
 export function NotificationsList({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
   const [items, setItems] = useState<Notification[]>([]);
+  // Derivado do estado — quantas notificações ainda não foram lidas.
   const unread = items.filter(i => !i.read).length;
 
+  // Busca as últimas 50 notificações do usuário atual.
   const load = async () => {
     if (!user) return;
     const { data } = await supabase
@@ -37,23 +52,28 @@ export function NotificationsList({ compact = false }: { compact?: boolean }) {
     if (data) setItems(data as Notification[]);
   };
 
+  // Carrega na montagem e assina mudanças em tempo real (insert/update/delete).
   useEffect(() => {
     if (!user) return;
     load();
+    // Nome do canal único por sessão evita colisão entre abas/instâncias.
     const channel = supabase
       .channel(`notifications:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => load())
       .subscribe();
+    // Cleanup: descarta o canal Realtime quando o componente desmonta.
     return () => { supabase.removeChannel(channel); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  // Marca todas as notificações não lidas como lidas no banco.
   const markAllRead = async () => {
     if (!user) return;
     await supabase.from('notifications').update({ read: true }).eq('user_id', user.id).eq('read', false);
     load();
   };
 
+  // Exclui uma notificação específica (atualização otimista no estado local).
   const removeOne = async (id: string) => {
     await supabase.from('notifications').delete().eq('id', id);
     setItems(prev => prev.filter(n => n.id !== id));

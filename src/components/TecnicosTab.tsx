@@ -1,3 +1,18 @@
+/**
+ * TecnicosTab
+ * -----------
+ * Aba "Técnicos" do Dashboard — versão somente leitura usada por todos os
+ * cargos exceto analista (que vê a UsuariosTab no mesmo slot).
+ *
+ * Responsabilidades:
+ * - Listar técnicos com filtro por área e busca por nome.
+ * - Abrir um dialog com os detalhes do técnico selecionado.
+ * - Reagir ao evento global `app:focus` (vindo da busca global) e abrir o
+ *   técnico correspondente automaticamente.
+ *
+ * Observação: a exclusão de perfis de técnico é proibida (regra do projeto).
+ */
+
 import { useState, useEffect } from 'react';
 import { useAuth, Profile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';

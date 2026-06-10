@@ -1,6 +1,15 @@
+/**
+ * UserMenu
+ * --------
+ * Avatar + dropdown no canto superior direito do Dashboard.
+ * Permite: editar informações pessoais, trocar senha, sair (com confirmação)
+ * e — somente para analistas — excluir a própria conta.
+ */
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+// Rótulos legíveis, listas globais e formatador de telefone.
 import { ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, formatPhone } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,16 +19,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ImageUpload';
 import { User, LogOut, Trash2, Settings, Eye, EyeOff } from 'lucide-react';
+// Dialog de confirmação reutilizável (usado em "Sair").
 import { useConfirm } from '@/components/ConfirmDialog';
 
 export function UserMenu() {
+  // Operações de conta vindas do AuthContext.
   const { user, logout, updateProfile, updateEmail, updatePassword, deleteAccount, uploadImage } = useAuth();
   const navigate = useNavigate();
   const confirm = useConfirm();
-  const [editOpen, setEditOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);     // Controle do dialog de edição.
+  const [deleteOpen, setDeleteOpen] = useState(false); // Controle do dialog de exclusão.
 
-  // Edit fields
+  // Campos do formulário de edição (espelham os valores do profile durante a edição).
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -29,18 +40,21 @@ export function UserMenu() {
   const [armazem, setArmazem] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [fotoPreview, setFotoPreview] = useState<string | undefined>();
-  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | undefined>(); // base64 para preview imediato.
+  const [fotoFile, setFotoFile] = useState<File | null>(null);          // arquivo real que será enviado.
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Sem usuário (não deveria acontecer dentro do Dashboard) não renderiza nada.
   if (!user) return null;
 
+  // Flags de cargo — controlam quais campos aparecem no formulário.
   const isTecnico = user.role === 'tecnico';
   const isCoordenador = user.role === 'coordenador';
   const isSupervisor = user.role === 'supervisor';
   const isAnalista = user.role === 'analista';
 
+  // Preenche os estados com os valores atuais do profile e abre o dialog.
   const openEdit = () => {
     setUsername(user.username);
     setEmail(user.email);
@@ -61,14 +75,17 @@ export function UserMenu() {
     setFotoFile(file || null);
   };
 
+  // Mantém apenas dígitos no telefone, limitado a 11 (DDD + 9 dígitos).
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
     setTelefone(digits);
   };
 
+  // Salva o formulário: valida senha, faz upload de foto se houver e atualiza perfil/email/senha.
   const handleSave = async () => {
     setPasswordError('');
     if (newPassword) {
+      // Carrega o validador sob demanda para reduzir o bundle inicial.
       const { validatePassword } = await import('@/lib/password');
       const v = validatePassword(newPassword);
       if (v) { setPasswordError(v); return; }
@@ -76,15 +93,17 @@ export function UserMenu() {
 
     setSaving(true);
 
-    // Upload new photo if changed
+    // Resolve a foto: usa a atual, faz upload da nova ou remove (null).
     let foto_url = user.foto_url;
     if (fotoFile) {
       const url = await uploadImage(fotoFile, 'profiles');
       if (url) foto_url = url;
     } else if (!fotoPreview) {
+      // Usuário limpou a foto no componente de upload.
       foto_url = null;
     }
 
+    // Campos comuns a todos os cargos.
     const updates: Record<string, unknown> = {
       username: username.trim(),
       telefone: telefone.trim(),
@@ -93,19 +112,23 @@ export function UserMenu() {
 
     updates.nome = nome.trim();
     updates.sobrenome = sobrenome.trim();
+    // Coordenador e supervisor têm unidade associada.
     if (isCoordenador || isSupervisor) {
       updates.unidade = unidade;
     }
+    // Apenas supervisor tem armazém.
     if (isSupervisor) {
       updates.armazem = armazem;
     }
 
     await updateProfile(updates);
 
+    // Troca de email é feita em separado (precisa passar pelo Auth do Supabase).
     if (email.trim() !== user.email) {
       await updateEmail(email.trim());
     }
 
+    // Troca de senha por último — se falhar, mantém o dialog aberto com o erro.
     if (newPassword) {
       const err = await updatePassword(newPassword);
       if (err) {
@@ -119,11 +142,13 @@ export function UserMenu() {
     setEditOpen(false);
   };
 
+  // Confirma exclusão e volta para a landing.
   const handleDelete = async () => {
     await deleteAccount();
     navigate('/');
   };
 
+  // Sair: sempre pede confirmação antes de encerrar a sessão.
   const handleLogout = async () => {
     const ok = await confirm({
       title: 'Tem certeza que deseja sair?',

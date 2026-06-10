@@ -1,3 +1,16 @@
+/**
+ * MaquinasTab
+ * -----------
+ * Aba "Máquinas" do Dashboard.
+ *
+ * Responsabilidades:
+ * - Listar máquinas com filtros (unidade, armazém, tipo, marca, modelo) e busca.
+ * - Criar nova máquina prevenindo duplicatas (regras em mem://regras-negocio/maquinas).
+ * - Gerenciar categorias globais: tipos, frotas, marcas, modelos.
+ * - Editar/excluir máquinas (apenas analista) e marcar tipos prioritários.
+ * - Upload da foto da máquina (exibida sem cortes — object-contain).
+ */
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,9 +28,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
 
+// Tipos do schema usados em listagens, criação e edição.
 type Maquina = Tables<'maquinas'>;
 type Unidade = Tables<'unidades'>;
 type Armazem = Tables<'armazens'>;
+// Categorias globais (tipo/frota/marca/modelo) seguem todas a mesma forma.
 type Cat = { id: string; nome: string; prioridade?: boolean };
 
 export function MaquinasTab() {

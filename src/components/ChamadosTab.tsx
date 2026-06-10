@@ -1,3 +1,22 @@
+/**
+ * ChamadosTab
+ * -----------
+ * Aba "Chamados" do Dashboard. É o coração operacional do app.
+ *
+ * Responsabilidades:
+ * - Listar chamados com filtros (status, categoria, técnico, arquivados, busca).
+ * - Criar novo chamado (apenas analista) associando máquina + técnicos + descrição.
+ * - Acompanhar progresso: status, ações de técnico, despacho da máquina ao concluir.
+ * - Arquivar/desarquivar chamados (apenas analista).
+ * - Disparar notificações para os técnicos atrelados e para o solicitante.
+ *
+ * Regras importantes (de mem://regras-negocio/chamados):
+ * - ID do chamado é gerado automaticamente.
+ * - Técnico não muda progressão — apenas o analista.
+ * - Exclusão de chamado é restrita ao analista.
+ * - Arquivados só aparecem com o filtro "Arquivados".
+ */
+
 import { useState, useEffect } from 'react';
 import { useAuth, Profile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,14 +39,16 @@ import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 import { useConfirm } from '@/components/ConfirmDialog';
 
+// Aliases de tipo derivados do schema do banco — mantêm tipagem em sincronia com as migrations.
 type Chamado = Tables<'chamados'>;
 type Maquina = Tables<'maquinas'>;
 type Acao = Tables<'chamado_acoes'>;
 type Fornecedor = Tables<'fornecedores'>;
 
-const MAX_DESC = 500;
-const MAX_ACAO = 300;
-const MAX_COD_ERRO = 50;
+// Limites de caracteres dos campos de texto livre exibidos no formulário.
+const MAX_DESC = 500;     // Descrição inicial do chamado.
+const MAX_ACAO = 300;     // Texto de uma ação registrada pelo técnico.
+const MAX_COD_ERRO = 50;  // Código de erro da máquina.
 
 export function ChamadosTab() {
   const { user } = useAuth();

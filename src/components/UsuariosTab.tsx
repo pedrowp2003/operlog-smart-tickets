@@ -1,3 +1,17 @@
+/**
+ * UsuariosTab
+ * -----------
+ * Aba "Usuários" do Dashboard — visível apenas para analistas.
+ * (Para outros cargos, o Dashboard renderiza TecnicosTab no mesmo slot.)
+ *
+ * Responsabilidades:
+ * - Listar todos os usuários com filtro por cargo, área (técnicos) e busca.
+ * - Cadastrar novos usuários (qualquer cargo exceto analista — proteção no backend).
+ * - Editar e excluir usuários respeitando a hierarquia
+ *   (regras em mem://auth/hierarquia-permissoes).
+ * - Gerar senha temporária inicial baseada no nome + 4 últimos dígitos do telefone.
+ */
+
 import { useState, useEffect } from 'react';
 import { useAuth, Profile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,9 +28,13 @@ import { formatPhone, ROLE_LABELS, UserRole, UNIDADES, ARMAZENS, AREAS } from '@
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
 
+/**
+ * Gera a senha temporária do primeiro acesso: nome em minúsculas + 4 últimos
+ * dígitos do telefone. O usuário é forçado a trocar no primeiro login.
+ */
 function generateTempPassword(nome: string, telefone: string): string {
-  const digits = telefone.replace(/\D/g, '');
-  const last4 = digits.slice(-4).padStart(4, '0');
+  const digits = telefone.replace(/\D/g, '');          // Só dígitos.
+  const last4 = digits.slice(-4).padStart(4, '0');     // Garante 4 caracteres.
   return `${nome.trim().toLowerCase()}${last4}`;
 }
 

@@ -1,35 +1,61 @@
+/**
+ * Dashboard
+ * ---------
+ * Página principal do OperLog (rota /dashboard).
+ * Monta o cabeçalho, painéis laterais (chat/notificações), as quatro abas
+ * (Chamados, Máquinas, Técnicos/Usuários, Fornecedores) e o tratamento do
+ * botão "voltar" do celular.
+ */
+
+// Hooks básicos do React para estado e ciclo de vida.
 import { useEffect, useState } from 'react';
+// Hook do React Router para navegação programática.
 import { useNavigate } from 'react-router-dom';
+// Acesso ao usuário logado e logout.
 import { useAuth } from '@/contexts/AuthContext';
+// Menu superior do usuário (perfil, sair).
 import { UserMenu } from '@/components/UserMenu';
+// Dialog que aparece no primeiro login (troca de senha obrigatória).
 import { FirstLoginDialog } from '@/components/FirstLoginDialog';
+// Conteúdos das quatro abas principais.
 import { ChamadosTab } from '@/components/ChamadosTab';
 import { MaquinasTab } from '@/components/MaquinasTab';
 import { TecnicosTab } from '@/components/TecnicosTab';
 import { UsuariosTab } from '@/components/UsuariosTab';
 import { FornecedoresTab } from '@/components/FornecedoresTab';
+// Componentes de UI do shadcn para o sistema de abas.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Ícones usados no cabeçalho e nas abas.
 import { ClipboardList, Wrench, Users, Package, Bell, Medal, Hammer, ClipboardCheck, MessageSquare } from 'lucide-react';
+// Busca global (lupa no header).
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { Button } from '@/components/ui/button';
+// Rótulos legíveis para cada cargo (gerente, coordenador, etc.).
 import { ROLE_LABELS, UserRole } from '@/types';
+// Popover (chat mobile) e Sheet (notificações mobile).
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+// Lista de notificações e contador de não-lidas.
 import { NotificationsList, useUnreadCount } from '@/components/NotificationsList';
+// Dialog de confirmação (usado ao sair pelo botão voltar).
 import { useConfirm } from '@/components/ConfirmDialog';
+// Logo do app importada como asset para o Vite gerar hash de cache.
 import logo from '@/assets/operlog-logo.png';
 
 export default function Dashboard() {
+  // Usuário, flag de carregamento e função de logout vindos do contexto.
   const { user, loading, logout } = useAuth();
-  const navigate = useNavigate();
-  const confirm = useConfirm();
-  const [activeTab, setActiveTab] = useState<string>('chamados');
-  const unread = useUnreadCount();
+  const navigate = useNavigate();             // Para redirecionar se não estiver logado.
+  const confirm = useConfirm();               // Dialog "Tem certeza?" reutilizável.
+  const [activeTab, setActiveTab] = useState<string>('chamados'); // Aba ativa.
+  const unread = useUnreadCount();            // Quantidade de notificações não lidas (badge).
 
+  // Escuta o evento global `app:focus` (disparado pela busca global) e troca de aba.
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as { kind: string };
       if (!detail) return;
+      // Mapeia o tipo do resultado clicado para a aba correspondente.
       if (detail.kind === 'chamado') setActiveTab('chamados');
       else if (detail.kind === 'maquina') setActiveTab('maquinas');
       else if (detail.kind === 'fornecedor') setActiveTab('fornecedores');
@@ -39,38 +65,44 @@ export default function Dashboard() {
     return () => window.removeEventListener('app:focus', handler as EventListener);
   }, []);
 
+  // Proteção de rota: se acabou de carregar e não há usuário, manda para a landing.
   useEffect(() => {
     if (!loading && !user) navigate('/');
   }, [user, loading, navigate]);
 
+  // Larguras dos painéis laterais (chat / notificações) — persistidas em localStorage.
   const [leftWidth, setLeftWidth] = useState<number>(() => {
     const v = Number(localStorage.getItem('panel-left-width'));
-    return v >= 240 && v <= 600 ? v : 360;
+    return v >= 240 && v <= 600 ? v : 360; // Clamp + fallback para 360.
   });
   const [rightWidth, setRightWidth] = useState<number>(() => {
     const v = Number(localStorage.getItem('panel-right-width'));
     return v >= 240 && v <= 600 ? v : 360;
   });
 
+  // Sempre que o tamanho mudar, salva no localStorage para a próxima visita.
   useEffect(() => { localStorage.setItem('panel-left-width', String(leftWidth)); }, [leftWidth]);
   useEffect(() => { localStorage.setItem('panel-right-width', String(rightWidth)); }, [rightWidth]);
 
-  // Mobile back button: close any open dialog/popover/sheet instead of navigating away.
+  // Botão "voltar" do celular: se houver overlay aberto, fecha; senão pergunta antes de sair.
   useEffect(() => {
+    // Marca a entrada de histórico atual como "guardada" para detectarmos o popstate.
     const sentinel = { __overlayGuard: true };
     if (!(window.history.state && (window.history.state as any).__overlayGuard)) {
       window.history.pushState(sentinel, '');
     }
     const onPop = async () => {
+      // Procura algum dialog/popover/sheet aberto no DOM.
       const overlay = document.querySelector(
         '[data-state="open"][role="dialog"], [data-state="open"][role="alertdialog"], [data-radix-popper-content-wrapper]'
       );
       if (overlay) {
+        // Fecha o overlay simulando ESC e reempurra a sentinela no histórico.
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         window.history.pushState(sentinel, '');
         return;
       }
-      // No overlay open: ask before leaving the app
+      // Sem overlay aberto: confirma a saída do app antes de deslogar.
       window.history.pushState(sentinel, '');
       const ok = await confirm({
         title: 'Tem certeza que deseja sair?',
@@ -86,6 +118,7 @@ export default function Dashboard() {
     return () => window.removeEventListener('popstate', onPop);
   }, [confirm, logout, navigate]);
 
+  // Acompanha o breakpoint "lg" (≥1024px) para aplicar margens dos painéis laterais.
   const [isLg, setIsLg] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
@@ -95,31 +128,37 @@ export default function Dashboard() {
     return () => mq.removeEventListener('change', update);
   }, []);
 
+  // Tela de espera enquanto resolvemos a sessão.
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <p className="text-muted-foreground">Carregando...</p>
     </div>
   );
 
+  // Sem usuário: o useEffect acima já redireciona; aqui só evitamos render incompleto.
   if (!user) return null;
 
+  // Atalho usado em vários lugares (mostra "Usuários" ao invés de "Técnicos" para analistas).
   const isAnalista = user.role === 'analista';
 
+  // Handler de arrastar para redimensionar painéis laterais via mouse.
   const startResize = (side: 'left' | 'right') => (e: React.MouseEvent) => {
     e.preventDefault();
-    const startX = e.clientX;
-    const startW = side === 'left' ? leftWidth : rightWidth;
+    const startX = e.clientX;                                   // Posição X inicial do mouse.
+    const startW = side === 'left' ? leftWidth : rightWidth;    // Largura no início do arrasto.
     const onMove = (ev: MouseEvent) => {
+      // O painel direito cresce quando o mouse vai para a esquerda → inverte o sinal do delta.
       const delta = side === 'left' ? ev.clientX - startX : startX - ev.clientX;
-      const next = Math.min(600, Math.max(240, startW + delta));
+      const next = Math.min(600, Math.max(240, startW + delta)); // Clamp [240, 600].
       if (side === 'left') setLeftWidth(next); else setRightWidth(next);
     };
     const onUp = () => {
+      // Encerra a operação e remove os listeners temporários.
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
       document.body.style.userSelect = '';
     };
-    document.body.style.userSelect = 'none';
+    document.body.style.userSelect = 'none';                    // Evita seleção de texto durante o arrasto.
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
   };
