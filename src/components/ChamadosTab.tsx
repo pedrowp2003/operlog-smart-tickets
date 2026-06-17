@@ -33,11 +33,13 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck, AlertTriangle, Archive, EyeOff, Eye, Truck } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { QRScannerDialog } from '@/components/QRScannerDialog';
 
 // Aliases de tipo derivados do schema do banco — mantêm tipagem em sincronia com as migrations.
 type Chamado = Tables<'chamados'>;
@@ -97,6 +99,7 @@ export function ChamadosTab() {
   const [parteMaquina, setParteMaquina] = useState<string>('none');
   const [partesList, setPartesList] = useState<{ id: string; nome: string }[]>([]);
   const [zoomImg, setZoomImg] = useState<string | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
