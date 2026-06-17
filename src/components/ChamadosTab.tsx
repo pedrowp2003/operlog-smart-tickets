@@ -800,6 +800,9 @@ export function ChamadosTab() {
                     {detailChamado.codigo_erro && (
                       <p className="mt-2"><span className="text-muted-foreground">Código de erro: </span><span className="font-semibold">{detailChamado.codigo_erro}</span></p>
                     )}
+                    {(detailChamado as any).parte_maquina && (
+                      <p className="mt-2"><span className="text-muted-foreground">Parte da máquina: </span><span className="font-semibold">{(detailChamado as any).parte_maquina}</span></p>
+                    )}
                     {(detailChamado as any).servico_descricao && (
                       <div className="mt-2">
                         <p className="text-muted-foreground">Serviço realizado:</p>
