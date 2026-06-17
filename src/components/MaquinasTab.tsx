@@ -387,6 +387,9 @@ export function MaquinasTab() {
                 <p className="text-xs text-muted-foreground">{m.unidade || m.armazem}</p>
               </div>
               <div className="flex gap-1 flex-shrink-0">
+                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setQrMaquina(m); }} aria-label="QR code" title="QR code">
+                  <QrCode className="w-4 h-4" />
+                </Button>
                 {canEdit && (
                   <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
                     <Pencil className="w-4 h-4" />
