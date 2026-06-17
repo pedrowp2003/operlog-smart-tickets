@@ -86,6 +86,7 @@ export type Database = {
           id: string
           maquina_id: string
           numero: string
+          parte_maquina: string | null
           progresso: number
           servico_descricao: string | null
           situacao_maquina: string
@@ -106,6 +107,7 @@ export type Database = {
           id?: string
           maquina_id: string
           numero: string
+          parte_maquina?: string | null
           progresso?: number
           servico_descricao?: string | null
           situacao_maquina: string
@@ -126,6 +128,7 @@ export type Database = {
           id?: string
           maquina_id?: string
           numero?: string
+          parte_maquina?: string | null
           progresso?: number
           servico_descricao?: string | null
           situacao_maquina?: string
@@ -214,6 +217,24 @@ export type Database = {
         Relationships: []
       }
       maquina_modelos: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      maquina_partes: {
         Row: {
           created_at: string
           id: string

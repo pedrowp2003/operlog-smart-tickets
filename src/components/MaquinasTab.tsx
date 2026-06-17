@@ -45,10 +45,12 @@ export function MaquinasTab() {
   const [frotasList, setFrotasList] = useState<Cat[]>([]);
   const [marcasList, setMarcasList] = useState<Cat[]>([]);
   const [modelosList, setModelosList] = useState<Cat[]>([]);
+  const [partesList, setPartesList] = useState<Cat[]>([]);
   const [novoTipo, setNovoTipo] = useState('');
   const [novaFrota, setNovaFrota] = useState('');
   const [novaMarca, setNovaMarca] = useState('');
   const [novoModelo, setNovoModelo] = useState('');
+  const [novaParte, setNovaParte] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [editMaquina, setEditMaquina] = useState<Maquina | null>(null);
   const [detailMaquina, setDetailMaquina] = useState<Maquina | null>(null);
@@ -79,13 +81,14 @@ export function MaquinasTab() {
   };
 
   const fetchCategorias = async () => {
-    const [u, a, t, f, mk, md] = await Promise.all([
+    const [u, a, t, f, mk, md, pt] = await Promise.all([
       supabase.from('unidades').select('*').order('nome'),
       supabase.from('armazens').select('*').order('nome'),
       supabase.from('maquina_tipos').select('*').order('nome'),
       supabase.from('maquina_frotas').select('*').order('nome'),
       supabase.from('maquina_marcas').select('*').order('nome'),
       supabase.from('maquina_modelos').select('*').order('nome'),
+      supabase.from('maquina_partes' as any).select('*').order('nome'),
     ]);
     if (u.data) setUnidadesList(u.data);
     if (a.data) setArmazensList(a.data);
@@ -93,6 +96,7 @@ export function MaquinasTab() {
     if (f.data) setFrotasList(f.data);
     if (mk.data) setMarcasList(mk.data);
     if (md.data) setModelosList(md.data);
+    if (pt.data) setPartesList(pt.data as any);
   };
 
   useEffect(() => { fetchMaquinas(); fetchCategorias(); }, []);
@@ -482,6 +486,7 @@ export function MaquinasTab() {
               { title: 'Frotas', table: 'maquina_frotas' as const, list: frotasList, novo: novaFrota, setNovo: setNovaFrota },
               { title: 'Marcas', table: 'maquina_marcas' as const, list: marcasList, novo: novaMarca, setNovo: setNovaMarca },
               { title: 'Modelos', table: 'maquina_modelos' as const, list: modelosList, novo: novoModelo, setNovo: setNovoModelo },
+            { title: 'Partes da máquina', table: 'maquina_partes' as const, list: partesList, novo: novaParte, setNovo: setNovaParte },
             ].map(sec => (
               <section key={sec.table}>
                 <h3 className="font-semibold mb-2">{sec.title}</h3>
@@ -491,11 +496,11 @@ export function MaquinasTab() {
                   </p>
                 )}
                 <div className="flex gap-2 mb-2">
-                  <Input value={sec.novo} onChange={e => sec.setNovo(e.target.value)} placeholder={`Novo ${sec.title.slice(0, -1).toLowerCase()}`} />
+                <Input value={sec.novo} onChange={e => sec.setNovo(e.target.value)} placeholder={`Novo item`} />
                   <Button size="sm" onClick={async () => {
                     const val = sec.novo.trim();
                     if (!val) return;
-                    const { error } = await supabase.from(sec.table).insert({ nome: val });
+                  const { error } = await supabase.from(sec.table as any).insert({ nome: val });
                     if (error) toast.error(error.message); else { sec.setNovo(''); fetchCategorias(); }
                   }}><Plus className="w-4 h-4" /></Button>
                 </div>
@@ -504,8 +509,8 @@ export function MaquinasTab() {
                     <CategoriaItem key={item.id} initial={item.nome}
                       prioridade={sec.withPrioridade ? !!item.prioridade : undefined}
                       onTogglePrioridade={sec.withPrioridade ? async (v) => { await supabase.from('maquina_tipos').update({ prioridade: v } as any).eq('id', item.id); fetchCategorias(); } : undefined}
-                      onRename={async (nome) => { await supabase.from(sec.table).update({ nome }).eq('id', item.id); fetchCategorias(); }}
-                      onDelete={async () => { await supabase.from(sec.table).delete().eq('id', item.id); fetchCategorias(); }}
+                    onRename={async (nome) => { await supabase.from(sec.table as any).update({ nome }).eq('id', item.id); fetchCategorias(); }}
+                    onDelete={async () => { await supabase.from(sec.table as any).delete().eq('id', item.id); fetchCategorias(); }}
                     />
                   ))}
                 </div>
