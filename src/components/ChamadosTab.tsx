@@ -1202,6 +1202,21 @@ export function ChamadosTab() {
         </DialogContent>
       </Dialog>
 
+      <QRScannerDialog
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onResult={(text) => {
+          const id = (text || '').trim();
+          const found = availableMaquinas.find(m => m.id === id);
+          if (found) {
+            setMaquinaId(found.id);
+            toast.success(`Máquina selecionada: ${found.tipo} ${found.frota}`);
+          } else {
+            toast.error('QR code não corresponde a nenhuma máquina disponível.');
+          }
+        }}
+      />
+
     </div>
   );
 }
