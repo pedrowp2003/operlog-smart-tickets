@@ -280,13 +280,15 @@ export function ChamadosTab() {
       data_inicio: now,
       foto_defeito_url: fotoUrl,
       codigo_erro: codigoErro.trim() ? codigoErro.trim().toUpperCase() : null,
-    });
+      parte_maquina: parteMaquina !== 'none' ? parteMaquina : null,
+    } as any);
     setCreateOpen(false);
     setDescricao('');
     setMaquinaId('');
     setFotoDefeito(undefined);
     setFotoDefeitoFile(null);
     setCodigoErro('');
+    setParteMaquina('none');
     fetchData();
   };
 
