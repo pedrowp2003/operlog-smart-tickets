@@ -33,11 +33,13 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Plus, Trash2, Wrench, User, ClipboardList, ChevronUp, ChevronDown, Package, X, Pencil, Hammer, Filter, Search, ClipboardCheck, AlertTriangle, Archive, EyeOff, Eye, Truck } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { QRScannerDialog } from '@/components/QRScannerDialog';
 
 // Aliases de tipo derivados do schema do banco — mantêm tipagem em sincronia com as migrations.
 type Chamado = Tables<'chamados'>;
@@ -97,6 +99,7 @@ export function ChamadosTab() {
   const [parteMaquina, setParteMaquina] = useState<string>('none');
   const [partesList, setPartesList] = useState<{ id: string; nome: string }[]>([]);
   const [zoomImg, setZoomImg] = useState<string | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaChamado>('Manutenção corretiva');
@@ -638,14 +641,26 @@ export function ChamadosTab() {
           <div className="flex flex-col gap-4">
             <div>
               <Label>Máquina *</Label>
-              <Select value={maquinaId} onValueChange={setMaquinaId}>
-                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                <SelectContent>
-                  {availableMaquinas.map(m => (
-                    <SelectItem key={m.id} value={m.id}>{m.tipo} {m.frota} ({m.unidade || m.armazem})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select value={maquinaId} onValueChange={setMaquinaId}>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    {availableMaquinas.map(m => (
+                      <SelectItem key={m.id} value={m.id}>{m.tipo} {m.frota} ({m.unidade || m.armazem})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setScannerOpen(true)}
+                  aria-label="Ler QR code"
+                  title="Ler QR code da máquina"
+                >
+                  <QrCode className="w-4 h-4" />
+                </Button>
+              </div>
               {selectedMaquinaForCreate?.foto_url && (
                 <img src={selectedMaquinaForCreate.foto_url} alt="" className="w-full rounded-lg object-contain max-h-40 mt-2" />
               )}
@@ -1186,6 +1201,21 @@ export function ChamadosTab() {
           <p className="text-sm text-muted-foreground">Em breve você poderá ver relatórios sobre chamados e máquinas aqui.</p>
         </DialogContent>
       </Dialog>
+
+      <QRScannerDialog
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onResult={(text) => {
+          const id = (text || '').trim();
+          const found = availableMaquinas.find(m => m.id === id);
+          if (found) {
+            setMaquinaId(found.id);
+            toast.success(`Máquina selecionada: ${found.tipo} ${found.frota}`);
+          } else {
+            toast.error('QR code não corresponde a nenhuma máquina disponível.');
+          }
+        }}
+      />
 
     </div>
   );

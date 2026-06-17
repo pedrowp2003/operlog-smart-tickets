@@ -23,10 +23,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Plus, Trash2, Pencil, Wrench, Settings, X, Filter, Search, AlertTriangle } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { MachineQRDialog } from '@/components/MachineQRDialog';
 
 // Tipos do schema usados em listagens, criação e edição.
 type Maquina = Tables<'maquinas'>;
@@ -54,6 +56,7 @@ export function MaquinasTab() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editMaquina, setEditMaquina] = useState<Maquina | null>(null);
   const [detailMaquina, setDetailMaquina] = useState<Maquina | null>(null);
+  const [qrMaquina, setQrMaquina] = useState<Maquina | null>(null);
   const [categoriasOpen, setCategoriasOpen] = useState(false);
   const [novaUnidade, setNovaUnidade] = useState('');
   const [novoArmazem, setNovoArmazem] = useState('');
@@ -384,6 +387,9 @@ export function MaquinasTab() {
                 <p className="text-xs text-muted-foreground">{m.unidade || m.armazem}</p>
               </div>
               <div className="flex gap-1 flex-shrink-0">
+                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setQrMaquina(m); }} aria-label="QR code" title="QR code">
+                  <QrCode className="w-4 h-4" />
+                </Button>
                 {canEdit && (
                   <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
                     <Pencil className="w-4 h-4" />
@@ -427,10 +433,20 @@ export function MaquinasTab() {
                 <span className="text-muted-foreground">Modelo:</span><span>{detailMaquina.modelo}</span>
                 <span className="text-muted-foreground">Unidade/Armazém:</span><span>{detailMaquina.unidade || detailMaquina.armazem}</span>
               </div>
+              <Button variant="outline" className="w-full mt-2" onClick={() => setQrMaquina(detailMaquina)}>
+                <QrCode className="w-4 h-4 mr-2" /> Ver QR Code
+              </Button>
             </>
           )}
         </DialogContent>
       </Dialog>
+
+      <MachineQRDialog
+        open={!!qrMaquina}
+        onOpenChange={(v) => { if (!v) setQrMaquina(null); }}
+        machineId={qrMaquina?.id ?? null}
+        label={qrMaquina ? `${qrMaquina.tipo} — ${qrMaquina.frota}` : undefined}
+      />
 
       {/* Alterar categorias dialog */}
       <Dialog open={categoriasOpen} onOpenChange={setCategoriasOpen}>
