@@ -682,6 +682,18 @@ export function ChamadosTab() {
               />
             </div>
             <div>
+              <Label>Parte da máquina (opcional)</Label>
+              <Select value={parteMaquina} onValueChange={setParteMaquina}>
+                <SelectTrigger><SelectValue placeholder="Selecione a parte com defeito..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Não especificada</SelectItem>
+                  {partesList.map(p => (
+                    <SelectItem key={p.id} value={p.nome}>{p.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label>Foto do defeito (opcional)</Label>
               <ImageUpload
                 value={fotoDefeito}
