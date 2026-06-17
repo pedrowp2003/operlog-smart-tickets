@@ -94,6 +94,8 @@ export function ChamadosTab() {
   const [fotoDefeito, setFotoDefeito] = useState<string | undefined>(undefined);
   const [fotoDefeitoFile, setFotoDefeitoFile] = useState<File | null>(null);
   const [codigoErro, setCodigoErro] = useState('');
+  const [parteMaquina, setParteMaquina] = useState<string>('none');
+  const [partesList, setPartesList] = useState<{ id: string; nome: string }[]>([]);
   const [zoomImg, setZoomImg] = useState<string | null>(null);
 
   const [acceptOpen, setAcceptOpen] = useState(false);
@@ -122,12 +124,13 @@ export function ChamadosTab() {
   const [despachoDesc, setDespachoDesc] = useState('');
 
   const fetchData = async () => {
-    const [cRes, mRes, pRes, fRes, tRes] = await Promise.all([
+    const [cRes, mRes, pRes, fRes, tRes, ptRes] = await Promise.all([
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
       supabase.from('maquinas').select('*'),
       supabase.from('profiles').select('*'),
       supabase.from('fornecedores').select('*'),
       supabase.from('maquina_tipos').select('nome,prioridade'),
+      supabase.from('maquina_partes' as any).select('id,nome').order('nome'),
     ]);
     if (cRes.data) setChamados(cRes.data);
     if (mRes.data) setMaquinas(mRes.data);
@@ -138,6 +141,7 @@ export function ChamadosTab() {
         (tRes.data as any[]).filter(t => t.prioridade).map(t => t.nome)
       ));
     }
+    if (ptRes.data) setPartesList(ptRes.data as any);
   };
 
   useEffect(() => { fetchData(); }, []);
