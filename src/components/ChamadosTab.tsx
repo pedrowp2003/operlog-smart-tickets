@@ -641,14 +641,26 @@ export function ChamadosTab() {
           <div className="flex flex-col gap-4">
             <div>
               <Label>Máquina *</Label>
-              <Select value={maquinaId} onValueChange={setMaquinaId}>
-                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                <SelectContent>
-                  {availableMaquinas.map(m => (
-                    <SelectItem key={m.id} value={m.id}>{m.tipo} {m.frota} ({m.unidade || m.armazem})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select value={maquinaId} onValueChange={setMaquinaId}>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    {availableMaquinas.map(m => (
+                      <SelectItem key={m.id} value={m.id}>{m.tipo} {m.frota} ({m.unidade || m.armazem})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setScannerOpen(true)}
+                  aria-label="Ler QR code"
+                  title="Ler QR code da máquina"
+                >
+                  <QrCode className="w-4 h-4" />
+                </Button>
+              </div>
               {selectedMaquinaForCreate?.foto_url && (
                 <img src={selectedMaquinaForCreate.foto_url} alt="" className="w-full rounded-lg object-contain max-h-40 mt-2" />
               )}
