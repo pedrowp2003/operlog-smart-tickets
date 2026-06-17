@@ -23,10 +23,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Plus, Trash2, Pencil, Wrench, Settings, X, Filter, Search, AlertTriangle } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { MachineQRDialog } from '@/components/MachineQRDialog';
 
 // Tipos do schema usados em listagens, criação e edição.
 type Maquina = Tables<'maquinas'>;
@@ -54,6 +56,7 @@ export function MaquinasTab() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editMaquina, setEditMaquina] = useState<Maquina | null>(null);
   const [detailMaquina, setDetailMaquina] = useState<Maquina | null>(null);
+  const [qrMaquina, setQrMaquina] = useState<Maquina | null>(null);
   const [categoriasOpen, setCategoriasOpen] = useState(false);
   const [novaUnidade, setNovaUnidade] = useState('');
   const [novoArmazem, setNovoArmazem] = useState('');
