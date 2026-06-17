@@ -433,10 +433,20 @@ export function MaquinasTab() {
                 <span className="text-muted-foreground">Modelo:</span><span>{detailMaquina.modelo}</span>
                 <span className="text-muted-foreground">Unidade/Armazém:</span><span>{detailMaquina.unidade || detailMaquina.armazem}</span>
               </div>
+              <Button variant="outline" className="w-full mt-2" onClick={() => setQrMaquina(detailMaquina)}>
+                <QrCode className="w-4 h-4 mr-2" /> Ver QR Code
+              </Button>
             </>
           )}
         </DialogContent>
       </Dialog>
+
+      <MachineQRDialog
+        open={!!qrMaquina}
+        onOpenChange={(v) => { if (!v) setQrMaquina(null); }}
+        machineId={qrMaquina?.id ?? null}
+        label={qrMaquina ? `${qrMaquina.tipo} — ${qrMaquina.frota}` : undefined}
+      />
 
       {/* Alterar categorias dialog */}
       <Dialog open={categoriasOpen} onOpenChange={setCategoriasOpen}>
